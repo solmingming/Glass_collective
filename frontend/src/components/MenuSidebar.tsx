@@ -1,9 +1,8 @@
 import React from "react";
-import "../styles/Sidebar.css";
+import "../styles/MenuSidebar.css";
 
-const Sidebar: React.FC = () => (
-  <aside className="sidebar">
-    <div className="logo">GC</div>
+const MenuSidebar: React.FC = () => (
+  <aside className="menu-sidebar">
     <nav>
       <ul>
         <li>Collective page</li>
@@ -18,4 +17,4 @@ const Sidebar: React.FC = () => (
   </aside>
 );
 
-export default Sidebar;
+export default MenuSidebar;

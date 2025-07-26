@@ -1,27 +1,24 @@
-.sidebar {
-  width: 220px;
+.menu-sidebar {
+  width: 200px;
   background: #fff;
   border-right: 1px solid #e5e7eb;
   padding: 32px 16px;
   display: flex;
   flex-direction: column;
 }
-.logo {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 40px;
-  color: #222;
-}
-.sidebar ul {
+
+.menu-sidebar ul {
   list-style: none;
   padding: 0;
 }
-.sidebar li {
+
+.menu-sidebar li {
   margin-bottom: 18px;
   color: #444;
   cursor: pointer;
   font-size: 1.05rem;
 }
-.sidebar li:hover {
+
+.menu-sidebar li:hover {
   color: #0070f3;
 }

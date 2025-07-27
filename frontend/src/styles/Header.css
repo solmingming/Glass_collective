@@ -7,31 +7,25 @@
   width: 100%;
   min-height: 80px;
   box-sizing: border-box;
-  /* 우측 상단 고정 */
   position: relative;
 }
-
 .search-input {
   width: 350px;
   padding: 8px 16px;
   border-radius: 8px;
   border: 1px solid #d1d5db;
   font-size: 1rem;
-  /* 검색창을 중앙으로 */
   margin: 0 auto;
 }
-
 .header-right {
   display: flex;
   align-items: center;
   gap: 12px;
-  /* 우측 상단 고정 */
   position: absolute;
   right: 32px;
   top: 50%;
   transform: translateY(-50%);
 }
-
 .wallet-btn {
   background: #f1f5f9;
   border: none;
@@ -40,9 +34,8 @@
   font-family: monospace;
   font-size: 1rem;
   color: #222;
-  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+  white-space: nowrap;
 }
-
 .darkmode-btn {
   background: #f1f5f9;
   border: none;
@@ -50,5 +43,5 @@
   padding: 8px;
   font-size: 1.2rem;
   cursor: pointer;
-  flex-shrink: 0; /* 버튼 크기 고정 */
+  flex-shrink: 0;
 }

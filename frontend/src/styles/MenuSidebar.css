@@ -5,20 +5,43 @@
   padding: 32px 16px;
   display: flex;
   flex-direction: column;
+  min-width: 200px;
+  min-height: 0;
 }
-
 .menu-sidebar ul {
   list-style: none;
   padding: 0;
 }
-
 .menu-sidebar li {
   margin-bottom: 18px;
-  color: #444;
-  cursor: pointer;
+  color: #000000;
   font-size: 1.05rem;
 }
-
-.menu-sidebar li:hover {
+.menu-title {
+  font-weight: bold;
+  color: #000;
+  cursor: default;
+  user-select: none;
+}
+.menu-indent {
+  padding-left: 2em;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.menu-indent:hover {
   color: #0070f3;
+}
+.menu-indent.active {
+  font-weight: bold;
+  color: #0070f3 !important;
+  background: #e0e7ff;
+  border-radius: 6px;
+}
+.menu-sidebar a {
+  color: #000 !important;
+  text-decoration: none;
+  font-size: 1.05rem;
+}
+.menu-sidebar a:hover {
+  color: #0070f3 !important;
 }

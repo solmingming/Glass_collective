@@ -1,0 +1,58 @@
+const p0 = await proposal.getProposal(0);
+const proposal = await ethers.getContractAt("proposal", address, signer);
+const [signer] = await ethers.getSigners(); // v6 기준
+);
+  member.address
+  ethers.parseEther("0.3"),
+  "이것은 테스트용입니다.",
+  "테스트 제안",
+await proposal.connect(member).createProposal(
+const member = ethers.provider.getSigner(0);
+(await vault.getBalance()).toString();
+});
+  value: ethers.parseEther("1")
+  to: await vault.getAddress(),
+await signer.sendTransaction({
+const [signer] = await ethers.getSigners(); // v6 기준
+await ethers.provider.getSigner(0).sendTransaction({to: await vault.getAddress(), value: ethers.parseEther("1")});
+await ethers.provider.getSigner(0).sendTransacion({to: await vault.getAddress(), value: ethers.parseEther("1")});
+});
+  value: ethers.parseEther("1")
+  to: await vault.getAddress(),
+await ethers.provider.getSigner(0).sendTransaction({
+(await vault.getBalance()).toString();
+await vault.getAddress();
+const monitor   = await ethers.getContractAt("CorruptionMonitor","0xdc64a140aa3e981100a9beca4e685f962f0cf6c9");
+const execution = await ethers.getContractAt("Execution","0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9");
+const voting    = await ethers.getContractAt("Voting","0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0");
+const proposal  = await ethers.getContractAt("Proposal","0xe7f1725e7734ce288f8367e1bb143e90bb3f0512");
+const vault     = await ethers.getContractAt("Vault","0x5fbdb2315678afecb367f032d93f642f64180aa3");
+const proposal  = await ethers.getContractAt("Proposal",        "0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1");
+(await vault.getBalance()).toString();
+await vault.getAddress()
+vault.address
+const vault    = await ethers.getContractAt("Vault",            "0x59b670e9fA9D0A427751Af201D676719a970857b");
+vault.address
+const vault = await ethers.getContractAt("Vault", "0x59b6…857b");
+vault.address
+(await vault.getBalance()).toString()
+const monitor  = await ethers.getContractAt("CorruptionMonitor","0x4A679253410272dd5232B3Ff7cF5dbB88f295319");
+const execution= await ethers.getContractAt("Execution",        "0xa85233C63b9Ee964Add6F2cffe00Fd84eb32338f");
+const voting   = await ethers.getContractAt("Voting",           "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44");
+const proposal = await ethers.getContractAt("Proposal",        "0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1");
+);
+  "0x59b670e9fA9D0A427751Af201D676719a970857b"
+  "Vault",
+const vault = await hre.ethers.getContractAt(
+const hre = require("hardhat");
+const vault = await ethers.getContractAt("Vault", "0x59b6…857b");
+npx hardhat console --network localhost
+});
+  value: ethers.parseEther("1")
+  to: vault.address,
+await ethers.provider.getSigner(0).sendTransaction({
+// 테스트용으로 이더 전송해보기
+(await vault.getBalance()).toString();
+const vault = await ethers.get// 잔액 조
+// 배포 주소를 복사해서 붙여넣기
+const vault = await ethers.getContractAt("Vault", "0xYourVaultAddress");

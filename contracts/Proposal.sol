@@ -55,7 +55,7 @@ contract Proposal is AccessControl{
             ProposalData({
                 title: title,
                 description: description,
-                amount: amount,
+                amount: amount, // 금전 제안인 경우에만 해당 (ex. 디자인 작업한 사람에게 2ETH 보상하자자)
                 recipient: recipient,
                 status: Status.Pending, // 제안의 초기 상태는 pending
                 votesFor: 0, // 초기엔 투표한 사람 없음 -> 찬성0, 반대0

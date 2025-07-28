@@ -13,7 +13,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 
 // Valut는 AccessControl이라는 기존 컨트랙트를 상속받음
 // AccessControl은 OpenZeppelin 라이브러리에서 제공하는 컨트랙트, 역할 생성/부여/확인/접근 제어 가능
-// **** 회계 담당(Vault) 역할 정의 ****
+// **** 회계 담당자(Vault) 역할 정의 ****
 contract Vault is AccessControl {
 
   // TREASURE ROLE 이라는 역할을 가진 사람만 실행 가능한 함수.. 의 권한 검사를 할 때 사용될 고유ID
@@ -62,7 +62,7 @@ contract Vault is AccessControl {
     onlyRole(TREASURER_ROLE)
   {
     // 잔액 확인
-    // require : 조건 검증 구문, 조건이 false일시 트랜잭션 실패 + "vault: insufficient balance" 메시지 출력력
+    // require : 조건 검증 구문, 조건이 false일시 트랜잭션 실패 + "vault: insufficient balance" 메시지 출력
     require(address(this).balance >= amount,
             "Vault: insufficient balance");
     // 실제 전송

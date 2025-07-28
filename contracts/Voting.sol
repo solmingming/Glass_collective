@@ -15,6 +15,11 @@ contract Voting is AccessControl{
   //DAO 구성원 역할
   bytes32 public constant MEMBER_ROLE = keccak256("MEMBER_ROLE");
 
+  constructor(address admin){
+    _grantRole(DEFAULT_ADMIN_ROLE, admin);
+    _grantRole(MEMBER_ROLE, admin);
+  }
+
   //단일제안 투표 기록 구조체
   struct VoteRecord{
     mapping(address=>bool) hasVoted; // 중복투표 방지

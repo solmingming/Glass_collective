@@ -1,56 +1,114 @@
-import React from "react";
-import "../styles/DaoOverview.css";
+import React, { useState } from "react";
+import "./../styles/DaoProposal.css";
+import NewProposalForm from "./DaoNewProposalForm";
 
-// DaoProposal 컴포넌트
-const DaoProposal: React.FC = () => (
-  <section className="dao-overview">
-    {/* 프로필, 통계, 금고, 바, 활동 등 DaoOverview와 동일 구조 */}
-    <div className="dao-profile">
-      <div className="dao-image">Proposal</div>
-      <div>
-        <h2 className="dao-title">Proposal</h2>
-        <div className="dao-id">@mad_camp0x</div>
-        <div className="dao-date">created on 2025.06</div>
-      </div>
+const dummyProposals = [
+  {
+    id: 1,
+    title: "MT 장소 고르기",
+    emoji: "🟫",
+    status: "ongoing",
+  },
+  {
+    id: 2,
+    title: "회식 장소 고르기",
+    emoji: "🕶️",
+    status: "ongoing",
+  },
+  {
+    id: 3,
+    title: "반티 정하기",
+    emoji: "🟦",
+    status: "ongoing",
+  },
+  {
+    id: 4,
+    title: "MT 장소 고르기",
+    emoji: "🟫",
+    status: "ongoing",
+  },
+  {
+    id: 5,
+    title: "MT 장소 고르기",
+    emoji: "🟫",
+    status: "ongoing",
+  },
+];
+
+const proposalDetails: { [key: string]: { description: string } } = {
+  1: { description: "MT 장소를 투표로 정합니다. 후보: 강릉, 속초, 남이섬" },
+  2: { description: "회식 장소를 투표로 정합니다. 후보: 고기집, 횟집, 중식당" },
+  3: { description: "반티(단체티) 디자인을 투표로 정합니다. 후보: 흰색, 파란색, 노란색" },
+  4: { description: "MT 장소를 투표로 정합니다. 후보: 강릉, 속초, 남이섬" },
+  5: { description: "MT 장소를 투표로 정합니다. 후보: 강릉, 속초, 남이섬" },
+};
+
+// ... (생략: import, dummyProposals, proposalDetails 등 기존 코드)
+
+const DaoProposal: React.FC = () => {
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [showNewProposal, setShowNewProposal] = useState(false);
+
+  const handleSelect = (id: number) => setSelectedId(id);
+  const handleBack = () => setSelectedId(null);
+  const handleNewProposal = () => setShowNewProposal(true);
+  const handleCloseNewProposal = () => setShowNewProposal(false);
+
+  return (
+    <div className="dao-proposal-container">
+      {showNewProposal ? (
+        <NewProposalForm onBack={handleCloseNewProposal} />
+      ) : (
+        <>
+          <div className="dao-proposal-header">
+            <h2>Proposals</h2>
+            <span className="edit-icon" title="Create Proposal" onClick={handleNewProposal}>✏️</span>
+            <span className="sort-by">sort by</span>
+          </div>
+          {selectedId === null ? (
+            <div className="proposal-list">
+              {dummyProposals.map((proposal) => (
+                <div
+                  className="proposal-card"
+                  key={proposal.id}
+                  onClick={() => handleSelect(proposal.id)}
+                >
+                  <div className="proposal-emoji">{proposal.emoji}</div>
+                  <div className="proposal-title">{proposal.title}</div>
+                  <div className="proposal-actions">
+                    <span className="action-yes">✔️</span>
+                    <span className="action-neutral">➖</span>
+                    <span className="action-no">❌</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="proposal-detail-card">
+              <div className="proposal-detail-header">
+                <button className="discussion-btn">
+                  Join the discussion <span role="img" aria-label="chat">💬</span>
+                </button>
+                <div className="proposal-detail-actions">
+                  <span className="action-yes">✔️</span>
+                  <span className="action-neutral">➖</span>
+                  <span className="action-no">❌</span>
+                </div>
+              </div>
+              <div className="proposal-detail-content">
+                <div className="proposal-detail-emoji">
+                  {dummyProposals.find(p => p.id === selectedId)?.emoji}
+                </div>
+                <div className="proposal-detail-title">
+                  {dummyProposals.find(p => p.id === selectedId)?.title}
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
-    <div className="dao-stats">
-      <div>
-        <div className="stat-label">Total Proposals</div>
-        <div className="stat-value">35</div>
-      </div>
-      <div>
-        <div className="stat-label">Open</div>
-        <div className="stat-value">5</div>
-      </div>
-      <div>
-        <div className="stat-label">Closed</div>
-        <div className="stat-value">30</div>
-      </div>
-    </div>
-    <div className="dao-treasury">
-      <div className="treasury-label">Proposal Treasury</div>
-      <div className="treasury-amount">50,000,000</div>
-    </div>
-    <div className="dao-bars">
-      <div>
-        <div className="bar-label">Proposal Success Rate</div>
-        <div className="bar-bg">
-          <div className="bar-fill glass" style={{width: "80%"}} />
-        </div>
-      </div>
-      <div>
-        <div className="bar-label">Participation</div>
-        <div className="bar-bg">
-          <div className="bar-fill vote" style={{width: "65%"}} />
-        </div>
-      </div>
-    </div>
-    <div className="dao-activity">
-      <div className="activity-label">
-        <button className="activity-button">Lasted Proposal Activity</button>
-      </div>
-    </div>
-  </section>
-);
+  );
+};
 
 export default DaoProposal;

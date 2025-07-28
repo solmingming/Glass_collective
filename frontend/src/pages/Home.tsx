@@ -66,18 +66,21 @@ const Home: React.FC = () => {
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
-      const threshold = 100;
+      const threshold = 50;
       
-      if (scrollPosition > threshold) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
+      const shouldBeScrolled = scrollPosition > threshold;
+      
+      if (shouldBeScrolled !== isScrolled) {
+        setIsScrolled(shouldBeScrolled);
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    // 초기 상태 설정
+    handleScroll();
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isScrolled]);
 
   // Update active section based on which section is in view
   useEffect(() => {

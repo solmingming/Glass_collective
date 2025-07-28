@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,6 +8,21 @@ interface NavigationProps {
 
 const Navigation: React.FC<NavigationProps> = ({ activeSection = 'hero' }) => {
   const navigate = useNavigate();
+  const [isScrolled, setIsScrolled] = useState(false);
+  
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      if (scrollPosition > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -21,7 +36,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeSection = 'hero' }) => {
 
   return (
     <motion.nav
-      className="navigation"
+      className={`navigation ${isScrolled ? 'scrolled' : ''}`}
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}

@@ -1,0 +1,121 @@
+/* MenuSidebar 스타일 */
+
+.menu-sidebar {
+  width: 240px;
+  background: white;
+  border-right: 1px solid #e5e7eb;
+  overflow-y: auto;
+  height: calc(100vh - 80px); /* 헤더 높이 제외 */
+}
+
+/* 네비게이션 */
+.menu-sidebar nav {
+  padding: 20px 0;
+}
+
+.menu-sidebar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* 메뉴 제목 */
+.menu-title {
+  padding: 12px 24px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+/* 메뉴 항목 */
+.menu-indent {
+  padding: 12px 24px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  border-left: 3px solid transparent;
+}
+
+.menu-indent:hover {
+  background: #f9fafb;
+  color: #111827;
+  border-left-color: #d1d5db;
+}
+
+.menu-indent.active {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-left-color: #3b82f6;
+  font-weight: 500;
+}
+
+.menu-indent.active::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid #3b82f6;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+
+/* 스크롤바 스타일링 */
+.menu-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.menu-sidebar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.menu-sidebar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+.menu-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .menu-sidebar {
+    width: 200px;
+    height: calc(100vh - 60px);
+  }
+  
+  .menu-indent {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+  
+  .menu-title {
+    padding: 10px 20px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .menu-sidebar {
+    width: 180px;
+  }
+  
+  .menu-indent {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+  
+  .menu-title {
+    padding: 8px 16px;
+    font-size: 10px;
+  }
+} 

@@ -1,0 +1,73 @@
+/* DAO 페이지용 메인 스타일 */
+/* 이 스타일은 DAO 페이지에서만 사용됩니다 */
+
+/* 앱 컨테이너 */
+.dao-app-container {
+  display: flex;
+  height: 100vh;
+  background: #f8fafc;
+}
+
+/* 우측 영역 */
+.right-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 콘텐츠 행 */
+.content-row {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* 메인 영역 */
+.main-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* 탭 섹션 */
+.tab-section {
+  min-height: calc(100vh - 80px); /* 헤더 높이 제외 */
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-section.active {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+/* 탭 콘텐츠 */
+.tab-content {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* 스크롤 컨테이너 */
+.scroll-container {
+  scroll-behavior: smooth;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .dao-app-container {
+    flex-direction: column;
+  }
+  
+  .content-row {
+    flex-direction: column;
+  }
+  
+  .tab-section {
+    min-height: calc(100vh - 120px);
+    padding: 15px;
+  }
+} 

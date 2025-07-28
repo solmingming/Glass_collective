@@ -1,0 +1,46 @@
+/* LogoSidebar 스타일 */
+
+.logo-sidebar {
+  width: 64px;
+  background: #fff;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 24px;
+  min-width: 64px;
+  min-height: 0;
+}
+
+.logo-image-wrapper {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.logo-image {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .logo-sidebar {
+    width: 48px;
+    min-width: 48px;
+  }
+  
+  .logo-image-wrapper {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .logo-image {
+    width: 32px;
+    height: 32px;
+  }
+} 

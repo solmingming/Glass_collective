@@ -1,27 +1,26 @@
-import React, { useRef, useState, useEffect }, { useRef, useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom'
-import Navigation from './components/Navigation'
-import Home from './pages/Home'
-import Contact from './pages/Contact'
-import Login from './pages/Login'
-import CollectivesSearch from './pages/CollectivesSearch'
-import ScrollProgress from './components/ScrollProgress'
-import MouseFollower from './components/MouseFollower'
+import React, { useRef, useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import Navigation from './components/Navigation';
+import Home from './pages/Home';
+import Contact from './pages/Contact';
+import Login from './pages/Login';
+import CollectivesSearch from './pages/CollectivesSearch';
+import ScrollProgress from './components/ScrollProgress';
+import MouseFollower from './components/MouseFollower';
 
 // DAO 페이지 컴포넌트들
-import Logo{ BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import LogoSidebar from "./components/LogoLogoSidebar";
-import Header from "./components/Header";
-import MenuSidebar from "./components/MenuSidebar";
-import DaoOverview from "./pages/DaoOverview";
-import DaoRulebook from "./pages/DaoRulebook";
-import DaoProposal from "./pages/DaoProposal";
-import DaoVote from "./pages/DaoVote";
-import DaoHistory from "./pages/DaoHistory";
-import DaoMypage from "./pages/DaoMypage";
+import LogoSidebar from './components/LogoSidebar';
+import Header from './components/Header';
+import MenuSidebar from './components/MenuSidebar';
+import DaoOverview from './pages/DaoOverview';
+import DaoRulebook from './pages/DaoRulebook';
+import DaoProposal from './pages/DaoProposal';
+import DaoVote from './pages/DaoVote';
+import DaoHistory from './pages/DaoHistory';
+import DaoMypage from './pages/DaoMypage';
 
 // CSS 파일들을 동적으로 import
-import './App.css' // 랜딩페이지용 스타일
+import './App.css'; // 랜딩페이지용 스타일
 
 // DAO 페이지용 탭 리스트
 const daoTabList = [
@@ -139,10 +138,10 @@ const DaoAppContent: React.FC = () => {
 // 랜딩페이지용 메인 컴포넌트
 const LandingApp: React.FC = () => {
   return (
-    <div className="glass-collective-app">
+    <div className="glass-collective-app" style={{ height: '100vh' }}>
       <ScrollProgress />
       <MouseFollower />
-      <Navigation />
+      {/* <Navigation /> 삭제! */}
       <main className="main-content">
         <Home />
       </main>

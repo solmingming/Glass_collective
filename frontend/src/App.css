@@ -560,8 +560,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  left: 50%;
-  transform: translateX(-50%);
+  /* left: 50%; */
+  /* transform: translateX(-50%); */
   background: 
     radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.01) 0%, transparent 50%),
     radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.01) 0%, transparent 50%),
@@ -577,8 +577,8 @@ body {
   align-items: center;
   margin: 0;
   padding: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  /* left: 50%; */
+  /* transform: translateX(-50%); */
 }
 
 .container {
@@ -595,8 +595,8 @@ body {
   position: relative;
   width: 100vw;
   margin: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  /* left: 50%; */
+  /* transform: translateX(-50%); */
 }
 
 .hero-section {
@@ -610,8 +610,8 @@ body {
   background: linear-gradient(135deg, var(--glass-white) 0%, var(--glass-gray-50) 100%);
   width: 100vw;
   margin: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  /* left: 50%; */
+  /* transform: translateX(-50%); */
 }
 
 .hero-content {

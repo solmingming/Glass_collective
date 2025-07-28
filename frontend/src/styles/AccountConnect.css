@@ -1,0 +1,176 @@
+/* Account Connect Page - 미니멀 스타일 */
+.account-connect-page {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  z-index: 0;
+}
+
+.account-connect-container {
+  background: transparent;
+  border: 1px solid #000;
+  padding: 3rem 2.5rem;
+  max-width: 450px;
+  width: 100%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.back-btn {
+  background: transparent;
+  border: none;
+  color: #000;
+  font-size: 0.875rem;
+  font-weight: 400;
+  cursor: pointer;
+  padding: 0;
+  margin-right: 1rem;
+  transition: opacity 0.2s ease;
+}
+
+.back-btn:hover {
+  opacity: 0.6;
+}
+
+.title {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: #000;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.description {
+  font-size: 1rem;
+  color: #666;
+  font-weight: 400;
+  text-align: center;
+  margin: 0;
+}
+
+.bank-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bank-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: 1px solid #000;
+  color: #000;
+  font-size: 1rem;
+  font-weight: 400;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  text-align: left;
+}
+
+.bank-item:hover {
+  background: #f5f5f5;
+}
+
+.bank-item.selected {
+  background: #000;
+  color: #fff;
+}
+
+.bank-logo {
+  font-size: 1.2rem;
+}
+
+.bank-name {
+  font-size: 1rem;
+}
+
+.connect-btn {
+  width: 100%;
+  padding: 0.75rem 0;
+  background: transparent;
+  border: 1px solid #000;
+  color: #000;
+  font-size: 1rem;
+  font-weight: 400;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.connect-btn:hover:not(:disabled) {
+  background: #000;
+  color: #fff;
+}
+
+.connect-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.loading-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.loading-spinner {
+  width: 12px;
+  height: 12px;
+  border: 1px solid currentColor;
+  border-top: 1px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 600px) {
+  .account-connect-container {
+    padding: 1.5rem 1rem;
+    max-width: 90vw;
+  }
+  
+  .title {
+    font-size: 1rem;
+  }
+  
+  .bank-item {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  .connect-btn {
+    font-size: 0.875rem;
+    padding: 0.5rem 0;
+  }
+} 

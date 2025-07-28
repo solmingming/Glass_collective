@@ -1,26 +1,40 @@
-import React, { useRef, useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import LogoSidebar from "./components/LogoSidebar";
+import React, { useRef, useState, useEffect }, { useRef, useState, useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom'
+import Navigation from './components/Navigation'
+import Home from './pages/Home'
+import Contact from './pages/Contact'
+import Login from './pages/Login'
+import CollectivesSearch from './pages/CollectivesSearch'
+import ScrollProgress from './components/ScrollProgress'
+import MouseFollower from './components/MouseFollower'
+
+// DAO 페이지 컴포넌트들
+import Logo{ BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import LogoSidebar from "./components/LogoLogoSidebar";
 import Header from "./components/Header";
 import MenuSidebar from "./components/MenuSidebar";
-import DaoOverview from "./components/DaoOverview";
-import DaoRulebook from "./components/DaoRulebook";
-import DaoProposal from "./components/DaoProposal";
-import DaoVote from "./components/DaoVote";
-import DaoHistory from "./components/DaoHistory";
-import DaoMypage from "./components/DaoMypage";
-import "./styles/App.css";
+import DaoOverview from "./pages/DaoOverview";
+import DaoRulebook from "./pages/DaoRulebook";
+import DaoProposal from "./pages/DaoProposal";
+import DaoVote from "./pages/DaoVote";
+import DaoHistory from "./pages/DaoHistory";
+import DaoMypage from "./pages/DaoMypage";
 
-const tabList = [
-  { key: "overview", path: "/overview", label: "Overview", component: <DaoOverview /> },
-  { key: "rulebook", path: "/rulebook", label: "Rule Book", component: <DaoRulebook /> },
-  { key: "proposal", path: "/proposal", label: "Proposal", component: <DaoProposal /> },
-  { key: "vote", path: "/vote", label: "Vote", component: <DaoVote /> },
-  { key: "history", path: "/history", label: "History", component: <DaoHistory /> },
-  { key: "mypage", path: "/mypage", label: "My page", component: <DaoMypage /> },
+// CSS 파일들을 동적으로 import
+import './App.css' // 랜딩페이지용 스타일
+
+// DAO 페이지용 탭 리스트
+const daoTabList = [
+  { key: "overview", path: "/dao/overview", label: "Overview", component: <DaoOverview /> },
+  { key: "rulebook", path: "/dao/rulebook", label: "Rule Book", component: <DaoRulebook /> },
+  { key: "proposal", path: "/dao/proposal", label: "Proposal", component: <DaoProposal /> },
+  { key: "vote", path: "/dao/vote", label: "Vote", component: <DaoVote /> },
+  { key: "history", path: "/dao/history", label: "History", component: <DaoHistory /> },
+  { key: "mypage", path: "/dao/mypage", label: "My page", component: <DaoMypage /> },
 ];
 
-const AppContent: React.FC = () => {
+// DAO 페이지 메인 컴포넌트
+const DaoAppContent: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const mainRef = useRef<HTMLDivElement>(null);
@@ -28,11 +42,15 @@ const AppContent: React.FC = () => {
   const [currentTab, setCurrentTab] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
 
+  // DAO 페이지용 CSS 동적 로딩
+  useEffect(() => {
+    import('./styles/DaoLayout.css');
+  }, []);
+
   // 현재 URL에 맞는 탭 인덱스 찾기
   const getCurrentTabIndex = () => {
-    return tabList.findIndex(tab => tab.path === location.pathname);
+    return daoTabList.findIndex(tab => tab.path === location.pathname);
   };
-
 
   const HEADER_HEIGHT = 80; // 실제 헤더 높이와 동일시해야함
 
@@ -45,10 +63,10 @@ const AppContent: React.FC = () => {
     const sectionHeight = windowHeight - HEADER_HEIGHT;
     const currentIndex = Math.round(scrollTop / sectionHeight);
     
-    if (currentIndex !== currentTab && currentIndex >= 0 && currentIndex < tabList.length) {
+    if (currentIndex !== currentTab && currentIndex >= 0 && currentIndex < daoTabList.length) {
       setCurrentTab(currentIndex);
       // URL도 함께 변경
-      navigate(tabList[currentIndex].path);
+      navigate(daoTabList[currentIndex].path);
     }
   };
 
@@ -60,7 +78,7 @@ const AppContent: React.FC = () => {
     setCurrentTab(idx);
     
     // URL 변경
-    navigate(tabList[idx].path);
+    navigate(daoTabList[idx].path);
     
     const main = mainRef.current;
     const section = sectionRefs.current[idx];
@@ -83,13 +101,13 @@ const AppContent: React.FC = () => {
   }, [location.pathname]);
 
   return (
-    <div className="app-container">
+    <div className="dao-app-container">
       <LogoSidebar />
       <div className="right-area">
         <Header />
         <div className="content-row">
           <MenuSidebar
-            tabList={tabList}
+            tabList={daoTabList}
             currentTab={currentTab}
             onTabClick={scrollToTab}
           />
@@ -98,10 +116,12 @@ const AppContent: React.FC = () => {
             className="main-area scroll-container"
             onScroll={handleScroll}
           >
-            {tabList.map((tab, idx) => (
+            {daoTabList.map((tab, idx) => (
               <div
                 key={tab.key}
-                ref={el => (sectionRefs.current[idx] = el)}
+                ref={(el) => {
+                  sectionRefs.current[idx] = el;
+                }}
                 className={`tab-section ${idx === currentTab ? "active" : ""}`}
               >
                 <div className="tab-content">
@@ -116,14 +136,41 @@ const AppContent: React.FC = () => {
   );
 };
 
-const App: React.FC = () => {
+// 랜딩페이지용 메인 컴포넌트
+const LandingApp: React.FC = () => {
   return (
-    <Router>
-      <Routes>
-        <Route path="/*" element={<AppContent />} />
-      </Routes>
-    </Router>
+    <div className="glass-collective-app">
+      <ScrollProgress />
+      <MouseFollower />
+      <Navigation />
+      <main className="main-content">
+        <Home />
+      </main>
+    </div>
   );
 };
 
-export default App;
+function App() {
+  return (
+    <Router>
+      <Routes>
+        {/* 랜딩페이지 라우트 */}
+        <Route path="/" element={<LandingApp />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/collectives-search" element={<CollectivesSearch />} />
+        
+        {/* DAO 페이지 라우트들 */}
+        <Route path="/dao/*" element={<DaoAppContent />} />
+        <Route path="/dao/overview" element={<DaoAppContent />} />
+        <Route path="/dao/rulebook" element={<DaoAppContent />} />
+        <Route path="/dao/proposal" element={<DaoAppContent />} />
+        <Route path="/dao/vote" element={<DaoAppContent />} />
+        <Route path="/dao/history" element={<DaoAppContent />} />
+        <Route path="/dao/mypage" element={<DaoAppContent />} />
+      </Routes>
+    </Router>
+  )
+}
+
+export default App

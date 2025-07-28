@@ -1,5 +1,5 @@
 import React from "react";
-import "../styles/DaoOverview.css"; // 공통 스타일 사용
+import "../styles/DaoOverview.css";
 
 // DaoOverview 컴포넌트
 const DaoOverview: React.FC = () => (

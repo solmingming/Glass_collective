@@ -67,6 +67,20 @@ const Navigation: React.FC<NavigationProps> = ({ activeSection = 'hero' }) => {
           </motion.a>
           
           <motion.a 
+            href="#features" 
+            className={`nav-link ${activeSection === 'features' ? 'active' : ''}`}
+            data-section="features"
+            onClick={(e) => {
+              e.preventDefault();
+              scrollToSection('features');
+            }}
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.2 }}
+          >
+            Features
+          </motion.a>
+          
+          <motion.a 
             href="#values" 
             className={`nav-link ${activeSection === 'values' ? 'active' : ''}`}
             data-section="values"
@@ -81,19 +95,19 @@ const Navigation: React.FC<NavigationProps> = ({ activeSection = 'hero' }) => {
           </motion.a>
           
           <motion.a 
-            href="#features" 
-            className={`nav-link ${activeSection === 'features' ? 'active' : ''}`}
-            data-section="features"
+            href="#gallery" 
+            className={`nav-link ${activeSection === 'gallery' ? 'active' : ''}`}
+            data-section="gallery"
             onClick={(e) => {
               e.preventDefault();
-              scrollToSection('features');
+              scrollToSection('gallery');
             }}
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.2 }}
           >
-            Features
+            Gallery
           </motion.a>
-          
+
           <motion.a 
             href="#score" 
             className={`nav-link ${activeSection === 'score' ? 'active' : ''}`}

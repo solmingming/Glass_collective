@@ -1,3 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
+
+.gc-logo-script {
+  font-family: 'Dancing Script', cursive;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 8px #e6e6e6, 0 1px 2px #0001;
+  user-select: none;
+  line-height: 1;
+  padding: 0 0.2em;
+  background: none;
+  display: inline-block;
+}
+
 /* Collectives Search Page - Minimal Design */
 .collectives-search-page {
   min-height: 100vh;
@@ -71,7 +87,6 @@
 
 .header-center {
   flex: 1;
-  display: flex;
   justify-content: center;
   max-width: none;
   margin-left: 0;
@@ -173,9 +188,9 @@
 /* 메인 콘텐츠 영역 */
 .main-content {
   background: #ffffff;
-  position: relative; /* fixed → relative */
-  width: 100%;
-  min-height: 600px;   /* 또는 height: 100vh; */
+  position: relative;
+  width: auto;
+  min-height: 600px;
   overflow: hidden;
 }
 
@@ -237,6 +252,15 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, #f8fafc 60%, #e0e7ef 100%);
+  box-shadow: 0 6px 32px 0 rgba(80, 120, 180, 0.10), 0 1.5px 8px 0 rgba(0,0,0,0.08);
+  border: 2.5px solid var(--bubble-border, #e0e7ef);
+  filter: drop-shadow(0 0 12px var(--bubble-glow, #b6e0fe33));
+  transition: 
+    box-shadow 0.25s cubic-bezier(.25,.46,.45,.94),
+    filter 0.25s cubic-bezier(.25,.46,.45,.94),
+    border-color 0.25s,
+    transform 0.18s cubic-bezier(.25,.46,.45,.94);
 }
 
 .collective-bubble::before {
@@ -266,8 +290,16 @@
 }
 
 .collective-bubble:hover {
-  transform: scale(1.05) translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  transform: scale(1.08) translateY(-6px);
+  box-shadow: 0 12px 40px 0 rgba(80, 120, 180, 0.18), 0 3px 16px 0 rgba(0,0,0,0.12);
+  filter: drop-shadow(0 0 24px var(--bubble-glow, #b6e0fe66));
+  border-color: var(--bubble-glow, #7dd3fc);
+}
+
+.bubble-title, .bubble-count, .bubble-count-only {
+  text-shadow: 0 2px 8px #fff, 0 1px 2px #0002;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .bubble-title {

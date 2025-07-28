@@ -2,12 +2,13 @@
 
 .dao-overview {
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
+  max-width: none;
+  margin: 0;
+  padding: 0;
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border-radius: 0;
+  box-shadow: none;
+  min-height: 100vh;
 }
 
 /* DAO 프로필 */

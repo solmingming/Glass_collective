@@ -1,9 +1,9 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
-import CollectivesSearch from './pages/CollectivesSearch';
+import CollectivesSearch from './components/CollectivesSearch';
 import ScrollProgress from './components/ScrollProgress';
 import MouseFollower from './components/MouseFollower';
 
@@ -11,12 +11,12 @@ import MouseFollower from './components/MouseFollower';
 import LogoSidebar from './components/LogoSidebar';
 import Header from './components/Header';
 import MenuSidebar from './components/MenuSidebar';
-import DaoOverview from './pages/DaoOverview';
-import DaoRulebook from './pages/DaoRulebook';
-import DaoProposal from './pages/DaoProposal';
-import DaoVote from './pages/DaoVote';
-import DaoHistory from './pages/DaoHistory';
-import DaoMypage from './pages/DaoMypage';
+import DaoOverview from './components/DaoOverview';
+import DaoRulebook from './components/DaoRulebook';
+import DaoProposal from './components/DaoProposal';
+import DaoVote from './components/DaoVote';
+import DaoHistory from './components/DaoHistory';
+import DaoMypage from './components/DaoMypage';
 
 // CSS 파일들을 동적으로 import
 import './App.css'; // 랜딩페이지용 스타일
@@ -33,22 +33,24 @@ const daoTabList = [
 
 // DAO 페이지 메인 컴포넌트
 const DaoAppContent: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
   const mainRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [currentTab, setCurrentTab] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
 
   // DAO 페이지용 CSS 동적 로딩
   useEffect(() => {
     import('./styles/DaoLayout.css');
   }, []);
 
-  // 현재 URL에 맞는 탭 인덱스 찾기
-  const getCurrentTabIndex = () => {
-    return daoTabList.findIndex(tab => tab.path === location.pathname);
-  };
+  useEffect(() => {
+    if (window.ethereum) {
+      window.ethereum.request({ method: 'eth_accounts' }).then((accounts: string[]) => {
+        if (accounts.length > 0) setWalletAddress(accounts[0]);
+      });
+    }
+  }, []);
 
   const HEADER_HEIGHT = 80; // 실제 헤더 높이와 동일시해야함
 
@@ -63,8 +65,6 @@ const DaoAppContent: React.FC = () => {
     
     if (currentIndex !== currentTab && currentIndex >= 0 && currentIndex < daoTabList.length) {
       setCurrentTab(currentIndex);
-      // URL도 함께 변경
-      navigate(daoTabList[currentIndex].path);
     }
   };
 
@@ -75,8 +75,8 @@ const DaoAppContent: React.FC = () => {
     setIsScrolling(true);
     setCurrentTab(idx);
     
-    // URL 변경
-    navigate(daoTabList[idx].path);
+    // URL 변경 (삭제)
+    // navigate(daoTabList[idx].path);
     
     const main = mainRef.current;
     const section = sectionRefs.current[idx];
@@ -90,19 +90,19 @@ const DaoAppContent: React.FC = () => {
     setTimeout(() => setIsScrolling(false), 1000);
   };
 
-  // URL 변경 시 탭 인덱스 업데이트
-  useEffect(() => {
-    const tabIndex = getCurrentTabIndex();
-    if (tabIndex !== -1 && tabIndex !== currentTab) {
-      setCurrentTab(tabIndex);
-    }
-  }, [location.pathname]);
+  // URL 변경 시 탭 인덱스 업데이트 (불필요하므로 주석 처리)
+  // useEffect(() => {
+  //   const tabIndex = getCurrentTabIndex();
+  //   if (tabIndex !== -1 && tabIndex !== currentTab) {
+  //     setCurrentTab(tabIndex);
+  //   }
+  // }, [location.pathname]);
 
   return (
     <div className="dao-app-container">
       <LogoSidebar />
       <div className="right-area">
-        <Header />
+        <Header walletAddress={walletAddress ? walletAddress : undefined} />
         <div className="content-row">
           <MenuSidebar
             tabList={daoTabList}
@@ -159,13 +159,7 @@ function App() {
         <Route path="/collectives-search" element={<CollectivesSearch />} />
         
         {/* DAO 페이지 라우트들 */}
-        <Route path="/dao/*" element={<DaoAppContent />} />
-        <Route path="/dao/overview" element={<DaoAppContent />} />
-        <Route path="/dao/rulebook" element={<DaoAppContent />} />
-        <Route path="/dao/proposal" element={<DaoAppContent />} />
-        <Route path="/dao/vote" element={<DaoAppContent />} />
-        <Route path="/dao/history" element={<DaoAppContent />} />
-        <Route path="/dao/mypage" element={<DaoAppContent />} />
+        <Route path="/collective/:id" element={<DaoAppContent />} />
       </Routes>
     </Router>
   )

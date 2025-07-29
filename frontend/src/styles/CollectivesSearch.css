@@ -173,7 +173,9 @@
 /* 메인 콘텐츠 영역 */
 .main-content {
   background: #ffffff;
-  position: fixed;
+  position: relative; /* fixed → relative */
+  width: 100%;
+  min-height: 600px;   /* 또는 height: 100vh; */
   overflow: hidden;
 }
 
@@ -181,8 +183,8 @@
 .bubble-canvas {
   position: relative;
   width: 100%;
+  min-height: 600px;
   height: 100%;
-  min-height: 500px;
   overflow: hidden;
   background: #ffffff;
   border-radius: 0;

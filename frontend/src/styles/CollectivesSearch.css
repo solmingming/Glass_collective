@@ -172,12 +172,8 @@
 
 /* 메인 콘텐츠 영역 */
 .main-content {
-  width: calc(100% - 140px);
-  height: calc(100vh - 120px);
   background: #ffffff;
   position: fixed;
-  left: 140px;
-  top: 120px;
   overflow: hidden;
 }
 

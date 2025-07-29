@@ -1,0 +1,167 @@
+.dao-proposal-container {
+  padding: 32px 48px;
+  background: #fff;
+  min-height: 100vh;
+}
+
+.dao-proposal-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 12px;
+}
+
+.dao-proposal-header h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.edit-icon {
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-right: auto;
+}
+
+.sort-by {
+  color: #888;
+  font-size: 0.95rem;
+}
+
+.proposal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.proposal-card {
+  display: flex;
+  align-items: center;
+  background: #fafafa;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 18px 24px;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+
+.proposal-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.proposal-emoji {
+  font-size: 2.2rem;
+  margin-right: 18px;
+}
+
+.proposal-title {
+  flex: 1;
+  font-size: 1.08rem;
+  font-weight: 500;
+}
+
+.proposal-actions {
+  display: flex;
+  gap: 16px;
+  font-size: 1.5rem;
+}
+
+.action-yes {
+  color: #3cb371;
+}
+.action-neutral {
+  color: #aaa;
+}
+.action-no {
+  color: #e74c3c;
+}
+
+.proposal-detail {
+  background: #fafafa;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 32px 28px;
+  max-width: 500px;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 18px;
+}
+
+.proposal-detail-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  padding: 36px 32px 48px 32px;
+  max-width: 600px;
+  margin: 40px auto 0 auto;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.proposal-detail-header {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 18px;
+  gap: 12px;
+  position: absolute;
+  top: 24px;
+  left: 0;
+  right: 0;
+  padding: 0 32px;
+}
+
+.discussion-btn {
+  background: #fff;
+  border: 1.5px solid #bbb;
+  border-radius: 20px;
+  padding: 7px 22px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-right: auto;
+  transition: border 0.15s;
+}
+
+.discussion-btn:hover {
+  border: 1.5px solid #888;
+}
+
+.proposal-detail-actions {
+  display: flex;
+  gap: 18px;
+  font-size: 1.6rem;
+}
+
+.proposal-detail-actions .action-yes { color: #3cb371; }
+.proposal-detail-actions .action-neutral { color: #aaa; }
+.proposal-detail-actions .action-no { color: #e74c3c; }
+
+.proposal-detail-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 60px;
+  width: 100%;
+}
+
+.proposal-detail-emoji {
+  font-size: 2.8rem;
+  margin-bottom: 18px;
+}
+
+.proposal-detail-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+}

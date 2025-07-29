@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import Navigation from '../components/Navigation';
@@ -7,6 +7,7 @@ import FeatureCard from '../components/FeatureCard';
 import GlassScore from '../components/GlassScore';
 import ObjectImage from '../components/ObjectImage';
 import ScrollSnap from '../components/ScrollSnap';
+import { useNavigate } from 'react-router-dom';
 
 // Import SVG files
 import object1Main from '../assets/images/object1/object1.svg';
@@ -17,6 +18,7 @@ const Home: React.FC = () => {
   const [activeSection, setActiveSection] = useState('hero');
   const [scrollProgress, setScrollProgress] = useState(0);
   const [glassKey, setGlassKey] = useState(0);
+  const navigate = useNavigate();
 
   // Define sections for scroll snap
   const sections = ['hero', 'philosophy', 'about', 'features', 'values', 'gallery', 'score', 'cta'];
@@ -73,6 +75,8 @@ const Home: React.FC = () => {
     cta: ctaRef,
   };
 
+  const scrollSnapRef = useRef<any>(null);
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -92,14 +96,14 @@ const Home: React.FC = () => {
 
   // Update active section based on which section is in view
   useEffect(() => {
-    if (heroInView) setActiveSection('hero');
-    else if (philosophyInView) setActiveSection('philosophy');
-    else if (aboutInView) setActiveSection('about');
-    else if (featuresInView) setActiveSection('features');
-    else if (valuesInView) setActiveSection('values');
-    else if (galleryInView) setActiveSection('gallery');
+    if (ctaInView) setActiveSection('cta');
     else if (scoreInView) setActiveSection('score');
-    else if (ctaInView) setActiveSection('cta');
+    else if (galleryInView) setActiveSection('gallery');
+    else if (valuesInView) setActiveSection('values');
+    else if (featuresInView) setActiveSection('features');
+    else if (aboutInView) setActiveSection('about');
+    else if (philosophyInView) setActiveSection('philosophy');
+    else if (heroInView) setActiveSection('hero');
   }, [heroInView, philosophyInView, aboutInView, featuresInView, valuesInView, galleryInView, scoreInView, ctaInView]);
 
   // Handle section change from ScrollSnap
@@ -148,6 +152,7 @@ const Home: React.FC = () => {
       >
       </motion.div>
 
+<<<<<<< HEAD
               <ScrollSnap
           sections={sections}
           onSectionChange={handleSectionChange}
@@ -155,6 +160,16 @@ const Home: React.FC = () => {
           snapThreshold={0.1}
           scrollDelay={200}
         >
+=======
+      <ScrollSnap
+        ref={scrollSnapRef}
+        sections={sections}
+        onSectionChange={handleSectionChange}
+        onScrollProgress={setScrollProgress}
+        snapThreshold={0.1}
+        scrollDelay={600}
+      >
+>>>>>>> origin/jong1
         <div className="glass-collective-app">
           <Navigation activeSection={activeSection} />
           
@@ -280,13 +295,13 @@ const Home: React.FC = () => {
               >
                 <button 
                   className="btn btn-primary"
-                  onClick={() => scrollToSection('cta')}
+                  onClick={() => scrollSnapRef.current?.scrollToSection('cta', sections.indexOf('cta'))}
                 >
                   시작하기
                 </button>
                 <button 
                   className="btn btn-secondary"
-                  onClick={() => scrollToSection('about')}
+                  onClick={() => scrollSnapRef.current?.scrollToSection('philosophy', sections.indexOf('philosophy'))}
                 >
                   더 알아보기
                 </button>
@@ -1016,6 +1031,7 @@ const Home: React.FC = () => {
                     }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ duration: 0.2 }}
+                    onClick={() => navigate('/login')}
                   >
                     <span className="button-text">Get Started</span>
                     <span className="button-icon">→</span>

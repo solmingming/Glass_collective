@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Outle
 import Home from './pages/Home';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
-import CollectivesSearch from './pages/CollectivesSearch';
+import CollectivesSearch from './components/CollectivesSearch';
 import ScrollProgress from './components/ScrollProgress';
 import MouseFollower from './components/MouseFollower';
 
@@ -12,11 +12,6 @@ import LogoSidebar from './components/LogoSidebar';
 import Header from './components/Header';
 import MenuSidebar from './components/MenuSidebar';
 import DaoOverview from './pages/DaoOverview';
-import DaoRulebook from './pages/DaoRulebook';
-import DaoProposal from './pages/DaoProposal';
-import DaoVote from './pages/DaoVote';
-import DaoHistory from './pages/DaoHistory';
-import DaoMypage from './pages/DaoMypage';
 
 // CSS 파일들을 동적으로 import
 import './App.css'; // 랜딩페이지용 스타일
@@ -33,10 +28,20 @@ const DaoLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [currentTab, setCurrentTab] = useState(0);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
 
   // DAO 페이지용 CSS 동적 로딩
   useEffect(() => {
     import('./styles/DaoLayout.css');
+  }, []);
+
+  // 지갑 연결 확인
+  useEffect(() => {
+    if (window.ethereum) {
+      window.ethereum.request({ method: 'eth_accounts' }).then((accounts: string[]) => {
+        if (accounts.length > 0) setWalletAddress(accounts[0]);
+      });
+    }
   }, []);
 
   // 현재 URL에 맞는 탭 인덱스 찾기
@@ -64,7 +69,7 @@ const DaoLayout: React.FC = () => {
     <div className="dao-app-container">
       <LogoSidebar />
       <div className="right-area">
-        <Header />
+        <Header walletAddress={walletAddress || undefined} />
         <div className="content-row">
           <MenuSidebar
             tabList={daoTabList}
@@ -108,8 +113,12 @@ function App() {
         <Route path="/dao" element={<DaoLayout />}>
           <Route index element={<DaoOverview />} />
           <Route path="overview" element={<DaoOverview />} />
-          <Route path="proposal" element={<DaoProposal />} />
-          <Route path="history" element={<DaoHistory />} />
+        </Route>
+        
+        {/* jong1 브랜치의 새로운 라우트 */}
+        <Route path="/collective/:id" element={<DaoLayout />}>
+          <Route index element={<DaoOverview />} />
+          <Route path="overview" element={<DaoOverview />} />
         </Route>
       </Routes>
     </Router>

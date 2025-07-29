@@ -5,16 +5,11 @@ module.exports = {
   solidity: {
     version: "0.8.20",
     settings: {
-<<<<<<< HEAD
       viaIR: true,
       optimizer: {
         enabled: true,
         runs: 200
       }
-=======
-      optimizer: { enabled: true, runs: 200 },
-      viaIR: true
->>>>>>> origin/jong1
     }
   },
   networks: {

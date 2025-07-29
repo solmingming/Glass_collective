@@ -152,7 +152,6 @@ const Home: React.FC = () => {
       >
       </motion.div>
 
-<<<<<<< HEAD
               <ScrollSnap
           sections={sections}
           onSectionChange={handleSectionChange}
@@ -160,16 +159,6 @@ const Home: React.FC = () => {
           snapThreshold={0.1}
           scrollDelay={200}
         >
-=======
-      <ScrollSnap
-        ref={scrollSnapRef}
-        sections={sections}
-        onSectionChange={handleSectionChange}
-        onScrollProgress={setScrollProgress}
-        snapThreshold={0.1}
-        scrollDelay={600}
-      >
->>>>>>> origin/jong1
         <div className="glass-collective-app">
           <Navigation activeSection={activeSection} />
           

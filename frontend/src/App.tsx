@@ -12,6 +12,8 @@ import LogoSidebar from './components/LogoSidebar';
 import Header from './components/Header';
 import MenuSidebar from './components/MenuSidebar';
 import DaoOverview from './pages/DaoOverview';
+import DaoProposal from './components/DaoProposal';
+import DaoHistory from './components/DaoHistory';
 
 // CSS 파일들을 동적으로 import
 import './App.css'; // 랜딩페이지용 스타일
@@ -113,12 +115,16 @@ function App() {
         <Route path="/dao" element={<DaoLayout />}>
           <Route index element={<DaoOverview />} />
           <Route path="overview" element={<DaoOverview />} />
+          <Route path="proposal" element={<DaoProposal />} />
+          <Route path="history" element={<DaoHistory />} />
         </Route>
         
         {/* jong1 브랜치의 새로운 라우트 */}
         <Route path="/collective/:id" element={<DaoLayout />}>
           <Route index element={<DaoOverview />} />
           <Route path="overview" element={<DaoOverview />} />
+          <Route path="proposal" element={<DaoProposal />} />
+          <Route path="history" element={<DaoHistory />} />
         </Route>
       </Routes>
     </Router>

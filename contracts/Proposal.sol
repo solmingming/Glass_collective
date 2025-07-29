@@ -15,31 +15,14 @@ contract Proposal is AccessControl {
 
     enum Status { Pending, Passed, Rejected, Executed }
     struct ProposalData {
-        string title; 
-        string description; 
-        uint256 amount; 
-        address payable recipient;
-        Status status;
-        uint256 votesFor; 
-        uint256 votesAgainst; 
-        uint256 votesAbstain;
-        uint256 startTime; 
-        address proposer; 
-        bool requireVote; 
-        string sanctionType;
-        uint256 beforeValue; 
-        uint256 afterValue; 
-        address targetMember;
+        string title; string description; uint256 amount; address payable recipient;
+        Status status; uint256 votesFor; uint256 votesAgainst; uint256 votesAbstain;
+        uint256 startTime; address proposer; bool requireVote; string sanctionType;
+        uint256 beforeValue; uint256 afterValue; address targetMember;
     }
     struct ProposalInput {
-        string title; 
-        string description; 
-        uint256 amount; address 
-        payable recipient;
-        bool requireVote; 
-        string sanctionType; 
-        uint256 beforeValue; 
-        uint256 afterValue;
+        string title; string description; uint256 amount; address payable recipient;
+        bool requireVote; string sanctionType; uint256 beforeValue; uint256 afterValue;
         address targetMember;
     }
 

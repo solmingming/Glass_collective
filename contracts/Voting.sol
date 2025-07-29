@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "./GovernanceToken.sol";
 
 /**
  * @title Voting
@@ -15,7 +16,11 @@ contract Voting is AccessControl{
   //DAO 구성원 역할
   bytes32 public constant MEMBER_ROLE = keccak256("MEMBER_ROLE");
 
-  constructor(address admin){
+  // 거버넌스 토큰 컨트랙트
+  GovernanceToken public governanceToken;
+
+  constructor(address _governanceToken, address admin){
+    governanceToken = GovernanceToken(_governanceToken);
     _grantRole(DEFAULT_ADMIN_ROLE, admin);
     _grantRole(MEMBER_ROLE, admin);
   }
@@ -54,9 +59,13 @@ contract Voting is AccessControl{
     //마감 확인
     require(!vr.hasVoted[msg.sender], "Voting: already voted");
 
+    // 투표 가중치 계산
+    uint256 votingPower = governanceToken.getVotingPower(msg.sender);
+    require(votingPower > 0, "Voting: no voting power");
+
     vr.hasVoted[msg.sender] = true;
-    if(support)  vr.votesFor++;
-    else  vr.votesAgainst++;
+    if(support)  vr.votesFor += votingPower;
+    else  vr.votesAgainst += votingPower;
 
     emit Voted(proposalId, msg.sender, support);
   }

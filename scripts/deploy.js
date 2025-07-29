@@ -46,28 +46,61 @@ async function main(){
   const [deployer] = await hre.ethers.getSigners();
   console.log("Deploying contracts with account:", deployer.address);
 
-  // 1. Vault 배포
+  // 1. GovernanceToken 배포 (새로 추가)
+  const GovernanceToken = await hre.ethers.getContractFactory("GovernanceToken");
+  const governanceToken = await GovernanceToken.deploy(
+    "Glass Collective Token",
+    "GLASS",
+    deployer.address
+  );
+  await governanceToken.waitForDeployment();
+  const governanceTokenAddress = await governanceToken.getAddress();
+  console.log("GovernanceToken deployed to:", governanceTokenAddress);
+
+  // 2. Vault 배포
   const Vault = await hre.ethers.getContractFactory("Vault");
   const vault = await Vault.deploy(deployer.address);
   await vault.waitForDeployment();
   const vaultAddress = await vault.getAddress();
   console.log("Vault deployed to:", vaultAddress);
 
-  // 2. Proposal 배포
+  // 3. EnhancedProposal 배포 (새로 추가)
+  const EnhancedProposal = await hre.ethers.getContractFactory("EnhancedProposal");
+  const enhancedProposal = await EnhancedProposal.deploy(
+    governanceTokenAddress,
+    deployer.address
+  );
+  await enhancedProposal.waitForDeployment();
+  const enhancedProposalAddress = await enhancedProposal.getAddress();
+  console.log("EnhancedProposal deployed to:", enhancedProposalAddress);
+
+  // 4. Voting 배포 (거버넌스 토큰 연동)
+  const Voting = await hre.ethers.getContractFactory("Voting");
+  const voting = await Voting.deploy(governanceTokenAddress, deployer.address);
+  await voting.waitForDeployment();
+  const votingAddress = await voting.getAddress();
+  console.log("Voting deployed to:", votingAddress);
+
+  // 5. AutoExecution 배포 (새로 추가)
+  const AutoExecution = await hre.ethers.getContractFactory("AutoExecution");
+  const autoExecution = await AutoExecution.deploy(
+    enhancedProposalAddress,
+    vaultAddress,
+    governanceTokenAddress,
+    deployer.address
+  );
+  await autoExecution.waitForDeployment();
+  const autoExecutionAddress = await autoExecution.getAddress();
+  console.log("AutoExecution deployed to:", autoExecutionAddress);
+
+  // 6. 기존 Proposal 배포 (하위 호환성)
   const Proposal = await hre.ethers.getContractFactory("Proposal");
   const proposal = await Proposal.deploy(deployer.address);
   await proposal.waitForDeployment();
   const proposalAddress = await proposal.getAddress();
   console.log("Proposal deployed to:", proposalAddress);
 
-  // 3. Voting 배포 (admin 주소 인자 필수)
-  const Voting = await hre.ethers.getContractFactory("Voting");
-  const voting = await Voting.deploy(deployer.address);
-  await voting.waitForDeployment();
-  const votingAddress = await voting.getAddress();
-  console.log("Voting deployed to:", votingAddress);
-
-  // 4. Execution 배포
+  // 7. 기존 Execution 배포 (하위 호환성)
   const Execution = await hre.ethers.getContractFactory("Execution");
   const execution = await Execution.deploy(
     proposalAddress,
@@ -78,12 +111,38 @@ async function main(){
   const executionAddress = await execution.getAddress();
   console.log("Execution deployed to:", executionAddress);
 
-  // 5. CorruptionMonitor 배포
+  // 8. CorruptionMonitor 배포
   const CorruptionMonitor = await hre.ethers.getContractFactory("CorruptionMonitor");
   const corruptionMonitor = await CorruptionMonitor.deploy();
   await corruptionMonitor.waitForDeployment();
   const corruptionAddress = await corruptionMonitor.getAddress();
   console.log("CorruptionMonitor deployed to:", corruptionAddress);
+
+  // 9. 초기 설정
+  console.log("\n=== 초기 설정 ===");
+  
+  // 거버넌스 토큰 초기 민팅
+  const initialMint = hre.ethers.parseEther("1000000"); // 100만 토큰
+  await governanceToken.mint(deployer.address, initialMint);
+  console.log("Initial tokens minted to deployer:", hre.ethers.formatEther(initialMint));
+
+  // 멤버 역할 부여
+  await enhancedProposal.grantRole(await enhancedProposal.MEMBER_ROLE(), deployer.address);
+  await voting.grantRole(await voting.MEMBER_ROLE(), deployer.address);
+  console.log("Member roles granted to deployer");
+
+  // 긴급 역할 부여
+  await enhancedProposal.grantRole(await enhancedProposal.EMERGENCY_ROLE(), deployer.address);
+  await autoExecution.grantRole(await autoExecution.EMERGENCY_ROLE(), deployer.address);
+  console.log("Emergency roles granted to deployer");
+
+  console.log("\n=== 배포 완료 ===");
+  console.log("GovernanceToken:", governanceTokenAddress);
+  console.log("EnhancedProposal:", enhancedProposalAddress);
+  console.log("AutoExecution:", autoExecutionAddress);
+  console.log("Vault:", vaultAddress);
+  console.log("Voting:", votingAddress);
+  console.log("CorruptionMonitor:", corruptionAddress);
 }
 
 main()

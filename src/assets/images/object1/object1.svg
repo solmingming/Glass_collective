@@ -1,0 +1,78 @@
+<svg width="400" height="500" viewBox="0 0 400 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="glassGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.9);stop-opacity:1" />
+      <stop offset="30%" style="stop-color:rgba(255,255,255,0.7);stop-opacity:1" />
+      <stop offset="70%" style="stop-color:rgba(255,255,255,0.4);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0.1);stop-opacity:1" />
+    </linearGradient>
+    <filter id="glassBlur">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3"/>
+    </filter>
+    <filter id="glassShadow">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="rgba(0,0,0,0.08)"/>
+    </filter>
+  </defs>
+  
+  <!-- Main organic glass shape - pretzel/figure-8 with two holes -->
+  <path d="M80 120 
+           C60 100, 40 80, 60 60 
+           C80 40, 120 40, 140 60 
+           C160 80, 160 100, 140 120 
+           C120 140, 80 140, 60 120 
+           C40 100, 40 80, 60 60 
+           M140 120 
+           C160 140, 180 160, 200 180 
+           C220 200, 240 220, 260 240 
+           C280 260, 300 280, 320 300 
+           C340 320, 360 340, 340 360 
+           C320 380, 300 400, 280 420 
+           C260 440, 240 460, 220 480 
+           C200 500, 180 480, 160 460 
+           C140 440, 120 420, 100 400 
+           C80 380, 60 360, 80 340 
+           C100 320, 120 300, 140 280 
+           C160 260, 180 240, 200 220 
+           C220 200, 240 180, 260 160 
+           C280 140, 300 120, 320 100 
+           C340 80, 360 60, 340 40 
+           C320 20, 300 40, 280 60 
+           C260 80, 240 100, 220 120 
+           C200 140, 180 160, 160 180 
+           C140 200, 120 220, 100 240 
+           C80 260, 60 280, 80 300 
+           C100 320, 120 340, 140 360 
+           C160 380, 180 400, 200 420 
+           C220 440, 240 460, 260 480 
+           C280 500, 300 480, 320 460 
+           C340 440, 360 420, 340 400 
+           C320 380, 300 360, 280 340 
+           C260 320, 240 300, 220 280 
+           C200 260, 180 240, 160 220 
+           C140 200, 120 180, 100 160 
+           C80 140, 60 120, 80 100 
+           Z" 
+        fill="url(#glassGradient1)" 
+        stroke="rgba(255,255,255,0.2)" 
+        stroke-width="2"
+        filter="url(#glassBlur) url(#glassShadow)"/>
+  
+  <!-- Inner highlights for depth -->
+  <ellipse cx="100" cy="90" rx="25" ry="20" 
+           fill="rgba(255,255,255,0.3)" 
+           opacity="0.6"/>
+  
+  <ellipse cx="300" cy="350" rx="30" ry="25" 
+           fill="rgba(255,255,255,0.2)" 
+           opacity="0.5"/>
+  
+  <!-- Watermark text -->
+  <text x="320" y="450" 
+        font-family="Space Grotesk, sans-serif" 
+        font-size="12" 
+        fill="rgba(0,0,0,0.3)" 
+        opacity="0.6">
+    <tspan x="320" dy="0">2025 07</tspan>
+    <tspan x="320" dy="16">madcamp</tspan>
+  </text>
+</svg> 

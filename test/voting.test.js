@@ -6,8 +6,22 @@ describe("Voting", function () {
 
   beforeEach(async function () {
     [owner, member, user] = await ethers.getSigners();
+    
+    // GovernanceToken 배포
+    const GovernanceToken = await ethers.getContractFactory("GovernanceToken");
+    governanceToken = await GovernanceToken.deploy(
+      "Glass Collective Token",
+      "GLASS",
+      owner.address
+    );
+    
+    // Voting 배포 (거버넌스 토큰 주소 포함)
     const Voting = await ethers.getContractFactory("Voting");
-    voting = await Voting.deploy(owner.address);
+    voting = await Voting.deploy(governanceToken.target, owner.address);
+    
+    // 사용자에게 토큰 민팅
+    await governanceToken.mint(member.address, ethers.parseEther("1000"));
+    
     await voting.connect(owner).grantRole(await voting.MEMBER_ROLE(), member.address);
     await voting.connect(owner).grantRole(await voting.DEFAULT_ADMIN_ROLE(), owner.address);
     await voting.connect(owner).startVoting(0);
@@ -32,7 +46,8 @@ describe("Voting", function () {
   it("투표 결과를 올바르게 반환해야 한다", async function () {
     await voting.connect(member).vote(0, true);
     const [forVotes, againstVotes] = await voting.getVotes(0);
-    expect(forVotes).to.equal(1);
+    // 투표 가중치를 고려해야 함 (1000 토큰 = 1000 가중치)
+    expect(forVotes).to.equal(ethers.parseEther("1000"));
     expect(againstVotes).to.equal(0);
   });
 });

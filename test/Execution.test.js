@@ -7,11 +7,19 @@ describe("Execution", function () {
   beforeEach(async function () {
     [owner, member, recipient] = await ethers.getSigners();
 
+    // GovernanceToken 배포
+    const GovernanceToken = await ethers.getContractFactory("GovernanceToken");
+    governanceToken = await GovernanceToken.deploy(
+      "Glass Collective Token",
+      "GLASS",
+      owner.address
+    );
+
     const Proposal = await ethers.getContractFactory("Proposal"); // 팩토리 객체를 만듬 = proposal 컨트랙트를 배포할 준비를 한다 라는 뜻
     proposal = await Proposal.deploy(owner.address); // 위 팩토리 객체를 이용해 실제 proposal 컨트랙트를 블록체인에 배포
 
     const Voting = await ethers.getContractFactory("Voting");
-    voting = await Voting.deploy(owner.address);
+    voting = await Voting.deploy(governanceToken.target, owner.address);
 
     const Vault = await ethers.getContractFactory("Vault");
     vault = await Vault.deploy(owner.address);
@@ -20,6 +28,9 @@ describe("Execution", function () {
     execution = await Execution.deploy(proposal.target, voting.target, vault.target);
 
     // 반드시 owner(admin) 계정으로 connect해서 grantRole 호출
+    // 사용자에게 토큰 민팅
+    await governanceToken.mint(member.address, ethers.parseEther("1000"));
+    
     await proposal.connect(owner).grantRole(await proposal.DEFAULT_ADMIN_ROLE(), execution.target);
     await proposal.connect(owner).grantRole(await proposal.MEMBER_ROLE(), member.address);
     await voting.connect(owner).grantRole(await voting.MEMBER_ROLE(), member.address);

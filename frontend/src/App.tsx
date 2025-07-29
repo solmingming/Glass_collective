@@ -14,7 +14,6 @@ import MenuSidebar from './components/MenuSidebar';
 import DaoOverview from './components/DaoOverview';
 import DaoRulebook from './components/DaoRulebook';
 import DaoProposal from './components/DaoProposal';
-import DaoVote from './components/DaoVote';
 import DaoHistory from './components/DaoHistory';
 import DaoMypage from './components/DaoMypage';
 
@@ -26,7 +25,6 @@ const daoTabList = [
   { key: "overview", path: "/dao/overview", label: "Overview", component: <DaoOverview /> },
   { key: "rulebook", path: "/dao/rulebook", label: "Rule Book", component: <DaoRulebook /> },
   { key: "proposal", path: "/dao/proposal", label: "Proposal", component: <DaoProposal /> },
-  { key: "vote", path: "/dao/vote", label: "Vote", component: <DaoVote /> },
   { key: "history", path: "/dao/history", label: "History", component: <DaoHistory /> },
   { key: "mypage", path: "/dao/mypage", label: "My page", component: <DaoMypage /> },
 ];

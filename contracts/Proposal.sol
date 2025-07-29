@@ -3,97 +3,235 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-/**
- * @title Proposal
- * @dev 제안의 등록과 상태 관리를 담당하는 컨트랙트
- *      - 제안 생성(createProposal)
- *      - 단일/전체 제안 조회(getProposal, getAllProposals)
- *      - 상태 변경(on-chain admin only)
- */
+// DAO 인터페이스 선언 (countToExpel, scoreToExpel 읽기용)
+interface IDAO {
+    function countToExpel() external view returns (uint256);
+    function scoreToExpel() external view returns (uint256);
+}
 
-// proposal 컨트랙트는 AccessControl 컨트랙트 상속 (역할 생성, 부여 등등 정의)
-contract Proposal is AccessControl{
-  //DAO "구성원 역할"을 나타내기 위한 고유 ID 정의
-  bytes32 public constant MEMBER_ROLE = keccak256("MEMBER_ROLE");
+contract Proposal is AccessControl {
+    bytes32 public constant MEMBER_ROLE = keccak256("MEMBER_ROLE");
+    bytes32 public constant DAO_ROLE = keccak256("DAO_ROLE");
 
-  // enum: 열거형 타입 / status : 제안의 상태를 나타냄
-  // pending: 투표가 아직 진행중 / passed, rejected: 통과/기각된 제안 / Executed: 실제 실행완료된 제안
-  enum Status { Pending, Passed, Rejected, Executed }
+    enum Status { Pending, Passed, Rejected, Executed }
 
-  //제안의 구체적인 정보를 담은 데이터 구조체
-  struct ProposalData {
-    string title;              // 제안 제목
-    string description;        // 상세 설명
-    uint256 amount;            // 요청 금액 (wei)
-    address payable recipient; // 자금을 받는 사람
-    Status status;             // 제안 현재 상태 (pending, passed...)
-    uint256 votesFor;          // 찬성표 수
-    uint256 votesAgainst;      // 반대표 수
-    uint256 startTime;         // 제안 생성 시각 (block.timestamp)
-  }
+    struct ProposalData {
+        string title;
+        string description;
+        uint256 amount;
+        address payable recipient;
+        Status status;
+        uint256 votesFor;
+        uint256 votesAgainst;
+        uint256 votesAbstain;
+        uint256 startTime;
+        address proposer;
+        bool requireVote;
+        string sanctionType;
+        uint256 beforeValue;
+        uint256 afterValue;
+        address targetMember;
+    }
 
-  event ProposalCreated(uint256 indexed id, address indexed proposer);
-  event ProposalStatusChanged(uint256 indexed id, Status status);
-  // 제안을 저장하는 배열 ( 배열 이름은 proposals이라고 정의)
-  // + proposals(0) -> 첫번째 제안 반환 / proposals.length -> 총 제안 개수 조회 가능
-  ProposalData[] public proposals;
+    ProposalData[] public proposals;
+    mapping(uint256 => mapping(address => bool)) public hasVoted;
+    mapping(address => uint256) public penaltyCount;
+    mapping(address => uint256) public glassScore;
 
-  constructor(address admin){
-    _grantRole(DEFAULT_ADMIN_ROLE, admin); // admin에게 관리자 권안 부여
-    _grantRole(MEMBER_ROLE, admin); // admin에게 구성원 역할 부여
-  }
+    address public daoAddress;
 
-  //DAO 구성원이 새로운 제안(Proposal)을 등록할 수 있는 함수수
-  function createProposal( // string calldata: 외부 입력으로 받고 가스 절약
+    address[] public members;
+    mapping(address => bool) public isMember;
+
+    event ProposalCreated(uint256 indexed id, address indexed proposer);
+    event ProposalStatusChanged(uint256 indexed id, Status status);
+    event Voted(uint256 indexed proposalId, address indexed voter, uint8 choice);
+    event GlassScoreChanged(address indexed member, uint256 newScore);
+
+    constructor(address admin, address dao){
+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
+        _grantRole(MEMBER_ROLE, admin);
+        _grantRole(DAO_ROLE, dao);
+        daoAddress = dao;
+        members.push(admin);
+        isMember[admin] = true;
+        glassScore[admin] = 50;
+    }
+
+    /// @notice DAO에서 멤버 권한 부여, 멤버 목록/GlassScore 초기화
+    function grantRole(bytes32 role, address account) public override onlyRole(DAO_ROLE) {
+        super.grantRole(role, account);
+        if (role == MEMBER_ROLE && !isMember[account]) {
+            members.push(account);
+            isMember[account] = true;
+            glassScore[account] = 50;
+            emit GlassScoreChanged(account, 50);
+        }
+    }
+
+    /// @notice DAO에서 멤버 권한 회수, 멤버 목록에서 제거
+    function revokeRole(bytes32 role, address account) public override onlyRole(DAO_ROLE) {
+        super.revokeRole(role, account);
+        if (role == MEMBER_ROLE && isMember[account]) {
+            isMember[account] = false;
+            for (uint256 i = 0; i < members.length; i++) {
+                if (members[i] == account) {
+                    members[i] = members[members.length - 1];
+                    members.pop();
+                    break;
+                }
+            }
+        }
+    }
+
+    /// @notice GlassScore 증가 (최대 100)
+    function addGlassScore(address member, uint256 amount) external onlyRole(DAO_ROLE) {
+        uint256 newScore = glassScore[member] + amount;
+        if (newScore > 100) newScore = 100;
+        glassScore[member] = newScore;
+        emit GlassScoreChanged(member, newScore);
+    }
+
+    /// @notice GlassScore 감소 (최소 0, 자동 추방)
+    function subGlassScore(address member, uint256 amount) external onlyRole(DAO_ROLE) {
+        uint256 newScore = glassScore[member] > amount ? glassScore[member] - amount : 0;
+        glassScore[member] = newScore;
+        emit GlassScoreChanged(member, newScore);
+        uint256 expelLimit = IDAO(daoAddress).scoreToExpel();
+        if (glassScore[member] < expelLimit) {
+            revokeRole(MEMBER_ROLE, member);
+            penaltyCount[member] = 0;
+            isMember[member] = false;
+            for (uint256 i = 0; i < members.length; i++) {
+                if (members[i] == member) {
+                    members[i] = members[members.length - 1];
+                    members.pop();
+                    break;
+                }
+            }
+        }
+    }
+
+    /// @notice 페널티 부과 및 countToExpel 미만시 자동 추방
+    function addPenaltyAndExpel(address member) external {
+        penaltyCount[member] += 1;
+        uint256 expelLimit = IDAO(daoAddress).countToExpel();
+        if (penaltyCount[member] >= expelLimit) {
+            revokeRole(MEMBER_ROLE, member);
+            penaltyCount[member] = 0;
+            isMember[member] = false;
+            for (uint256 i = 0; i < members.length; i++) {
+                if (members[i] == member) {
+                    members[i] = members[members.length - 1];
+                    members.pop();
+                    break;
+                }
+            }
+        }
+    }
+
+    /// @notice 미참여 멤버 강제 기권처리 (DAO에서만 호출)
+    function forceAbstain(uint256 proposalId, address member) external onlyRole(DAO_ROLE) {
+        ProposalData storage p = proposals[proposalId];
+        if (!hasVoted[proposalId][member]) {
+            hasVoted[proposalId][member] = true;
+            p.votesAbstain++;
+            emit Voted(proposalId, member, 2);
+        }
+    }
+
+    /// @notice 제안 생성 (멤버만 가능)
+    function createProposal(
         string calldata title,
         string calldata description,
-        uint256 amount, // 제안이 요청하는 Ether 양 (단위:Wei)
-        address payable recipient //Ether을 수령할 대상 주소 (출금이므로 payable 필요)
-    ) external onlyRole(MEMBER_ROLE) returns (uint256) { // DAO 멤버만 제안을 호출할 수 있고 uint256형태로 반환
-        // ProposalData 구조체 초기화 후 배열에 추가
+        uint256 amount,
+        address payable recipient,
+        bool requireVote,
+        string calldata sanctionType,
+        uint256 beforeValue,
+        uint256 afterValue,
+        address targetMember
+    ) external onlyRole(MEMBER_ROLE) returns (uint256) {
         proposals.push(
             ProposalData({
                 title: title,
                 description: description,
-                amount: amount, // 금전 제안인 경우에만 해당 (ex. 디자인 작업한 사람에게 2ETH 보상하자자)
+                amount: amount,
                 recipient: recipient,
-                status: Status.Pending, // 제안의 초기 상태는 pending
-                votesFor: 0, // 초기엔 투표한 사람 없음 -> 찬성0, 반대0
+                status: Status.Pending,
+                votesFor: 0,
                 votesAgainst: 0,
-                startTime: block.timestamp // 제안이 생성된 시각각
+                votesAbstain: 0,
+                startTime: block.timestamp,
+                proposer: msg.sender,
+                requireVote: requireVote,
+                sanctionType: sanctionType,
+                beforeValue: beforeValue,
+                afterValue: afterValue,
+                targetMember: targetMember
             })
         );
-        // 새로 추가된 제안 ID는 배열의 마지막 인덱스 -> length-1로 게산산
         uint256 pid = proposals.length - 1;
-        // 블록체인 로그를 생성하는 부분 (msg.sender는 이 함수를 호출한 계정(=제안자))
         emit ProposalCreated(pid, msg.sender);
-        // 새로 생성된 제안의 ID(배열 인덱스) 반환,,, 외부에서 사용 가능
         return pid;
     }
 
-    //단일 제안 정보 조회
-    //제안id를 받아서 ProposalData 구조체를 메모리에 복사하여 반환
-    //view:상태변경 없이 블록체인 데이터를 읽기 전용으로 조회
-    function getProposal(uint256 id) external view returns (ProposalData memory){
-      return proposals[id];
+    /// @notice 투표 (0: 찬성, 1: 반대, 2: 기권)
+    function vote(uint256 proposalId, uint8 choice) external onlyRole(MEMBER_ROLE) {
+        ProposalData storage p = proposals[proposalId];
+        require(p.requireVote, "Voting not required for this proposal");
+        require(!hasVoted[proposalId][msg.sender], "Voting: already voted");
+
+        hasVoted[proposalId][msg.sender] = true;
+        if (choice == 0) {
+            p.votesFor++;
+        } else if (choice == 1) {
+            p.votesAgainst++;
+        } else if (choice == 2) {
+            p.votesAbstain++;
+        } else {
+            revert("Invalid vote choice");
+        }
+        emit Voted(proposalId, msg.sender, choice);
     }
 
-    function getAllProposals() external view returns (ProposalData[] memory){
-      return proposals;
+    /// @notice 단일 제안 정보 조회
+    function getProposal(uint256 id) external view returns (ProposalData memory) {
+        return proposals[id];
     }
 
-    // DAO의 제안의 상태를 변경하는 관리자 전용 함수 (통과or기각or 실행되었는지 등등...)
+    /// @notice 전체 제안 목록 조회
+    function getAllProposals() external view returns (ProposalData[] memory) {
+        return proposals;
+    }
+
+    /// @notice DAO에서 제안 상태 변경 (Passed/Rejected/Executed 등)
     function setProposalStatus(uint256 id, Status status)
-      external
-      onlyRole(DEFAULT_ADMIN_ROLE)
+        external
+        onlyRole(DAO_ROLE)
     {
-      proposals[id].status = status;
-      // 이벤트 발생, 프론트엔드나 다른 시스템이 제안 상태 변경을 실시간 감지할 수 있도록 로그를 남김김
-      emit ProposalStatusChanged(id, status);
+        proposals[id].status = status;
+        emit ProposalStatusChanged(id, status);
     }
 
-    // * 추가적인 아이디어 *
-    // 투표 결과에 따라 자동으로 Passed/rejected 결정
-    // 자금 송금이 완료되면 executed로 자동 변경
-    // startTime이후 일정 시간만 수정 가능 등 제한 추가
+    /// @notice 특정 사용자가 해당 제안에 투표했는지 여부
+    function hasVotedForProposal(uint256 proposalId, address voter) external view returns (bool) {
+        return hasVoted[proposalId][voter];
+    }
+
+    /// @notice 투표 결과(찬성/반대/기권) 조회
+    function getVotes(uint256 proposalId) external view returns (uint256 forVotes, uint256 againstVotes, uint256 abstainVotes) {
+        ProposalData storage p = proposals[proposalId];
+        return (p.votesFor, p.votesAgainst, p.votesAbstain);
+    }
+
+    /// @notice 멤버 전체 목록 반환
+    function getAllMembers() external view returns (address[] memory) {
+        return members;
+    }
+
+    /// @notice 멤버 수 반환
+    function getMemberCount() external view returns (uint256) {
+        return members.length;
+    }
 }

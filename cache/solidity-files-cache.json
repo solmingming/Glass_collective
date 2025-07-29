@@ -1,54 +1,19 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "C:\\Users\\jong0\\Desktop\\madcamp4\\contracts\\CorruptionMonitor.sol": {
-      "lastModificationDate": 1753598852455,
-      "contentHash": "dee872f47fe8bb06e044103b59a3c2bf",
-      "sourceName": "contracts/CorruptionMonitor.sol",
-      "solcConfig": {
-        "version": "0.8.20",
-        "settings": {
-          "evmVersion": "paris",
-          "optimizer": {
-            "enabled": false,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        "^0.8.0"
-      ],
-      "artifacts": [
-        "CorruptionMonitor"
-      ]
-    },
     "C:\\Users\\jong0\\Desktop\\madcamp4\\contracts\\Execution.sol": {
-      "lastModificationDate": 1753624167915,
-      "contentHash": "4e540265ea041010ef970a07c67c6823",
+      "lastModificationDate": 1753802522054,
+      "contentHash": "53425ae0572ab9a632b2a02596950882",
       "sourceName": "contracts/Execution.sol",
       "solcConfig": {
         "version": "0.8.20",
         "settings": {
-          "evmVersion": "paris",
           "optimizer": {
-            "enabled": false,
+            "enabled": true,
             "runs": 200
           },
+          "viaIR": true,
+          "evmVersion": "paris",
           "outputSelection": {
             "*": {
               "*": [
@@ -67,7 +32,6 @@
       },
       "imports": [
         "./Proposal.sol",
-        "./Voting.sol",
         "./Vault.sol"
       ],
       "versionPragmas": [
@@ -78,17 +42,18 @@
       ]
     },
     "C:\\Users\\jong0\\Desktop\\madcamp4\\contracts\\Proposal.sol": {
-      "lastModificationDate": 1753624172695,
-      "contentHash": "019de37bebaa2fe0cdd04b5376ec41d2",
+      "lastModificationDate": 1753802690146,
+      "contentHash": "4868d8d4aee30cf8e5caa011e1576c50",
       "sourceName": "contracts/Proposal.sol",
       "solcConfig": {
         "version": "0.8.20",
         "settings": {
-          "evmVersion": "paris",
           "optimizer": {
-            "enabled": false,
+            "enabled": true,
             "runs": 200
           },
+          "viaIR": true,
+          "evmVersion": "paris",
           "outputSelection": {
             "*": {
               "*": [
@@ -106,65 +71,30 @@
         }
       },
       "imports": [
-        "@openzeppelin/contracts/access/AccessControl.sol"
+        "@openzeppelin/contracts/access/AccessControl.sol",
+        "hardhat/console.sol"
       ],
       "versionPragmas": [
         "^0.8.0"
       ],
       "artifacts": [
+        "IDAO",
         "Proposal"
       ]
     },
-    "C:\\Users\\jong0\\Desktop\\madcamp4\\contracts\\Voting.sol": {
-      "lastModificationDate": 1753626263403,
-      "contentHash": "5a75ac226df58999cbff65e1d7b78d36",
-      "sourceName": "contracts/Voting.sol",
-      "solcConfig": {
-        "version": "0.8.20",
-        "settings": {
-          "evmVersion": "paris",
-          "optimizer": {
-            "enabled": false,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "@openzeppelin/contracts/access/AccessControl.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.0"
-      ],
-      "artifacts": [
-        "Voting"
-      ]
-    },
     "C:\\Users\\jong0\\Desktop\\madcamp4\\contracts\\Vault.sol": {
-      "lastModificationDate": 1753624160677,
-      "contentHash": "6c6e766a06aaeea1ed5bafcd5df0163b",
+      "lastModificationDate": 1753802556403,
+      "contentHash": "b0e046dcca0d465128c334cd5a0d00c6",
       "sourceName": "contracts/Vault.sol",
       "solcConfig": {
         "version": "0.8.20",
         "settings": {
-          "evmVersion": "paris",
           "optimizer": {
-            "enabled": false,
+            "enabled": true,
             "runs": 200
           },
+          "viaIR": true,
+          "evmVersion": "paris",
           "outputSelection": {
             "*": {
               "*": [
@@ -198,11 +128,12 @@
       "solcConfig": {
         "version": "0.8.20",
         "settings": {
-          "evmVersion": "paris",
           "optimizer": {
-            "enabled": false,
+            "enabled": true,
             "runs": 200
           },
+          "viaIR": true,
+          "evmVersion": "paris",
           "outputSelection": {
             "*": {
               "*": [
@@ -238,11 +169,12 @@
       "solcConfig": {
         "version": "0.8.20",
         "settings": {
-          "evmVersion": "paris",
           "optimizer": {
-            "enabled": false,
+            "enabled": true,
             "runs": 200
           },
+          "viaIR": true,
+          "evmVersion": "paris",
           "outputSelection": {
             "*": {
               "*": [
@@ -274,11 +206,12 @@
       "solcConfig": {
         "version": "0.8.20",
         "settings": {
-          "evmVersion": "paris",
           "optimizer": {
-            "enabled": false,
+            "enabled": true,
             "runs": 200
           },
+          "viaIR": true,
+          "evmVersion": "paris",
           "outputSelection": {
             "*": {
               "*": [
@@ -312,11 +245,12 @@
       "solcConfig": {
         "version": "0.8.20",
         "settings": {
-          "evmVersion": "paris",
           "optimizer": {
-            "enabled": false,
+            "enabled": true,
             "runs": 200
           },
+          "viaIR": true,
+          "evmVersion": "paris",
           "outputSelection": {
             "*": {
               "*": [
@@ -348,11 +282,12 @@
       "solcConfig": {
         "version": "0.8.20",
         "settings": {
-          "evmVersion": "paris",
           "optimizer": {
-            "enabled": false,
+            "enabled": true,
             "runs": 200
           },
+          "viaIR": true,
+          "evmVersion": "paris",
           "outputSelection": {
             "*": {
               "*": [
@@ -375,6 +310,84 @@
       ],
       "artifacts": [
         "IERC165"
+      ]
+    },
+    "C:\\Users\\jong0\\Desktop\\madcamp4\\contracts\\DAO.sol": {
+      "lastModificationDate": 1753802589405,
+      "contentHash": "e421b66d262d5be8505227fe293df3d7",
+      "sourceName": "contracts/DAO.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "viaIR": true,
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./Proposal.sol",
+        "./Vault.sol",
+        "./Execution.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "DAO"
+      ]
+    },
+    "C:\\Users\\jong0\\Desktop\\madcamp4\\node_modules\\hardhat\\console.sol": {
+      "lastModificationDate": 1753466798669,
+      "contentHash": "681c532e816169606d13a5fe8b475074",
+      "sourceName": "hardhat/console.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "viaIR": true,
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.4.22 <0.9.0"
+      ],
+      "artifacts": [
+        "console"
       ]
     }
   }

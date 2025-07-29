@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Outlet } from 'react-router-dom';
 import Navigation from './components/Navigation';
 import Home from './pages/Home';
 import Contact from './pages/Contact';
@@ -24,22 +24,16 @@ import './App.css'; // 랜딩페이지용 스타일
 
 // DAO 페이지용 탭 리스트
 const daoTabList = [
-  { key: "overview", path: "/dao/overview", label: "Overview", component: <DaoOverview /> },
-  { key: "rulebook", path: "/dao/rulebook", label: "Rule Book", component: <DaoRulebook /> },
-  { key: "proposal", path: "/dao/proposal", label: "Proposal", component: <DaoProposal /> },
-  { key: "vote", path: "/dao/vote", label: "Vote", component: <DaoVote /> },
-  { key: "history", path: "/dao/history", label: "History", component: <DaoHistory /> },
-  { key: "mypage", path: "/dao/mypage", label: "My page", component: <DaoMypage /> },
+  { key: "overview", path: "/dao/overview", label: "Overview" },
+  { key: "proposal", path: "/dao/proposal", label: "Proposal" },
+  { key: "history", path: "/dao/history", label: "History" },
 ];
 
-// DAO 페이지 메인 컴포넌트
-const DaoAppContent: React.FC = () => {
+// DAO 페이지 레이아웃 컴포넌트
+const DaoLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const mainRef = useRef<HTMLDivElement>(null);
-  const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [currentTab, setCurrentTab] = useState(0);
-  const [isScrolling, setIsScrolling] = useState(false);
 
   // DAO 페이지용 CSS 동적 로딩
   useEffect(() => {
@@ -51,44 +45,12 @@ const DaoAppContent: React.FC = () => {
     return daoTabList.findIndex(tab => tab.path === location.pathname);
   };
 
-  const HEADER_HEIGHT = 80; // 실제 헤더 높이와 동일시해야함
-
-  // 스크롤 이벤트 핸들러
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (isScrolling) return;
+  // 메뉴 클릭 시 해당 페이지로 이동
+  const handleTabClick = (idx: number) => {
+    if (idx === currentTab) return;
     
-    const scrollTop = e.currentTarget.scrollTop;
-    const windowHeight = e.currentTarget.clientHeight;
-    const sectionHeight = windowHeight - HEADER_HEIGHT;
-    const currentIndex = Math.round(scrollTop / sectionHeight);
-    
-    if (currentIndex !== currentTab && currentIndex >= 0 && currentIndex < daoTabList.length) {
-      setCurrentTab(currentIndex);
-      // URL도 함께 변경
-      navigate(daoTabList[currentIndex].path);
-    }
-  };
-
-  // 메뉴 클릭 시 해당 섹션으로 스크롤
-  const scrollToTab = (idx: number) => {
-    if (isScrolling || idx === currentTab) return;
-    
-    setIsScrolling(true);
     setCurrentTab(idx);
-    
-    // URL 변경
     navigate(daoTabList[idx].path);
-    
-    const main = mainRef.current;
-    const section = sectionRefs.current[idx];
-
-    if (main && section) {
-      // 섹션의 top 위치에서 헤더 높이만큼 빼서 스크롤
-      const top = section.offsetTop - HEADER_HEIGHT;
-      main.scrollTo({ top, behavior: "smooth" });
-    }
-  
-    setTimeout(() => setIsScrolling(false), 1000);
   };
 
   // URL 변경 시 탭 인덱스 업데이트
@@ -108,26 +70,10 @@ const DaoAppContent: React.FC = () => {
           <MenuSidebar
             tabList={daoTabList}
             currentTab={currentTab}
-            onTabClick={scrollToTab}
+            onTabClick={handleTabClick}
           />
-          <main
-            ref={mainRef}
-            className="main-area scroll-container"
-            onScroll={handleScroll}
-          >
-            {daoTabList.map((tab, idx) => (
-              <div
-                key={tab.key}
-                ref={(el) => {
-                  sectionRefs.current[idx] = el;
-                }}
-                className={`tab-section ${idx === currentTab ? "active" : ""}`}
-              >
-                <div className="tab-content">
-                  {tab.component}
-                </div>
-              </div>
-            ))}
+          <main className="main-area">
+            <Outlet />
           </main>
         </div>
       </div>
@@ -160,13 +106,12 @@ function App() {
         <Route path="/collectives-search" element={<CollectivesSearch />} />
         
         {/* DAO 페이지 라우트들 */}
-        <Route path="/dao/*" element={<DaoAppContent />} />
-        <Route path="/dao/overview" element={<DaoAppContent />} />
-        <Route path="/dao/rulebook" element={<DaoAppContent />} />
-        <Route path="/dao/proposal" element={<DaoAppContent />} />
-        <Route path="/dao/vote" element={<DaoAppContent />} />
-        <Route path="/dao/history" element={<DaoAppContent />} />
-        <Route path="/dao/mypage" element={<DaoAppContent />} />
+        <Route path="/dao" element={<DaoLayout />}>
+          <Route index element={<DaoOverview />} />
+          <Route path="overview" element={<DaoOverview />} />
+          <Route path="proposal" element={<DaoProposal />} />
+          <Route path="history" element={<DaoHistory />} />
+        </Route>
       </Routes>
     </Router>
   )

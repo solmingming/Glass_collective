@@ -1,61 +1,123 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import GlassScore from "../components/GlassScore";
 import "../styles/DaoOverview.css";
 
-// DaoOverview 컴포넌트
-const DaoOverview: React.FC = () => (
-  // 전체 섹션을 감싸는 div (공통 className)
-  <section className="dao-overview">
-    {/* DAO 프로필 영역 */}
-    <div className="dao-profile">
-      <div className="dao-image">img</div>
-      <div>
-        <h2 className="dao-title">Mad_camp</h2>
-        <div className="dao-id">@mad_camp0x</div>
-        <div className="dao-date">created on 2025.06</div>
+const DaoOverview: React.FC = () => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [showJoinButton, setShowJoinButton] = useState(true); // Join 버튼 표시 여부
+
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
+
+  const handleJoinClick = () => {
+    // Join 버튼 클릭 시 로직
+    console.log("Join button clicked!");
+    // 여기에 실제 join 로직 추가
+  };
+
+  return (
+    <div className={`dao-overview-page overview-container ${isLoaded ? 'loaded' : ''}`}>
+      {/* 1. 헤더 섹션 - 세련된 상단 배치 */}
+      <div className="dao-header-section">
+        <div className="dao-profile">
+          <div className="dao-avatar-container">
+            <div className="dao-avatar">
+              <img src="/images/dao-avatar.png" alt="DAO Avatar" />
+            </div>
+            <div className="dao-type-overlay">
+              <span className="dao-type public">Public</span>
+            </div>
+          </div>
+          <div className="dao-info">
+            <div className="dao-name">mad_camp collective</div>
+            <div className="dao-description">
+              혁신적인 아이디어를 공유하고 함께 성장하는 창작자들의 모임입니다. 
+              우리는 새로운 가능성을 탐구하며, 서로의 경험과 지식을 나누어 더 나은 미래를 만들어갑니다.
+            </div>
+          </div>
+        </div>
+        
+        {/* Join 버튼 - 우측 상단 */}
+        {showJoinButton && (
+          <div className="join-section-top">
+            <button className="join-btn" onClick={handleJoinClick}>
+              <span className="join-icon">+</span>
+              <span className="join-text">Join</span>
+            </button>
+          </div>
+        )}
       </div>
-    </div>
-    {/* DAO 통계 영역 */}
-    <div className="dao-stats">
-      <div>
-        <div className="stat-label">Member</div>
-        <div className="stat-value">20</div>
-      </div>
-      <div>
-        <div className="stat-label">Vote</div>
-        <div className="stat-value">20</div>
-      </div>
-      <div>
-        <div className="stat-label">Proposal</div>
-        <div className="stat-value">35</div>
-      </div>
-    </div>
-    {/* DAO 금고(재정) 영역 */}
-    <div className="dao-treasury">
-      <div className="treasury-label">Collective Treasury</div>
-      <div className="treasury-amount">150,000,000</div>
-    </div>
-    {/* DAO 지표(바) 영역 */}
-    <div className="dao-bars">
-      <div>
-        <div className="bar-label">Glass score</div>
-        <div className="bar-bg">
-          <div className="bar-fill glass" style={{width: "70%"}} />
+
+      {/* 2. Glass Score & Rule Book - 수평 배치 */}
+      <div className="score-rule-section">
+        <div className="glass-score-section">
+          <div className="score-group">
+            <h3 className="score-title">DAO Score</h3>
+            <div className="group-score">
+              <GlassScore score={87} />
+            </div>
+          </div>
+          
+          <div className="score-personal">
+            <h3 className="personal-score-title">내 기여도</h3>
+            <div className="personal-score">
+              <GlassScore score={92} />
+            </div>
+          </div>
+        </div>
+
+        <div className="rule-snapshot">
+          <h3 className="rule-title">Governance Rules</h3>
+          <div className="rule-grid">
+            <div className="rule-item">
+              <div className="rule-icon">🎯</div>
+              <div className="rule-content">
+                <div className="rule-name">임계값</div>
+                <div className="rule-value">60%</div>
+              </div>
+            </div>
+            
+            <div className="rule-item">
+              <div className="rule-icon">⏰</div>
+              <div className="rule-content">
+                <div className="rule-name">투표 기간</div>
+                <div className="rule-value">7일</div>
+              </div>
+            </div>
+            
+            <div className="rule-item">
+              <div className="rule-icon">💰</div>
+              <div className="rule-content">
+                <div className="rule-name">입장 예치금</div>
+                <div className="rule-value">₩100K</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <div>
-        <div className="bar-label">Voting participation</div>
-        <div className="bar-bg">
-          <div className="bar-fill vote" style={{width: "60%"}} />
+
+      {/* 3. Smart Contract - 참신한 미니멀 디자인 */}
+      <div className="contract-section">
+        <div className="contract-info">
+          <div className="contract-icon">📄</div>
+          <div className="contract-details">
+            <div className="contract-label">Smart Contract</div>
+            <div className="contract-address">0x1234...abcd</div>
+          </div>
         </div>
+        <a 
+          href="https://etherscan.io/address/0x1234567890abcdef" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="contract-link-btn"
+        >
+          <span>View</span>
+          <div className="link-arrow">↗</div>
+        </a>
       </div>
     </div>
-    {/* 최근 활동 영역 */}
-    <div className="dao-activity">
-      <div className="activity-label">
-        <button className="activity-button">Lasted Activity</button>
-      </div>
-    </div>
-  </section>
-);
+  );
+};
 
 export default DaoOverview;

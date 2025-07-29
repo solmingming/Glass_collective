@@ -39,7 +39,7 @@ const ScrollSnap: React.FC<ScrollSnapProps> = ({
       onSectionChange?.(sectionId);
       
       // 스크롤 완료 후 딜레이 해제 (마지막 섹션에서는 더 짧게)
-      const delay = index === sections.length - 1 ? scrollDelay * 0.8 : scrollDelay;
+      const delay = index === sections.length - 1 ? scrollDelay * 0.4 : scrollDelay;
       setTimeout(() => {
         setIsScrolling(false);
       }, delay);

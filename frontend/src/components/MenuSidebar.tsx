@@ -12,14 +12,13 @@ const MenuSidebar: React.FC<MenuSidebarProps> = ({ tabList, currentTab, onTabCli
   <aside className="menu-sidebar">
     <nav>
       <ul>
-        <li className="menu-title">Collective</li>
-
         {/* 탭 목록을 순회하며 메뉴 항목 생성 */}
         {tabList.map((tab, idx) => (
           <li
             key={tab.key}
             className={`menu-indent${currentTab === idx ? " active" : ""}`}
             onClick={() => onTabClick(idx)}
+            style={{ cursor: 'pointer' }}
           >
             {tab.label}
           </li>

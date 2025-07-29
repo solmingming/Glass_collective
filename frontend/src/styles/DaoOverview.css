@@ -1,182 +1,486 @@
-/* DAO Overview 스타일 */
+/* DAO Overview - Clean & Minimal Design */
 
-.dao-overview {
-  width: 100%;
-  max-width: 800px;
+.dao-overview-page .overview-container {
+  min-height: calc(100vh - 64px);
+  background: #ffffff;
+  color: #000000;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 16px 20px;
+  max-width: 600px;
   margin: 0 auto;
-  padding: 20px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-/* DAO 프로필 */
-.dao-profile {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 20px;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #e5e7eb;
 }
 
-.dao-image {
+.dao-overview-page .overview-container.loaded {
+  animation: daoFadeIn 0.6s ease-out;
+}
+
+@keyframes daoFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 1. 헤더 섹션 - 세련된 상단 배치 */
+.dao-overview-page .dao-header-section {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+}
+
+.dao-overview-page .dao-profile {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex: 1;
+}
+
+.dao-overview-page .dao-avatar-container {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.dao-overview-page .dao-avatar {
   width: 80px;
   height: 80px;
-  background: #f3f4f6;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  color: #6b7280;
-  border: 2px solid #e5e7eb;
+  overflow: hidden;
+  border: 2px solid #000000;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
-.dao-title {
-  font-size: 24px;
+.dao-overview-page .dao-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dao-overview-page .dao-type-overlay {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.dao-overview-page .dao-type {
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 10px;
   font-weight: 600;
-  color: #111827;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.dao-overview-page .dao-type.public {
+  background: #000000;
+  color: #ffffff;
+}
+
+.dao-overview-page .dao-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.dao-overview-page .dao-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: #000000;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.dao-overview-page .dao-description {
+  font-size: 11px;
+  line-height: 1.4;
+  color: #666666;
+  margin: 0;
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
+/* Join 버튼 섹션 - 상단 오른쪽 */
+.dao-overview-page .join-section-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.dao-overview-page .join-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+.dao-overview-page .join-btn:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+}
+
+.dao-overview-page .join-btn:active {
+  transform: translateY(0);
+}
+
+.dao-overview-page .join-icon {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.dao-overview-page .join-text {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* 2. Glass Score & Rule Book - 수평 배치 */
+.dao-overview-page .score-rule-section {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.dao-overview-page .glass-score-section {
+  flex: 1;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 16px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+}
+
+.dao-overview-page .score-group {
+  flex: 1;
+  text-align: center;
+}
+
+.dao-overview-page .score-personal {
+  flex: 1;
+  text-align: center;
+}
+
+.dao-overview-page .score-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #000000;
   margin: 0 0 8px 0;
 }
 
-.dao-id {
-  font-size: 14px;
-  color: #6b7280;
-  margin-bottom: 4px;
-}
-
-.dao-date {
+.dao-overview-page .personal-score-title {
   font-size: 12px;
-  color: #9ca3af;
-}
-
-/* DAO 통계 */
-.dao-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-bottom: 30px;
-  padding: 20px;
-  background: #f9fafb;
-  border-radius: 8px;
-}
-
-.dao-stats > div {
-  text-align: center;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: #6b7280;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 8px;
-}
-
-.stat-value {
-  font-size: 24px;
-  font-weight: 600;
-  color: #111827;
-}
-
-/* DAO 금고 */
-.dao-treasury {
-  margin-bottom: 30px;
-  padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 8px;
-  color: white;
-}
-
-.treasury-label {
-  font-size: 14px;
-  opacity: 0.9;
-  margin-bottom: 8px;
-}
-
-.treasury-amount {
-  font-size: 32px;
-  font-weight: 700;
-}
-
-/* DAO 바 */
-.dao-bars {
-  margin-bottom: 30px;
-}
-
-.dao-bars > div {
-  margin-bottom: 20px;
-}
-
-.bar-label {
-  font-size: 14px;
-  color: #374151;
-  margin-bottom: 8px;
   font-weight: 500;
+  color: #666666;
+  margin: 0 0 8px 0;
 }
 
-.bar-bg {
-  width: 100%;
-  height: 8px;
-  background: #e5e7eb;
-  border-radius: 4px;
-  overflow: hidden;
+.dao-overview-page .group-score {
+  display: flex;
+  justify-content: center;
 }
 
-.bar-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 0.3s ease;
+.dao-overview-page .personal-score {
+  display: flex;
+  justify-content: center;
+  transform: scale(0.6);
 }
 
-.bar-fill.glass {
-  background: linear-gradient(90deg, #10b981, #34d399);
+/* Glass Score 커스터마이징 */
+.dao-overview-page .group-score .glass-score-container {
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.1));
 }
 
-.bar-fill.vote {
-  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+.dao-overview-page .personal-score .glass-score-container {
+  filter: drop-shadow(0 3px 12px rgba(59, 130, 246, 0.15));
 }
 
-/* DAO 활동 */
-.dao-activity {
+.dao-overview-page .personal-score .glass-vessel {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border: 1px solid #dee2e6;
+}
+
+.dao-overview-page .personal-score .score-number {
+  color: #3b82f6;
+}
+
+/* 3. Rule Snapshot - 컴팩트 */
+.dao-overview-page .rule-snapshot {
+  flex: 1;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+}
+
+.dao-overview-page .rule-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #000000;
+  margin: 0 0 12px 0;
   text-align: center;
 }
 
-.activity-button {
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
-  padding: 12px 24px;
+.dao-overview-page .rule-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.dao-overview-page .rule-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
   border-radius: 6px;
-  font-size: 14px;
-  color: #374151;
-  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.activity-button:hover {
-  background: #e5e7eb;
-  border-color: #9ca3af;
+.dao-overview-page .rule-item:hover {
+  background: #ffffff;
+  border-color: #000000;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dao-overview-page .rule-icon {
+  font-size: 14px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+}
+
+.dao-overview-page .rule-content {
+  flex: 1;
+}
+
+.dao-overview-page .rule-name {
+  font-size: 8px;
+  color: #666666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 1px;
+}
+
+.dao-overview-page .rule-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #000000;
+}
+
+/* 4. Smart Contract - 참신한 미니멀 디자인 */
+.dao-overview-page .contract-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.dao-overview-page .contract-section:hover {
+  background: #ffffff;
+  border-color: #000000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.dao-overview-page .contract-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dao-overview-page .contract-icon {
+  font-size: 18px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.dao-overview-page .contract-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dao-overview-page .contract-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #000000;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dao-overview-page .contract-address {
+  font-size: 10px;
+  color: #666666;
+  font-family: 'Monaco', 'Menlo', monospace;
+  letter-spacing: 0.5px;
+}
+
+.dao-overview-page .contract-link-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #000000;
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: 1px solid #000000;
+}
+
+.dao-overview-page .contract-link-btn:hover {
+  background: #ffffff;
+  color: #000000;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.dao-overview-page .link-arrow {
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.dao-overview-page .contract-link-btn:hover .link-arrow {
+  transform: translate(2px, -2px);
 }
 
 /* 반응형 디자인 */
 @media (max-width: 768px) {
-  .dao-overview {
-    padding: 15px;
+  .dao-overview-page .overview-container {
+    padding: 12px 16px;
+    gap: 16px;
   }
   
-  .dao-profile {
+  .dao-overview-page .dao-header-section {
+    padding: 16px;
+  }
+  
+  .dao-overview-page .dao-profile {
     flex-direction: column;
     text-align: center;
-    gap: 15px;
+    gap: 12px;
   }
   
-  .dao-stats {
+  .dao-overview-page .dao-avatar {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .dao-overview-page .dao-name {
+    font-size: 20px;
+    text-align: center;
+  }
+  
+  .dao-overview-page .dao-description {
+    font-size: 12px;
+    text-align: center;
+  }
+  
+  .dao-overview-page .join-btn {
+    padding: 8px 14px;
+    font-size: 11px;
+  }
+  
+  .dao-overview-page .score-rule-section {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .dao-overview-page .glass-score-section {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .dao-overview-page .rule-grid {
     grid-template-columns: 1fr;
-    gap: 15px;
+    gap: 8px;
   }
   
-  .treasury-amount {
-    font-size: 24px;
+  .dao-overview-page .contract-section {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+  
+  .dao-overview-page .contract-info {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dao-overview-page .dao-name {
+    font-size: 18px;
+  }
+  
+  .dao-overview-page .dao-description {
+    font-size: 11px;
+  }
+  
+  .dao-overview-page .dao-avatar {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .dao-overview-page .join-btn {
+    padding: 6px 12px;
+    font-size: 10px;
+  }
+  
+  .dao-overview-page .glass-score-section,
+  .dao-overview-page .rule-snapshot {
+    padding: 12px;
+  }
+  
+  .dao-overview-page .contract-section {
+    padding: 12px 16px;
+  }
+  
+  .dao-overview-page .contract-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
   }
 } 
+

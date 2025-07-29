@@ -921,7 +921,7 @@ p {
 
 /* ===== GLASS OBJECTS - 투명한 유리 질감 ===== */
 .glass-objects {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100vw;
@@ -942,7 +942,7 @@ p {
   width: 120px; /* 기존보다 작게 */
   height: 120px; /* 기존보다 작게 */
   opacity: 0.6;
-  transition: all 0.6s ease;
+  transition: all 0.15s ease;
 }
 
 .glass-object.top-left {
@@ -2486,7 +2486,7 @@ html {
 
 /* Enhanced glass objects for active sections */
 .glass-objects {
-  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: all 0.08s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .section.active .glass-object {

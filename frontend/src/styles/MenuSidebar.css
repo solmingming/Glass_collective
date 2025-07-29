@@ -1,11 +1,11 @@
 /* MenuSidebar 스타일 */
 
 .menu-sidebar {
-  width: 240px;
-  background: white;
-  border-right: 1px solid #e5e7eb;
+  width: 180px;
+  background: #ffffff;
+  border-right: 1.5px solid #000000;
   overflow-y: auto;
-  height: calc(100vh - 80px); /* 헤더 높이 제외 */
+  height: calc(100vh - 64px);
 }
 
 /* 네비게이션 */
@@ -34,7 +34,7 @@
 /* 메뉴 항목 */
 .menu-indent {
   padding: 12px 24px;
-  font-size: 14px;
+  font-size: 18px;
   color: #374151;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -43,29 +43,42 @@
 }
 
 .menu-indent:hover {
-  background: #f9fafb;
-  color: #111827;
-  border-left-color: #d1d5db;
+  font-size: 20px;
+  font-weight: 600;
+  color: #000000;
+  transform: translateX(4px);
+  transition: all 0.3s ease;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
 }
 
 .menu-indent.active {
-  background: #eff6ff;
-  color: #1d4ed8;
-  border-left-color: #3b82f6;
-  font-weight: 500;
+  font-weight: 700;
+  color: #000000;
+  transform: translateX(8px);
+  transition: all 0.3s ease;
+  position: relative;
 }
 
-.menu-indent.active::before {
+.menu-indent.active::after {
   content: '';
   position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0;
-  height: 0;
-  border-left: 6px solid #3b82f6;
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #000000, #333333);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 100%;
+    opacity: 1;
+  }
 }
 
 /* 스크롤바 스타일링 */
@@ -89,8 +102,8 @@
 /* 반응형 디자인 */
 @media (max-width: 768px) {
   .menu-sidebar {
-    width: 200px;
-    height: calc(100vh - 60px);
+    width: 160px;
+    height: calc(100vh - 64px);
   }
   
   .menu-indent {
@@ -106,7 +119,7 @@
 
 @media (max-width: 480px) {
   .menu-sidebar {
-    width: 180px;
+    width: 140px;
   }
   
   .menu-indent {

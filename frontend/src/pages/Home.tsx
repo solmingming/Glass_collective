@@ -148,13 +148,13 @@ const Home: React.FC = () => {
       >
       </motion.div>
 
-      <ScrollSnap
-        sections={sections}
-        onSectionChange={handleSectionChange}
-        onScrollProgress={setScrollProgress}
-        snapThreshold={0.1}
-        scrollDelay={600}
-      >
+              <ScrollSnap
+          sections={sections}
+          onSectionChange={handleSectionChange}
+          onScrollProgress={setScrollProgress}
+          snapThreshold={0.1}
+          scrollDelay={200}
+        >
         <div className="glass-collective-app">
           <Navigation activeSection={activeSection} />
           
@@ -163,6 +163,7 @@ const Home: React.FC = () => {
             id="hero" 
             ref={heroRef}
             className={`hero-section ${activeSection === 'hero' ? 'active' : ''}`}
+            style={{ position: 'relative' }}
           >
             {/* Glass Objects: key를 glassKey로 지정 */}
             <div
@@ -170,7 +171,12 @@ const Home: React.FC = () => {
               style={{
                 opacity: heroInView ? 1 : 0,
                 pointerEvents: heroInView ? 'auto' : 'none',
-                transition: 'opacity 0.7s'
+                transition: 'opacity 0.1s',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%'
               }}
               key={glassKey}
             >

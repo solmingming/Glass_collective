@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "hardhat/console.sol";
 
 interface IDAO {
     function countToExpel() external view returns (uint256);
@@ -127,7 +126,7 @@ contract Proposal is AccessControl {
             ProposalData({
                 title: input.title, description: input.description, amount: input.amount,
                 recipient: input.recipient, status: Status.Pending, votesFor: 0,
-                votesAgainst: 0, votesAbstain: 0, startTime: block.timestamp,
+                votesAgainst: 0, votesAbstain: 0, startTime: block.timestamp, // solhint-disable-line not-rely-on-time
                 proposer: proposer, requireVote: input.requireVote,
                 sanctionType: input.sanctionType, beforeValue: input.beforeValue,
                 afterValue: input.afterValue, targetMember: input.targetMember

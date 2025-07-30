@@ -15,7 +15,7 @@ contract DAO {
     uint256 public absentPenalty = 0.001 ether;
     uint256 public countToExpel = 5;
     uint256 public scoreToExpel = 20;
-    uint256 public entryFee = 0 ether;
+    uint256 public entryFee = 0.05 ether;
 
     mapping(uint256 => uint256) public proposalDeadline;
     mapping(uint256 => bool) public proposalExecuted;
@@ -140,6 +140,11 @@ contract DAO {
     function adminSubGlassScore(address member, uint256 amount) external {
         require(proposalContract.hasRole(proposalContract.DEFAULT_ADMIN_ROLE(), msg.sender), "Not admin");
         proposalContract.subGlassScore(member, amount);
+    }
+    
+    // +++ 신규 추가된 함수 +++
+    function isMember(address user) external view returns (bool) {
+        return proposalContract.hasRole(proposalContract.MEMBER_ROLE(), user);
     }
 
     function getTreasuryBalance() external view returns (uint256) { return vaultContract.getBalance(); }

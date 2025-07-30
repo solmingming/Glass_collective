@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { generateNftFromTokenId, type NftData } from '../utils/nftUtils';
 import * as d3 from 'd3';
 import '../styles/CollectivesSearch.css';
 import Header from './Header';
 import LogoSidebar from './LogoSidebar';
-import MenuSidebar from './MenuSidebar';
 
 interface Collective {
   id: string;
@@ -29,6 +29,15 @@ interface Bubble {
   zIndex: number;
   hover: boolean;
   category: string;
+}
+
+interface SimulationNode extends d3.SimulationNodeDatum {
+  id: string;
+  name: string;
+  memberCount: number;
+  category: string;
+  description: string;
+  radius: number;
 }
 
 const CollectivesSearch: React.FC = () => {
@@ -115,6 +124,13 @@ const CollectivesSearch: React.FC = () => {
       isActive: true
     }
   ];
+
+  // NFT 가입 관련 상태
+  const [showNftModal, setShowNftModal] = useState(false);
+  const [nftCode, setNftCode] = useState('');
+  const [isValidatingNft, setIsValidatingNft] = useState(false);
+  const [nftValidationError, setNftValidationError] = useState('');
+  const [validatedNftInfo, setValidatedNftInfo] = useState<(NftData & { isValid: boolean }) | null>(null);
 
   // 고품질 버블 크기 계산
   const getBubbleRadius = (participants: number) => {
@@ -336,7 +352,78 @@ const CollectivesSearch: React.FC = () => {
 
   // 버블 클릭 핸들러
   const handleBubbleClick = (id: string) => {
-    navigate(`/collective/${id}`);
+    navigate(`/collective/${id}/overview`);
+  };
+
+  // Create 버튼 클릭 핸들러
+  const handleCreateClick = () => {
+    navigate('/create-dao');
+  };
+
+  // NFT 모달 열기
+  const handleJoinWithNft = () => {
+    setShowNftModal(true);
+    setNftCode('');
+    setNftValidationError('');
+    setValidatedNftInfo(null);
+  };
+
+  // NFT 코드 검증 및 DAO 가입 함수
+  const handleJoinWithNftCode = async () => {
+    if (!nftCode.trim()) {
+      setNftValidationError('NFT 코드를 입력해주세요.');
+      return;
+    }
+
+    setIsValidatingNft(true);
+    setNftValidationError('');
+    setValidatedNftInfo(null);
+
+    try {
+      // 실제로는 블록체인에서 NFT 정보를 조회
+      // const nftInfo = await validateNFTCode(nftCode);
+      
+      // 시뮬레이션: NFT 코드 검증
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // 토큰 ID 패턴 검증 (예: 1703234567890-1234 형태 - 13자리 타임스탬프 + 하이픈 + 1-4자리 랜덤)
+      const tokenIdPattern = /^\d{13}-\d{1,4}$/;
+      if (!tokenIdPattern.test(nftCode)) {
+        throw new Error('유효하지 않은 NFT 코드 형식입니다. (예: 1703234567890-1234)');
+      }
+
+      // 공통 유틸리티 함수를 사용하여 일관된 NFT 정보 생성
+      const nftInfo = generateNftFromTokenId(nftCode, 'Tech Innovators', 'tech-innovators');
+      setValidatedNftInfo({
+        ...nftInfo,
+        isValid: true
+      });
+
+    } catch (error) {
+      console.error('NFT 검증 실패:', error);
+      setNftValidationError(error instanceof Error ? error.message : 'NFT 검증에 실패했습니다.');
+      setValidatedNftInfo(null);
+    } finally {
+      setIsValidatingNft(false);
+    }
+  };
+
+  // NFT로 DAO 가입 확인
+  const handleConfirmJoinWithNft = () => {
+    if (validatedNftInfo && validatedNftInfo.isValid) {
+      console.log('NFT 검증 성공:', validatedNftInfo);
+      navigate(`/collective/${validatedNftInfo.collectiveId}/overview`);
+      handleCloseNftModal();
+    }
+  };
+
+  // NFT 모달 닫기
+  const handleCloseNftModal = () => {
+    setShowNftModal(false);
+    setNftCode('');
+    setNftValidationError('');
+    setIsValidatingNft(false);
+    setValidatedNftInfo(null);
   };
 
   // 메타마스크 지갑 ID 불러옴
@@ -369,6 +456,71 @@ const CollectivesSearch: React.FC = () => {
         <Header walletAddress={formatAddress(walletAddress)} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         <div style={{ display: 'flex', flex: 1, minHeight: 0, minWidth: 0 }}>
           <div className="main-content" style={{ flex: 1, minWidth: 0, position: 'relative' }}>
+            {/* Create 버튼 */}
+            <button 
+              className="create-collective-button"
+              onClick={handleCreateClick}
+              style={{
+                position: 'absolute',
+                top: '20px',
+                left: '20px',
+                zIndex: 1000,
+                padding: '12px 24px',
+                backgroundColor: '#000000',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#333333';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#000000';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+              }}
+            >
+              Create
+            </button>
+            
+            {/* Join with NFT 버튼 */}
+            <button 
+              onClick={handleJoinWithNft}
+              style={{
+                position: 'absolute',
+                top: '20px',
+                left: '120px',
+                zIndex: 1000,
+                padding: '12px 24px',
+                background: 'linear-gradient(45deg, #667eea, #764ba2)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 4px 16px rgba(102, 126, 234, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+              }}
+            >
+              🎫 Join with NFT
+            </button>
+
             {/* 둥둥 떠다니는 Bubble Canvas */}
             <div 
               ref={canvasRef}
@@ -489,6 +641,310 @@ const CollectivesSearch: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* NFT 코드 입력 모달 */}
+      {showNftModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2000
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '32px',
+            width: '90%',
+            maxWidth: validatedNftInfo ? '600px' : '500px',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+            position: 'relative'
+          }}>
+            {/* 닫기 버튼 */}
+            <button
+              onClick={handleCloseNftModal}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: '#666'
+              }}
+            >
+              ×
+            </button>
+
+            <h2 style={{ 
+              fontSize: '24px', 
+              fontWeight: '600', 
+              marginBottom: '8px',
+              color: '#000'
+            }}>
+              🎫 Join with NFT Invitation
+            </h2>
+            
+            <p style={{ 
+              color: '#666', 
+              marginBottom: '24px',
+              fontSize: '14px'
+            }}>
+              NFT 초대장의 토큰 ID를 입력하여 Private Collective에 가입하세요.
+            </p>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '8px', 
+                fontWeight: '500',
+                color: '#333'
+              }}>
+                NFT Token ID:
+              </label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  value={nftCode}
+                  onChange={(e) => setNftCode(e.target.value)}
+                  placeholder="예: 1703234567890-1234"
+                  style={{
+                    flex: 1,
+                    padding: '12px 16px',
+                    border: nftValidationError ? '2px solid #dc2626' : '2px solid #e9ecef',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    fontFamily: 'Monaco, Menlo, monospace',
+                    letterSpacing: '1px',
+                    outline: 'none',
+                    transition: 'border-color 0.2s ease'
+                  }}
+                  onFocus={(e) => {
+                    if (!nftValidationError) {
+                      e.target.style.borderColor = '#007bff';
+                    }
+                  }}
+                  onBlur={(e) => {
+                    if (!nftValidationError) {
+                      e.target.style.borderColor = '#e9ecef';
+                    }
+                  }}
+                />
+                <button
+                  onClick={handleJoinWithNftCode}
+                  disabled={isValidatingNft || !nftCode.trim()}
+                  style={{
+                    padding: '12px 20px',
+                    border: 'none',
+                    borderRadius: '8px',
+                    background: isValidatingNft || !nftCode.trim()
+                      ? '#ccc' 
+                      : '#007bff',
+                    color: 'white',
+                    cursor: isValidatingNft || !nftCode.trim() ? 'not-allowed' : 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {isValidatingNft ? '⏳' : '🔍 Verify'}
+                </button>
+              </div>
+              {nftValidationError && (
+                <p style={{ 
+                  color: '#dc2626', 
+                  fontSize: '12px', 
+                  marginTop: '4px',
+                  margin: '4px 0 0 0'
+                }}>
+                  {nftValidationError}
+                </p>
+              )}
+            </div>
+
+            {/* NFT 정보 표시 */}
+            {validatedNftInfo && (
+              <div style={{
+                marginTop: '24px',
+                padding: '20px',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                borderRadius: '12px',
+                color: 'white'
+              }}>
+                <h3 style={{ 
+                  fontSize: '18px', 
+                  fontWeight: '600', 
+                  marginBottom: '16px',
+                  color: 'white'
+                }}>
+                  ✅ NFT Verified!
+                </h3>
+                
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  backdropFilter: 'blur(10px)'
+                }}>
+                  <div style={{
+                    background: 'white',
+                    borderRadius: '12px',
+                    padding: '16px',
+                    display: 'flex',
+                    gap: '16px',
+                    alignItems: 'center',
+                    marginBottom: '16px'
+                  }}>
+                    <div style={{
+                      width: '80px',
+                      height: '80px',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      flexShrink: 0,
+                      background: '#f0f0f0'
+                    }}>
+                      <img 
+                        src={validatedNftInfo.image} 
+                        alt={validatedNftInfo.name}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover'
+                        }}
+                      />
+                    </div>
+                    <div style={{ flex: 1, color: '#333' }}>
+                      <h4 style={{ 
+                        fontSize: '16px', 
+                        fontWeight: '600', 
+                        color: '#000', 
+                        margin: '0 0 8px 0' 
+                      }}>
+                        {validatedNftInfo.name}
+                      </h4>
+                      <p style={{ 
+                        fontSize: '12px', 
+                        color: '#666', 
+                        margin: '0 0 12px 0',
+                        fontFamily: 'Monaco, Menlo, monospace'
+                      }}>
+                        Token ID: {validatedNftInfo.tokenId}
+                      </p>
+                      <div style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '6px'
+                      }}>
+                        {validatedNftInfo.attributes.slice(0, 4).map((attr, index) => (
+                          <span key={index} style={{
+                            background: '#f8f9fa',
+                            color: '#495057',
+                            padding: '4px 8px',
+                            borderRadius: '12px',
+                            fontSize: '10px',
+                            fontWeight: '500',
+                            border: '1px solid #e9ecef'
+                          }}>
+                            {attr.trait_type}: {attr.value}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div style={{
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    textAlign: 'center'
+                  }}>
+                    <p style={{ 
+                      fontSize: '14px',
+                      margin: '0 0 8px 0',
+                      color: 'rgba(255, 255, 255, 0.9)'
+                    }}>
+                      이 NFT는 <strong>{validatedNftInfo.collectiveName}</strong>에 대한 초대장입니다.
+                    </p>
+                    <p style={{ 
+                      fontSize: '12px',
+                      margin: '0',
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      fontStyle: 'italic'
+                    }}>
+                      가입을 진행하시겠습니까?
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div style={{ 
+              display: 'flex', 
+              gap: '12px',
+              justifyContent: 'flex-end',
+              marginTop: '24px'
+            }}>
+              <button
+                onClick={handleCloseNftModal}
+                style={{
+                  padding: '12px 24px',
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  backgroundColor: '#fff',
+                  color: '#666',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+              >
+                Cancel
+              </button>
+              
+              {validatedNftInfo ? (
+                <button
+                  onClick={handleConfirmJoinWithNft}
+                  style={{
+                    padding: '12px 24px',
+                    border: 'none',
+                    borderRadius: '8px',
+                    background: 'linear-gradient(45deg, #667eea, #764ba2)',
+                    color: 'white',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600'
+                  }}
+                >
+                  🚀 Join {validatedNftInfo.collectiveName}
+                </button>
+              ) : (
+                <button
+                  disabled
+                  style={{
+                    padding: '12px 24px',
+                    border: 'none',
+                    borderRadius: '8px',
+                    background: '#ccc',
+                    color: 'white',
+                    cursor: 'not-allowed',
+                    fontSize: '14px',
+                    fontWeight: '600'
+                  }}
+                >
+                  Enter Token ID First
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

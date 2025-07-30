@@ -67,7 +67,6 @@ const DaoOverview: React.FC = () => {
           <div className="dao-info">
             <div className="dao-name">mad_camp collective</div>
             <div className="dao-description">
-              혁신적인 아이디어를 공유하고 함께 성장하는 창작자들의 모임입니다. 
               우리는 새로운 가능성을 탐구하며, 서로의 경험과 지식을 나누어 더 나은 미래를 만들어갑니다.
             </div>
           </div>

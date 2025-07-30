@@ -7,7 +7,6 @@
   padding: 0 16px;
   height: 64px;
   background: #ffffff;
-  border-bottom: 1.5px solid #000000;
   border-left: none;
 }
 
@@ -61,6 +60,52 @@
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+/* ETH 잔고 컨테이너 */
+.eth-balance-container {
+  display: flex;
+  align-items: center;
+  background: #f0f9ff;
+  border: 1.5px solid #0ea5e9;
+  border-radius: 8px;
+  padding: 8px 12px;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.eth-balance {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Monaco', 'Menlo', monospace;
+}
+
+.eth-amount {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0369a1;
+  line-height: 1;
+}
+
+.eth-symbol {
+  font-size: 12px;
+  font-weight: 500;
+  color: #0284c7;
+  background: #e0f2fe;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.loading-balance {
+  font-size: 16px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* 지갑 버튼 */
@@ -158,6 +203,20 @@
     padding: 8px 12px;
     font-size: 13px;
   }
+
+  .eth-balance-container {
+    min-width: 100px;
+    padding: 6px 10px;
+  }
+
+  .eth-amount {
+    font-size: 14px;
+  }
+
+  .eth-symbol {
+    font-size: 10px;
+    padding: 1px 4px;
+  }
   
   .wallet-btn {
     padding: 6px 12px;
@@ -181,6 +240,20 @@
     max-width: 150px;
     padding: 6px 10px;
     font-size: 12px;
+  }
+
+  .eth-balance-container {
+    min-width: 80px;
+    padding: 4px 8px;
+  }
+
+  .eth-amount {
+    font-size: 12px;
+  }
+
+  .eth-symbol {
+    font-size: 9px;
+    padding: 1px 3px;
   }
   
   .wallet-btn {

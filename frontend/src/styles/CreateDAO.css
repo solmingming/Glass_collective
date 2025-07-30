@@ -1,0 +1,430 @@
+/* CreateDao.css */
+
+.create-dao-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: #333;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.page-title {
+  font-size: 32px;
+  font-weight: 600;
+  color: #000;
+}
+
+.submit-button {
+  background-color: #e9e9e9;
+  color: #555;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-button:hover {
+  background-color: #dcdcdc;
+}
+
+.main-content {
+  display: flex;
+  gap: 24px;
+}
+
+.panel {
+  flex: 1; /* 양쪽 패널이 동일한 너비를 갖도록 함 */
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 24px;
+  background-color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.panel-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #888;
+  margin: 0 0 24px 0;
+}
+
+/* --- 프로필 패널 스타일 --- */
+.image-uploader {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.image-uploader input[type="file"] {
+  display: none; /* 실제 파일 인풋은 숨김 */
+}
+
+.upload-label {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px dashed #dcdcdc;
+  transition: background-color 0.2s, border-color 0.2s;
+  overflow: hidden; /* 이미지가 원 밖으로 나가지 않도록 */
+}
+
+.upload-label:hover {
+  background-color: #e9e9e9;
+  border-color: #c0c0c0;
+}
+
+.upload-label svg {
+  color: #888;
+}
+
+.image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 이미지가 원에 꽉 차도록 */
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.form-group input[type="text"],
+.form-group textarea {
+  width: 100%;
+  background-color: #f0f0f0;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 14px;
+  box-sizing: border-box; /* 패딩이 너비에 포함되도록 */
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.type-selector {
+  display: flex;
+  gap: 12px;
+}
+
+.type-selector button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 999px; /* 알약 모양 */
+  border: 1px solid #e0e0e0;
+  background-color: #fff;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.type-selector button.active {
+  background-color: #000;
+  color: #fff;
+}
+
+/* Invite Code 섹션 스타일 */
+.invite-code-section {
+  margin-top: 16px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+}
+
+.invite-code-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.invite-code {
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 16px;
+  font-weight: 600;
+  color: #000;
+  background-color: #fff;
+  padding: 12px 16px;
+  border: 2px solid #007bff;
+  border-radius: 8px;
+  letter-spacing: 2px;
+  user-select: all;
+  flex: 1;
+}
+
+.regenerate-btn {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.regenerate-btn:hover {
+  background-color: #f8f9fa;
+  border-color: #007bff;
+  transform: rotate(180deg);
+}
+
+.invite-code-note {
+  font-size: 12px;
+  color: #6c757d;
+  margin: 0;
+  font-style: italic;
+}
+
+/* NFT 초대장 섹션 스타일 */
+.nft-invitation-section {
+  margin-top: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  color: white;
+}
+
+.nft-invitation-section label {
+  color: white;
+  font-weight: 600;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.nft-generate-container {
+  text-align: center;
+  padding: 24px;
+}
+
+.generate-nft-btn {
+  background: linear-gradient(45deg, #ff6b6b, #feca57);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 auto 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.generate-nft-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.generate-nft-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.nft-generate-note {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  margin: 0;
+  font-style: italic;
+}
+
+.nft-display-container {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.nft-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.nft-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #f0f0f0;
+}
+
+.nft-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.nft-info {
+  flex: 1;
+  color: #333;
+}
+
+.nft-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #000;
+  margin: 0 0 8px 0;
+}
+
+.nft-token-id {
+  font-size: 12px;
+  color: #666;
+  margin: 0 0 12px 0;
+  font-family: 'Monaco', 'Menlo', monospace;
+}
+
+.nft-attributes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.nft-attribute {
+  background: #f8f9fa;
+  color: #495057;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 500;
+  border: 1px solid #e9ecef;
+}
+
+.nft-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.regenerate-nft-btn,
+.copy-nft-btn {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.regenerate-nft-btn:hover,
+.copy-nft-btn:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.nft-usage-note {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  margin: 0;
+  font-style: italic;
+  text-align: center;
+}
+
+/* --- 규칙 설정 패널 스타일 --- */
+.rules-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.rule-setting {
+  width: 100%;
+}
+
+.rule-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+/* --- 슬라이더(input[type="range"]) 스타일링 --- */
+input[type="range"] {
+  -webkit-appearance: none; /* 기본 UI 제거 (Chrome, Safari) */
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: #e9e9e9;
+  border-radius: 5px;
+  outline: none;
+  opacity: 0.9;
+  transition: opacity .2s;
+}
+
+input[type="range"]:hover {
+  opacity: 1;
+}
+
+/* 슬라이더 핸들(동그라미) - Webkit 계열 */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #333;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 2px rgba(0,0,0,0.2);
+}
+
+/* 슬라이더 핸들(동그라미) - Firefox */
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: #333;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 2px rgba(0,0,0,0.2);
+}

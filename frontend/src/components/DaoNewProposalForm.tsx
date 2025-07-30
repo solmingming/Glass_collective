@@ -185,13 +185,13 @@ const NewProposalForm: React.FC<NewProposalFormProps> = ({ onBack }) => {
         </div>
         <div className="timeline">
           <div>Time line</div>
-          <div className="timeline-dot created">
+          <div className="proposal-timeline-item created">
             <span className="dot" /> created <span className="date">2023.07.17</span>
           </div>
-          <div className="timeline-dot start">
+          <div className="proposal-timeline-item start">
             <span className="dot" /> start <span className="date">2023.07.17/00:00</span>
           </div>
-          <div className="timeline-dot end">
+          <div className="proposal-timeline-item end">
             <span className="dot" /> end <span className="date">2023.08.01/00:00</span>
           </div>
         </div>

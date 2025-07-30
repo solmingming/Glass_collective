@@ -83,7 +83,7 @@
 
 .proposal-desc-input {
   width: 100%;
-  min-height: 160px;
+  min-height: 240px;
   font-size: 1rem;
   padding: 16px;
   border-radius: 12px;
@@ -164,13 +164,13 @@
   font-size: 0.98rem;
 }
 
-.timeline-dot {
+.proposal-timeline-item {
   display: flex;
   align-items: center;
   margin-top: 8px;
 }
 
-.timeline-dot .dot {
+.proposal-timeline-item .dot {
   display: inline-block;
   width: 8px;
   height: 8px;
@@ -179,9 +179,9 @@
   margin-right: 8px;
 }
 
-.timeline-dot.created .dot { background: #222; }
-.timeline-dot.start .dot { background: #3cb371; }
-.timeline-dot.end .dot { background: #e74c3c; }
+.proposal-timeline-item.created .dot { background: #222; }
+.proposal-timeline-item.start .dot { background: #3cb371; }
+.proposal-timeline-item.end .dot { background: #e74c3c; }
 
 .date {
   margin-left: 8px;

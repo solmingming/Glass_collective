@@ -74,7 +74,8 @@ const NewProposalForm: React.FC<NewProposalFormProps> = ({ onBack }) => {
         title,
         desc,
         amount,
-        recipient
+        recipient,
+        1 // category (기본값: 1)
       );
 
       console.log("제안 생성 완료:", proposalId);

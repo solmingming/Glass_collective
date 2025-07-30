@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import "./Proposal.sol";
 import "./Vault.sol";
@@ -15,7 +15,7 @@ contract DAO {
     uint256 public absentPenalty = 0.001 ether;
     uint256 public countToExpel = 5;
     uint256 public scoreToExpel = 20;
-    uint256 public entryFee = 0.05 ether;
+    uint256 public entryFee = 0.002 ether;
 
     mapping(uint256 => uint256) public proposalDeadline;
     mapping(uint256 => bool) public proposalExecuted;
@@ -37,6 +37,11 @@ contract DAO {
         (bool sent, ) = address(vaultContract).call{value: msg.value}("");
         require(sent, "Failed to send Ether to vault");
         proposalContract.grantRole(proposalContract.MEMBER_ROLE(), msg.sender);
+    }
+
+    function leaveDAO() external {
+        require(proposalContract.hasRole(proposalContract.MEMBER_ROLE(), msg.sender), "Not a member");
+        proposalContract.revokeRole(proposalContract.MEMBER_ROLE(), msg.sender);
     }
     
     function createProposal(

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "../styles/Header.css";
 
 interface HeaderProps {
@@ -27,8 +27,22 @@ const Header: React.FC<HeaderProps> = ({ walletAddress, searchTerm, setSearchTer
   const [ethBalance, setEthBalance] = useState<number>(0);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
 
+  // Sepolia 네트워크 체인 ID
+  const SEPOLIA_CHAIN_ID = '0xaa36a7'; // 11155111 in hex
+
+  // 네트워크 체크 함수
+  const checkNetwork = async () => {
+    try {
+      const chainId = await window.ethereum?.request({ method: 'eth_chainId' });
+      return chainId === SEPOLIA_CHAIN_ID;
+    } catch (error) {
+      console.error('네트워크 체크 실패:', error);
+      return false;
+    }
+  };
+
   // ETH 잔고 조회 함수
-  const fetchEthBalance = async (address: string) => {
+  const fetchEthBalance = useCallback(async (address: string) => {
     if (!window.ethereum) {
       console.error('MetaMask not found');
       return;
@@ -36,6 +50,14 @@ const Header: React.FC<HeaderProps> = ({ walletAddress, searchTerm, setSearchTer
 
     try {
       setIsLoadingBalance(true);
+      
+      // 네트워크 체크
+      const isSepoliaNetwork = await checkNetwork();
+      if (!isSepoliaNetwork) {
+        console.warn('Sepolia 네트워크가 아닙니다. 잔고 조회를 건너뜁니다.');
+        setEthBalance(0);
+        return;
+      }
       
       // 웹3 provider를 통해 잔고 조회
       const balance = await window.ethereum.request({
@@ -53,7 +75,7 @@ const Header: React.FC<HeaderProps> = ({ walletAddress, searchTerm, setSearchTer
     } finally {
       setIsLoadingBalance(false);
     }
-  };
+  }, []);
 
   // 지갑 주소가 변경될 때마다 잔고 조회
   useEffect(() => {
@@ -62,7 +84,25 @@ const Header: React.FC<HeaderProps> = ({ walletAddress, searchTerm, setSearchTer
     } else {
       setEthBalance(0);
     }
-  }, [walletAddress]);
+  }, [walletAddress, fetchEthBalance]);
+
+  // 네트워크 변경 감지
+  useEffect(() => {
+    if (window.ethereum && walletAddress) {
+      const handleChainChanged = () => {
+        console.log('네트워크가 변경되었습니다. 잔고를 다시 조회합니다.');
+        fetchEthBalance(walletAddress);
+      };
+
+      window.ethereum.on('chainChanged', handleChainChanged);
+      
+      return () => {
+        if (window.ethereum?.removeListener) {
+          window.ethereum.removeListener('chainChanged', handleChainChanged);
+        }
+      };
+    }
+  }, [walletAddress, fetchEthBalance]);
 
   return (
     <header className="header">
@@ -79,13 +119,18 @@ const Header: React.FC<HeaderProps> = ({ walletAddress, searchTerm, setSearchTer
       <div className="header-right">
         {/* ETH 잔고 표시 */}
         <div className="eth-balance-container">
-          <div className="eth-balance">
+          <div 
+            className="eth-balance" 
+            onClick={() => walletAddress && fetchEthBalance(walletAddress)}
+            style={{ cursor: walletAddress ? 'pointer' : 'default' }}
+            title={walletAddress ? '클릭하여 잔고 새로고침' : ''}
+          >
             {isLoadingBalance ? (
               <span className="loading-balance">⏳</span>
             ) : (
               <>
                 <span className="eth-amount">{formatEthBalance(ethBalance)}</span>
-                <span className="eth-symbol">ETH</span>
+                <span className="eth-symbol">SepoliaETH</span>
               </>
             )}
           </div>

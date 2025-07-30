@@ -34,120 +34,84 @@ deploy.js의 기능(목적)
 
 const hre = require("hardhat");
 
-async function main(){
-  // hre.ethers.getSigners() : 이더리움 노드에 미리 생성or언락된 여러 계정 배열 반환
-  // 그 중 첫번째 요소만 꺼내서 deployer 변수에 할당, 즉 Signers[0]
-  // 즉, Hardhat이 제공하는 테스트계정 중 첫번째를 deployer로 사용용
-  // Signer : 특정 이더리움 계정(지갑)의 역할을 하는 객체..
-  // Signer을 통해 트랜잭션에 서명하고, 네트워크에 전송할 수 있음
+async function main() {
+  console.log("Deploying contracts with hre.ethers...");
 
-  // hardhat/ganache같은 개발형 네트워크는 모두 잠금 해제된 상태로 계정이 제공됨
-  // 실제 메인넷에서는 보안을 위해 각 계정은 개인키가 디스크에 암호화되어 저장됨
+  // 1. 배포자(signer) 정보를 가져옵니다.
   const [deployer] = await hre.ethers.getSigners();
-  console.log("Deploying contracts with account:", deployer.address);
+  console.log("Deploying with account:", deployer.address);
+  console.log("Account balance:", (await hre.ethers.provider.getBalance(deployer.address)).toString());
+  console.log("----------------------------------------------------");
 
-  // 1. GovernanceToken 배포 (새로 추가)
-  const GovernanceToken = await hre.ethers.getContractFactory("GovernanceToken");
-  const governanceToken = await GovernanceToken.deploy(
-    "Glass Collective Token",
-    "GLASS",
-    deployer.address
-  );
-  await governanceToken.waitForDeployment();
-  const governanceTokenAddress = await governanceToken.getAddress();
-  console.log("GovernanceToken deployed to:", governanceTokenAddress);
+  // 2. 각 컨트랙트 팩토리를 가져옵니다.
+  const VaultFactory = await hre.ethers.getContractFactory("Vault");
+  const ProposalFactory = await hre.ethers.getContractFactory("Proposal");
+  const ExecutionFactory = await hre.ethers.getContractFactory("Execution");
+  const DAOFactory = await hre.ethers.getContractFactory("DAO");
 
-  // 2. Vault 배포
-  const Vault = await hre.ethers.getContractFactory("Vault");
-  const vault = await Vault.deploy(deployer.address);
+  // 3. 모든 컨트랙트를 순서대로 배포하고, 배포가 완전히 완료될 때까지 기다립니다.
+  console.log("Deploying Vault...");
+  const vault = await VaultFactory.deploy(deployer.address, hre.ethers.ZeroAddress);
   await vault.waitForDeployment();
   const vaultAddress = await vault.getAddress();
-  console.log("Vault deployed to:", vaultAddress);
+  console.log("✅ Vault deployed to:", vaultAddress);
 
-  // 3. EnhancedProposal 배포 (새로 추가)
-  const EnhancedProposal = await hre.ethers.getContractFactory("EnhancedProposal");
-  const enhancedProposal = await EnhancedProposal.deploy(
-    governanceTokenAddress,
-    deployer.address
-  );
-  await enhancedProposal.waitForDeployment();
-  const enhancedProposalAddress = await enhancedProposal.getAddress();
-  console.log("EnhancedProposal deployed to:", enhancedProposalAddress);
-
-  // 4. Voting 배포 (거버넌스 토큰 연동)
-  const Voting = await hre.ethers.getContractFactory("Voting");
-  const voting = await Voting.deploy(governanceTokenAddress, deployer.address);
-  await voting.waitForDeployment();
-  const votingAddress = await voting.getAddress();
-  console.log("Voting deployed to:", votingAddress);
-
-  // 5. AutoExecution 배포 (새로 추가)
-  const AutoExecution = await hre.ethers.getContractFactory("AutoExecution");
-  const autoExecution = await AutoExecution.deploy(
-    enhancedProposalAddress,
-    vaultAddress,
-    governanceTokenAddress,
-    deployer.address
-  );
-  await autoExecution.waitForDeployment();
-  const autoExecutionAddress = await autoExecution.getAddress();
-  console.log("AutoExecution deployed to:", autoExecutionAddress);
-
-  // 6. 기존 Proposal 배포 (하위 호환성)
-  const Proposal = await hre.ethers.getContractFactory("Proposal");
-  const proposal = await Proposal.deploy(deployer.address);
+  console.log("\nDeploying Proposal...");
+  const proposal = await ProposalFactory.deploy(deployer.address);
   await proposal.waitForDeployment();
   const proposalAddress = await proposal.getAddress();
-  console.log("Proposal deployed to:", proposalAddress);
+  console.log("✅ Proposal deployed to:", proposalAddress);
 
-  // 7. 기존 Execution 배포 (하위 호환성)
-  const Execution = await hre.ethers.getContractFactory("Execution");
-  const execution = await Execution.deploy(
-    proposalAddress,
-    votingAddress,
-    vaultAddress
-  );
+  console.log("\nDeploying Execution...");
+  const execution = await ExecutionFactory.deploy(proposalAddress, vaultAddress);
   await execution.waitForDeployment();
   const executionAddress = await execution.getAddress();
-  console.log("Execution deployed to:", executionAddress);
+  console.log("✅ Execution deployed to:", executionAddress);
 
-  // 8. CorruptionMonitor 배포
-  const CorruptionMonitor = await hre.ethers.getContractFactory("CorruptionMonitor");
-  const corruptionMonitor = await CorruptionMonitor.deploy();
-  await corruptionMonitor.waitForDeployment();
-  const corruptionAddress = await corruptionMonitor.getAddress();
-  console.log("CorruptionMonitor deployed to:", corruptionAddress);
+  // [핵심] DAO 컨트랙트를 배포할 때, 위에서 얻은 주소들이 올바른지 확인합니다.
+  console.log("\nDeploying DAO with addresses:");
+  console.log("  - Proposal:", proposalAddress);
+  console.log("  - Vault:", vaultAddress);
+  console.log("  - Execution:", executionAddress);
+  const dao = await DAOFactory.deploy(proposalAddress, vaultAddress, executionAddress);
+  await dao.waitForDeployment();
+  const daoAddress = await dao.getAddress();
+  console.log("✅ DAO deployed to:", daoAddress);
+  console.log("----------------------------------------------------");
 
-  // 9. 초기 설정
-  console.log("\n=== 초기 설정 ===");
-  
-  // 거버넌스 토큰 초기 민팅
-  const initialMint = hre.ethers.parseEther("1000000"); // 100만 토큰
-  await governanceToken.mint(deployer.address, initialMint);
-  console.log("Initial tokens minted to deployer:", hre.ethers.formatEther(initialMint));
+  // 4. 배포 후, 컨트랙트 간의 주소와 역할을 설정합니다.
+  console.log("Configuring roles and addresses...\n");
 
-  // 멤버 역할 부여
-  await enhancedProposal.grantRole(await enhancedProposal.MEMBER_ROLE(), deployer.address);
-  await voting.grantRole(await voting.MEMBER_ROLE(), deployer.address);
-  console.log("Member roles granted to deployer");
+  const tx1 = await proposal.setDaoAddress(daoAddress);
+  await tx1.wait();
+  console.log(`- Proposal.setDaoAddress(${daoAddress}) [OK]`);
 
-  // 긴급 역할 부여
-  await enhancedProposal.grantRole(await enhancedProposal.EMERGENCY_ROLE(), deployer.address);
-  await autoExecution.grantRole(await autoExecution.EMERGENCY_ROLE(), deployer.address);
-  console.log("Emergency roles granted to deployer");
+  const tx2 = await execution.setDaoAddress(daoAddress);
+  await tx2.wait();
+  console.log(`- Execution.setDaoAddress(${daoAddress}) [OK]`);
 
-  console.log("\n=== 배포 완료 ===");
-  console.log("GovernanceToken:", governanceTokenAddress);
-  console.log("EnhancedProposal:", enhancedProposalAddress);
-  console.log("AutoExecution:", autoExecutionAddress);
-  console.log("Vault:", vaultAddress);
-  console.log("Voting:", votingAddress);
-  console.log("CorruptionMonitor:", corruptionAddress);
+  const EXECUTOR_ROLE = await vault.EXECUTOR_ROLE();
+  const tx3 = await vault.grantRole(EXECUTOR_ROLE, executionAddress);
+  await tx3.wait();
+  console.log(`- Vault.grantRole(EXECUTOR_ROLE, ${executionAddress}) [OK]`);
+
+  const DAO_ROLE = await proposal.DAO_ROLE();
+  const tx4 = await proposal.grantRole(DAO_ROLE, daoAddress);
+  await tx4.wait();
+  console.log(`- Proposal.grantRole(DAO_ROLE, ${daoAddress}) [OK]`);
+
+  const tx5 = await proposal.grantRole(DAO_ROLE, executionAddress);
+  await tx5.wait();
+  console.log(`- Proposal.grantRole(DAO_ROLE, ${executionAddress}) [OK]`);
+
+  console.log("\n✅ Deployment and configuration complete!");
+  console.log("----------------------------------------------------");
+  console.log("Final DAO Address to use in frontend:");
+  console.log(daoAddress);
+  console.log("----------------------------------------------------");
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((err) => {
-    console.error(err);
-    process.exit(1);
-  });
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

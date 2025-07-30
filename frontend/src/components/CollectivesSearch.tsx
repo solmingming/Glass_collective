@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { generateNftFromTokenId, type NftData } from '../utils/nftUtils';
 import * as d3 from 'd3';
-import '../styles/CollectivesSearch.css'; // CSS 파일을 import 합니다.
+import '../styles/CollectivesSearch.css';
 import Header from './Header';
 import LogoSidebar from './LogoSidebar';
-import contractService, { type Collective } from '../services/contractService';
+import contractService from '../services/contractService';
+
+// [수정] 새로 만든 중앙 데이터 파일에서 Collective 타입과 전체 목록을 가져옵니다.
+import { allCollectives, type Collective } from '../data/collectives';
+import { generateNftFromTokenId, type NftData } from '../utils/nftUtils';
 
 interface Bubble {
   id: string;
@@ -23,15 +26,6 @@ interface Bubble {
   category: string;
 }
 
-interface SimulationNode extends d3.SimulationNodeDatum {
-  id: string;
-  name: string;
-  memberCount: number;
-  category: string;
-  description: string;
-  radius: number;
-}
-
 const CollectivesSearch: React.FC = () => {
   const navigate = useNavigate();
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -46,90 +40,7 @@ const CollectivesSearch: React.FC = () => {
   const [currentTab, setCurrentTab] = useState(0);
   const [displayedCollectives, setDisplayedCollectives] = useState<Collective[]>([]);
 
-  // 실제 배포된 DAO 컨트랙트 주소로 변경해야 합니다.
-  const allCollectives: Collective[] = [
-    {
-      id: 'DAO_TEST1',
-      name: 'DAO_TEST1_NAME',
-      description: 'DeFi와 투자 전략을 공유하는 금융 공동체',
-      participants: 2340,
-      category: 'finance',
-      isActive: true,
-      contractAddress: '0x5FbDB2315678afecb367f032d93F642f64180aa3'
-    },
-    {
-      id: 'tech-startup',
-      name: 'Tech\nStartup',
-      description: '혁신적인 기술 스타트업 생태계',
-      participants: 1890,
-      category: 'technology',
-      isActive: true,
-      contractAddress: '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512'
-    },
-    {
-      id: 'gaming-collective',
-      name: 'Gaming\nCollective',
-      description: '게임과 메타버스 생태계 구축',
-      participants: 1567,
-      category: 'gaming',
-      isActive: true,
-      contractAddress: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0'
-    },
-    {
-      id: 'glass-collective',
-      name: 'Glass\nCollective',
-      description: '투명하고 공정한 Web3 공동체',
-      participants: 1250,
-      category: 'glass',
-      isActive: true,
-      contractAddress: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9'
-    },
-    {
-      id: 'eco-collective',
-      name: 'Eco\nCollective',
-      description: '환경 보호를 위한 지속가능한 공동체',
-      participants: 890,
-      category: 'environment',
-      isActive: true,
-      contractAddress: '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9'
-    },
-    {
-      id: 'music-collective',
-      name: 'Music\nCollective',
-      description: '음악과 오디오 NFT 플랫폼',
-      participants: 789,
-      category: 'music',
-      isActive: true,
-      contractAddress: '0x5FC8d32690cc91D4c39d9d3abcBD16989F875707'
-    },
-    {
-      id: 'health-collective',
-      name: 'Health\nCollective',
-      description: '웰빙과 건강 정보를 공유하는 공동체',
-      participants: 678,
-      category: 'health',
-      isActive: true,
-      contractAddress: '0x0165878A594ca255338adfa4d48449f69242Eb8F'
-    },
-    {
-      id: 'art-collective',
-      name: 'Art\nCollective',
-      description: '디지털 아트와 NFT를 통한 창작자 공동체',
-      participants: 567,
-      category: 'art',
-      isActive: true,
-      contractAddress: '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853'
-    },
-    {
-      id: 'education-collective',
-      name: 'Education\nCollective',
-      description: '블록체인 교육과 지식 공유 플랫폼',
-      participants: 432,
-      category: 'education',
-      isActive: true,
-      contractAddress: '0x2279B7A0a67DB372996a5FAB50D91eAA73d2eBe6'
-    }
-  ];
+  // [삭제] 컴포넌트 내부에 있던 allCollectives 배열 정의를 삭제합니다. (위에서 import 했기 때문입니다.)
 
   const [showNftModal, setShowNftModal] = useState(false);
   const [nftCode, setNftCode] = useState('');
@@ -143,12 +54,10 @@ const CollectivesSearch: React.FC = () => {
     const minRadius = mainArea * 0.10 * 0.8;
     const maxRadius = mainArea * 0.22 * 0.8;
     const scale = Math.sqrt(participants) / Math.sqrt(2500);
-    const radius = minRadius + (maxRadius - minRadius) * scale;
-    console.log(`📏 Bubble radius for ${participants} participants: ${radius}px (canvas: ${canvas?.offsetWidth}x${canvas?.offsetHeight})`);
-    return radius;
+    return minRadius + (maxRadius - minRadius) * scale;
   };
 
-  const getBubbleColor = (category: string, participants: number, scale: number) => {
+  const getBubbleColor = (category: string) => {
     const minimalColors = {
       finance: '#f8fafc', technology: '#f1f5f9', gaming: '#f8fafc',
       glass: '#f1f5f9', environment: '#f8fafc', music: '#f1f5f9',
@@ -156,8 +65,7 @@ const CollectivesSearch: React.FC = () => {
     };
     const baseColor = minimalColors[category as keyof typeof minimalColors] || '#f8fafc';
     return {
-      background: baseColor, opacity: 0.95, borderColor: 'rgba(0, 0, 0, 0.08)',
-      glowColor: 'transparent', shadowColor: 'transparent'
+      background: baseColor, opacity: 0.95, borderColor: 'rgba(0, 0, 0, 0.08)'
     };
   };
 
@@ -171,20 +79,13 @@ const CollectivesSearch: React.FC = () => {
   };
 
   const initializeSimulation = useCallback((collectivesToDisplay: Collective[]) => {
-    console.log("🎯 initializeSimulation called with:", collectivesToDisplay.length, "collectives");
-    
     const filtered = collectivesToDisplay.filter(collective =>
       collective.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       collective.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    console.log("🔍 After search filter:", filtered.length, "collectives");
 
     const canvas = canvasRef.current;
-    if (!canvas) {
-      console.error("❌ Canvas ref not found!");
-      return;
-    }
-    console.log("✅ Canvas found:", canvas);
+    if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
     const containerWidth = rect.width;
@@ -205,7 +106,6 @@ const CollectivesSearch: React.FC = () => {
       };
     });
 
-    console.log("🫧 Created bubbles:", newBubbles.length, newBubbles);
     setBubbles(newBubbles);
 
     if (simulationRef.current) {
@@ -225,21 +125,11 @@ const CollectivesSearch: React.FC = () => {
           let newX = bubble.x, newY = bubble.y, newVx = bubble.vx, newVy = bubble.vy;
           const springStrength = 0.3, damping = 0.8, boundaryPadding = 5;
 
-          if (newX - bubble.radius < boundaryPadding) {
-            newVx = newVx * damping + ((boundaryPadding - (newX - bubble.radius)) * springStrength);
-            newX = bubble.radius + boundaryPadding;
-          } else if (newX + bubble.radius > containerWidth - boundaryPadding) {
-            newVx = newVx * damping + (-( (newX + bubble.radius) - (containerWidth - boundaryPadding)) * springStrength);
-            newX = containerWidth - bubble.radius - boundaryPadding;
-          }
+          if (newX - bubble.radius < boundaryPadding) { newVx = newVx * damping + ((boundaryPadding - (newX - bubble.radius)) * springStrength); newX = bubble.radius + boundaryPadding; }
+          else if (newX + bubble.radius > containerWidth - boundaryPadding) { newVx = newVx * damping + (-( (newX + bubble.radius) - (containerWidth - boundaryPadding)) * springStrength); newX = containerWidth - bubble.radius - boundaryPadding; }
 
-          if (newY - bubble.radius < boundaryPadding) {
-            newVy = newVy * damping + ((boundaryPadding - (newY - bubble.radius)) * springStrength);
-            newY = bubble.radius + boundaryPadding;
-          } else if (newY + bubble.radius > containerHeight - boundaryPadding) {
-            newVy = newVy * damping + (-( (newY + bubble.radius) - (containerHeight - boundaryPadding)) * springStrength);
-            newY = containerHeight - bubble.radius - boundaryPadding;
-          }
+          if (newY - bubble.radius < boundaryPadding) { newVy = newVy * damping + ((boundaryPadding - (newY - bubble.radius)) * springStrength); newY = bubble.radius + boundaryPadding; }
+          else if (newY + bubble.radius > containerHeight - boundaryPadding) { newVy = newVy * damping + (-( (newY + bubble.radius) - (containerHeight - boundaryPadding)) * springStrength); newY = containerHeight - bubble.radius - boundaryPadding; }
 
           const maxVelocity = 2;
           newVx = Math.max(-maxVelocity, Math.min(maxVelocity, newVx));
@@ -267,31 +157,24 @@ const CollectivesSearch: React.FC = () => {
   
   useEffect(() => {
     const filterAndDisplayCollectives = async () => {
-      console.log("🔍 Filtering collectives, currentTab:", currentTab, "walletAddress:", walletAddress);
       setIsLoading(true);
       if (currentTab === 1 && walletAddress) {
         try {
-          console.log("📋 All collectives:", allCollectives.length);
           const myDaos = await contractService.filterMyDAOs(allCollectives, walletAddress);
-          console.log("✅ My DAOs found:", myDaos.length, myDaos);
           setDisplayedCollectives(myDaos);
         } catch (error) {
-          console.error("❌ Failed to filter my DAOs:", error);
+          console.error("Failed to filter my DAOs:", error);
           setDisplayedCollectives([]);
         }
       } else {
-        console.log("📋 Showing all collectives:", allCollectives.length);
         setDisplayedCollectives(allCollectives);
       }
       setIsLoading(false);
     };
-
     filterAndDisplayCollectives();
   }, [currentTab, walletAddress]);
 
   useEffect(() => {
-    console.log("🎯 Initializing simulation with:", displayedCollectives.length, "collectives");
-    // DOM이 준비될 때까지 약간 지연
     const timer = setTimeout(() => {
       initializeSimulation(displayedCollectives);
     }, 10);
@@ -380,15 +263,8 @@ const CollectivesSearch: React.FC = () => {
     }
   }, []);
 
-  const formatAddress = (address: string | null) => {
-    if (!address) return '';
-    return '0x' + address.slice(2, 10) + '...';
-  };
-
   const handleLogout = () => {
-    // 지갑 연결 해제
     setWalletAddress(null);
-    // 랜딩 페이지로 이동
     navigate('/');
   };
   
@@ -402,7 +278,7 @@ const CollectivesSearch: React.FC = () => {
     <div className="collectives-search-page" style={{ display: 'flex', height: '100vh' }}>
       <LogoSidebar />
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        <Header walletAddress={formatAddress(walletAddress)} searchTerm={searchTerm} setSearchTerm={setSearchTerm} onLogout={handleLogout} />
+        <Header walletAddress={walletAddress || undefined} searchTerm={searchTerm} setSearchTerm={setSearchTerm} onLogout={handleLogout} />
 
         <div style={{ padding: '0 24px', borderBottom: '1px solid #e5e7eb', backgroundColor: '#fff' }}>
           <div style={{ display: 'flex', gap: '28px' }}>
@@ -443,17 +319,17 @@ const CollectivesSearch: React.FC = () => {
                 </div>
               ) : (
                 bubbles.map((bubble) => {
-                  const { background, opacity, borderColor } = getBubbleColor(bubble.category, bubble.participants, bubble.scale);
+                  const { background, borderColor } = getBubbleColor(bubble.category);
                   const dx = mouse.x - bubble.x;
                   const dy = mouse.y - bubble.y;
                   const distance = Math.sqrt(dx * dx + dy * dy);
                   const maxDistance = 180;
-                  let scale = 1, zIndex = 1, enhancedOpacity = opacity;
+                  let scale = 1, zIndex = 1, enhancedOpacity = 0.95;
                   if (distance < maxDistance) {
                     const factor = 1 - distance / maxDistance;
                     scale = 1 + 0.12 * factor;
                     zIndex = Math.floor(15 * factor);
-                    enhancedOpacity = Math.min(0.98, opacity + 0.1 * factor);
+                    enhancedOpacity = Math.min(0.98, 0.95 + 0.1 * factor);
                   }
                   return (
                     <div key={bubble.id} className="collective-bubble" style={{ 
@@ -485,7 +361,7 @@ const CollectivesSearch: React.FC = () => {
                       {shouldShowFullText(bubble.radius) ? (
                         <>
                           <div className="bubble-title" style={{ fontSize: `${getFontSize(bubble.radius, true)}px`, marginBottom: `${bubble.radius * 0.05}px`, maxWidth: `${bubble.radius * 1.6}px`, whiteSpace: 'pre-wrap' }}>
-                            {bubble.name}
+                            {bubble.name.replace(/\\n/g, '\n')}
                           </div>
                           <div className="bubble-count" style={{ fontSize: `${getFontSize(bubble.radius, false)}px`, maxWidth: `${bubble.radius * 1.4}px` }}>
                             {bubble.participants.toLocaleString()} participants

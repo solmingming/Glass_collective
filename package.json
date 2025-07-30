@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "npx hardhat run scripts/deploy.js --network sepolia",
+    "postdeploy": "node -e \"const fs = require('fs'); const path = require('path'); const contracts = ['DAO', 'Proposal']; contracts.forEach(c => { const src = path.join(__dirname, 'artifacts/contracts', c + '.sol', c + '.json'); const dest = path.join(__dirname, 'frontend/src/contracts', c + '.json'); if (fs.existsSync(src)) { fs.copyFileSync(src, dest); console.log('Copied ' + c + '.json to frontend/src/contracts'); } });\""
   },
   "author": "",
   "license": "ISC",

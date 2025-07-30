@@ -22,6 +22,10 @@ const Login: React.FC = () => {
   const [accountInfo, setAccountInfo] = useState<string>('');
   const [showBankModal, setShowBankModal] = useState(false);
   const [selectedBank, setSelectedBank] = useState<string>('');
+  const [networkError, setNetworkError] = useState<string>('');
+
+  // Sepolia 테스트넷 체인 ID
+  const SEPOLIA_CHAIN_ID = '0xaa36a7'; // 11155111 in hex
 
   const banks = [
     { 
@@ -56,8 +60,62 @@ const Login: React.FC = () => {
     },
   ];
 
+  // 네트워크 체크 함수
+  const checkNetwork = async () => {
+    try {
+      const chainId = await window.ethereum?.request({ method: 'eth_chainId' });
+      return chainId === SEPOLIA_CHAIN_ID;
+    } catch (error) {
+      console.error('네트워크 체크 실패:', error);
+      return false;
+    }
+  };
+
+  // Sepolia 네트워크로 전환 요청
+  const switchToSepolia = async () => {
+    try {
+      await window.ethereum?.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: SEPOLIA_CHAIN_ID }],
+      });
+      setNetworkError('');
+      return true;
+    } catch (error: any) {
+      if (error.code === 4902) {
+        // 네트워크가 MetaMask에 추가되지 않은 경우
+        try {
+          await window.ethereum?.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: SEPOLIA_CHAIN_ID,
+              chainName: 'Sepolia Test Network',
+              nativeCurrency: {
+                name: 'SepoliaETH',
+                symbol: 'SEP',
+                decimals: 18,
+              },
+              rpcUrls: ['https://sepolia.infura.io/v3/'],
+              blockExplorerUrls: ['https://sepolia.etherscan.io/'],
+            }],
+          });
+          setNetworkError('');
+          return true;
+        } catch (addError) {
+          console.error('네트워크 추가 실패:', addError);
+          setNetworkError('Sepolia 네트워크 추가에 실패했습니다.');
+          return false;
+        }
+      } else {
+        console.error('네트워크 전환 실패:', error);
+        setNetworkError('네트워크 전환에 실패했습니다.');
+        return false;
+      }
+    }
+  };
+
   const connectWallet = async () => {
     setIsLoading(true);
+    setNetworkError('');
     
     try {
       if (typeof window.ethereum !== 'undefined') {
@@ -66,6 +124,15 @@ const Login: React.FC = () => {
         });
         
         if (accounts.length > 0) {
+          // 네트워크 체크
+          const isSepoliaNetwork = await checkNetwork();
+          
+          if (!isSepoliaNetwork) {
+            setNetworkError('Sepolia 테스트넷으로 전환해주세요.');
+            setIsLoading(false);
+            return;
+          }
+          
           setAccountInfo(accounts[0]);
           setConnectionType('wallet');
           setIsConnected(true);
@@ -136,6 +203,23 @@ const Login: React.FC = () => {
         </div>
 
         <div className="wallet-section">
+          {/* 네트워크 에러 메시지 */}
+          {networkError && (
+            <div className="network-error">
+              <div className="error-message">
+                <span className="error-icon">⚠️</span>
+                <span>{networkError}</span>
+              </div>
+              <button
+                type="button"
+                className="switch-network-btn"
+                onClick={switchToSepolia}
+              >
+                Sepolia로 전환
+              </button>
+            </div>
+          )}
+
           {isConnected ? (
             <div className="connected-wallet">
               <div className="wallet-info">

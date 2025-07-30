@@ -14,442 +14,398 @@
   display: inline-block;
 }
 
-/* Collectives Search Page - Minimal Design */
-.collectives-search-page {
-  min-height: 100vh;
-  width: 100vw;
-  background: #ffffff;
-  padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
-  overflow-x: hidden;
-}
-
-.collectives-search-container {
-  width: 100%;
-  max-width: none;
-  margin: 0;
-  padding: 0;
-}
-
-/* 미니멀 헤더 */
-.header {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  padding: 1.5rem 2rem;
-  width: 100%;
-  box-sizing: border-box;
-  background: #ffffff;
-  gap: 2rem;
-}
-
-.header-left {
+/* 카테고리 필터 컨테이너 */
+.category-filter-container {
   display: flex;
   align-items: center;
-  gap: 1.2rem;
-  flex-shrink: 0;
-  width: 120px;
-  justify-content: flex-start;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  position: relative;
+  z-index: 10;
 }
 
-.logo {
-  width: 32px;
-  height: 32px;
-  background: #000000;
+.category-filter {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.category-filter-chip {
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
+  border: none;
+  color: white;
+  font-size: 10px;
   font-weight: 600;
-  font-size: 1rem;
-}
-
-.page-title {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: #111827;
-  margin: 0;
-  letter-spacing: -0.01em;
-}
-
-.header-divider {
-  width: 1px;
-  height: 100vh;
-  background-color: #000000;
-  position: fixed;
-  left: 140px;
-  top: 0;
-  z-index: 100;
-  flex-shrink: 0;
-}
-
-.header-center {
-  flex: 1;
-  justify-content: center;
-  max-width: none;
-  margin-left: 0;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-shrink: 0;
-}
-
-/* 미니멀 글래스 서치바 */
-.search-bar {
-  position: relative;
-  width: 100%;
-  max-width: 480px;
-  border-radius: 50px;
-}
-
-.search-input {
-  width: 100%;
-  padding: 0.9rem 3rem 0.9rem 1.5rem;
-  border: 2px solid rgba(0, 0, 0, 0.6);
-  border-radius: 300px;
-  background: #F12AFA;
-  font-size: 16px;
-  font-weight: 400;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
-  color: #000000;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.search-input::placeholder {
-  color: #9ca3af;
-  font-weight: 400;
-  font-size: 16px;
-}
-
-.search-input:hover {
-  background: #f5f5f5;
-  border-color: rgba(0, 0, 0, 0.7);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.search-input:focus {
-  outline: none;
-  background: #f8f8f8;
-  border-color: rgba(0, 0, 0, 0.8);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-}
-
-.search-icon {
-  position: absolute;
-  right: 1.2rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #6b7280;
-  font-size: 0.9rem;
-  pointer-events: none;
-  opacity: 0.7;
-}
-
-.wallet-display {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 0.8rem 1.4rem;
-  border-radius: 8px;
-  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-  font-size: 0.9rem;
-  color: #111827;
-  transition: all 0.2s ease;
-}
-
-.wallet-display:hover {
-  border-color: rgba(0, 0, 0, 0.2);
-}
-
-.dark-mode-toggle {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  width: 40px;
-  height: 40px;
-  font-size: 1rem;
   cursor: pointer;
-  color: #111827;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.dark-mode-toggle:hover {
-  border-color: rgba(0, 0, 0, 0.2);
-}
-
-/* 메인 콘텐츠 영역 */
-.main-content {
-  background: #ffffff;
+  text-align: center;
+  line-height: 1.2;
   position: relative;
-  width: auto;
-  min-height: 600px;
   overflow: hidden;
+  user-select: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* 둥둥 떠다니는 Glass Bubble Canvas */
-.bubble-canvas {
+.category-filter-chip:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.category-filter-chip.selected {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px currentColor;
+}
+
+.category-filter-chip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.category-filter-chip:hover::before {
+  opacity: 1;
+}
+
+.clear-filter-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.clear-filter-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.2);
+  color: #333;
+}
+
+/* 2D 색상환 컬렉티브 탐색 */
+
+.collectives-search-page {
+  background: white;
+  min-height: 100vh;
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.main-content {
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+}
+
+/* 2D 색상환 컨테이너 */
+.circle-wrapper {
   position: relative;
   width: 100%;
-  min-height: 600px;
   height: 100%;
   overflow: hidden;
-  background: #ffffff;
-  border-radius: 0;
-  box-sizing: border-box;
-  display: block;
+  user-select: none;
 }
 
-/* 빈 상태 메시지 (선택사항) */
-.empty-state {
-  text-align: center;
-  color: #9ca3af;
-  font-size: 1rem;
-  opacity: 0.6;
+.circle-wrapper:active {
+  cursor: grabbing;
 }
 
-.bubble-canvas.animating .collective-bubble {
-  animation: floatBubbleAppear 1s ease-out forwards;
-  opacity: 0;
-  transform: scale(0) translateY(20px);
-}
-
-@keyframes floatBubbleAppear {
-  0% {
-    opacity: 0;
-    transform: scale(0) translateY(20px);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.05) translateY(-5px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.collective-bubble {
+/* 색상환 카드 */
+.circle-card {
   position: absolute;
-  border-radius: 50%;
+  width: 300px;
+  height: 200px;
+  border-radius: 8px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  color: #374151;
+  color: white;
   text-align: center;
+  padding: 20px 24px;
   user-select: none;
-  overflow: hidden;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: linear-gradient(135deg, #f8fafc 60%, #e0e7ef 100%);
-  box-shadow: 0 6px 32px 0 rgba(80, 120, 180, 0.10), 0 1.5px 8px 0 rgba(0,0,0,0.08);
-  border: 2.5px solid var(--bubble-border, #e0e7ef);
-  filter: drop-shadow(0 0 12px var(--bubble-glow, #b6e0fe33));
-  transition: 
-    box-shadow 0.25s cubic-bezier(.25,.46,.45,.94),
-    filter 0.25s cubic-bezier(.25,.46,.45,.94),
-    border-color 0.25s,
-    transform 0.18s cubic-bezier(.25,.46,.45,.94);
+  border: none;
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
-.collective-bubble::before {
+/* 텍스트 위치 고정 */
+.circle-card .card-title,
+.circle-card .card-participants {
+  transform: none !important;
+  transform-origin: center center;
+  position: relative;
+  z-index: 10;
+}
+
+.circle-card:hover {
+  /* hover 효과 제거 - 와리가리 현상 방지 */
+  /* transform: scale(1.02) !important; */
+  /* z-index: 10; */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.collective-card::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 50%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, transparent 100%);
-  border-radius: 50% 50% 0 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, transparent 100%);
+  border-radius: 12px 12px 0 0;
   pointer-events: none;
   z-index: 1;
 }
 
-.collective-bubble::after {
+.collective-card::after {
   content: '';
   position: absolute;
-  top: 10%;
-  left: 10%;
-  width: 30%;
-  height: 30%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, transparent 70%);
+  top: 15%;
+  left: 15%;
+  width: 25%;
+  height: 25%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
   border-radius: 50%;
   pointer-events: none;
   z-index: 1;
 }
 
-.collective-bubble:hover {
-  transform: scale(1.08) translateY(-6px);
-  box-shadow: 0 12px 40px 0 rgba(80, 120, 180, 0.18), 0 3px 16px 0 rgba(0,0,0,0.12);
-  filter: drop-shadow(0 0 24px var(--bubble-glow, #b6e0fe66));
-  border-color: var(--bubble-glow, #7dd3fc);
+.collective-card:hover {
+  transform: scale(1.05) translateZ(20px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
-.bubble-title, .bubble-count, .bubble-count-only {
-  text-shadow: 0 2px 8px #fff, 0 1px 2px #0002;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
-.bubble-title {
+/* 카드 텍스트 스타일 */
+.card-title {
+  font-size: 18px;
   font-weight: 600;
-  line-height: 1.1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  color: #374151;
+  line-height: 1.2;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.01em;
   position: relative;
   z-index: 2;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
-.bubble-count {
-  opacity: 0.8;
+.card-participants {
+  font-size: 14px;
   font-weight: 500;
-  line-height: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  color: #6b7280;
+  opacity: 0.9;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.02em;
   position: relative;
   z-index: 2;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
-.bubble-count-only {
-  font-weight: 600;
-  line-height: 1.1;
-  color: #374151;
-  position: relative;
-  z-index: 2;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+/* 포커스된 카드 스타일 */
+.collective-card[data-focused="true"] {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(255, 255, 255, 0.3);
+  transform: scale(1.1) translateZ(30px);
 }
 
 /* 검색 결과 없음 */
 .no-results {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   text-align: center;
-  padding: 3rem;
-  color: #9ca3af;
-  width: 100%;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  color: #666;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .no-results p {
-  margin: 0.5rem 0;
-  font-size: 1rem;
+  margin: 8px 0;
+  opacity: 0.8;
 }
 
-/* 반응형 */
+/* Create 버튼 */
+.create-collective-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  padding: 12px 24px;
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.create-collective-button:hover {
+  background-color: #333333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* NFT 버튼 */
+.nft-join-button {
+  position: absolute;
+  top: 20px;
+  left: 120px;
+  z-index: 1000;
+  padding: 12px 24px;
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.nft-join-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+}
+
+/* 반응형 디자인 */
 @media (max-width: 768px) {
-  .collectives-search-container {
-    padding: 0 1rem;
+  .collective-card {
+    width: 200px;
+    height: 140px;
+    padding: 16px;
   }
   
-  .header {
-    flex-direction: column;
-    gap: 1.2rem;
-    align-items: stretch;
-    padding: 1rem;
+  .card-title {
+    font-size: 16px;
   }
   
-  .header-left {
-    width: auto;
-    justify-content: center;
+  .card-participants {
+    font-size: 12px;
   }
   
-  .header-divider {
-    display: none;
+  .create-collective-button,
+  .nft-join-button {
+    padding: 10px 20px;
+    font-size: 12px;
   }
   
-  .header-center {
-    justify-content: center;
-    margin-left: 0;
-  }
-  
-  .main-content {
-    width: 100%;
-    left: 0;
-    top: 160px;
-    height: calc(100vh - 160px);
-  }
-  
-  .header-right {
-    order: 3;
-    justify-content: center;
-    gap: 0.8rem;
-  }
-  
-  .bubble-canvas {
-    height: calc(100vh - 160px);
-    min-height: 400px;
-  }
-  
-  .page-title {
-    font-size: 1.3rem;
-  }
-  
-  .logo {
-    width: 32px;
-    height: 32px;
-    font-size: 1rem;
+  .nft-join-button {
+    left: 100px;
   }
 }
 
 @media (max-width: 480px) {
-  .header-divider {
-    left: 120px;
+  .collective-card {
+    width: 180px;
+    height: 120px;
+    padding: 12px;
   }
   
-  .header-center {
-    margin-left: 0;
+  .card-title {
+    font-size: 14px;
   }
   
-  .main-content {
-    width: calc(100% - 120px);
-    left: 120px;
-    top: 200px;
-    height: calc(100vh - 200px);
+  .card-participants {
+    font-size: 11px;
   }
   
-  .bubble-canvas {
-    height: calc(100vh - 200px);
-    min-height: 350px;
+  .create-collective-button,
+  .nft-join-button {
+    padding: 8px 16px;
+    font-size: 11px;
   }
   
-  .search-input {
-    font-size: 0.85rem;
-    padding: 0.7rem 2.5rem 0.7rem 1.2rem;
+  .nft-join-button {
+    left: 90px;
   }
-  
-  .search-icon {
-    font-size: 0.9rem;
-    right: 0.8rem;
+}
+
+/* 애니메이션 */
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
   }
-  
-  .wallet-display {
-    font-size: 0.7rem;
-    padding: 0.4rem 0.6rem;
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
-  
-  .dark-mode-toggle {
-    width: 28px;
-    height: 28px;
-    font-size: 0.8rem;
+}
+
+.collective-card {
+  animation: cardAppear 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 스크롤바 숨기기 */
+.arc-container::-webkit-scrollbar {
+  display: none;
+}
+
+.arc-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 드래그 힌트 애니메이션 */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 255, 255, 0.6);
   }
 } 

@@ -179,8 +179,10 @@ class ContractService {
         gasUsed: receipt.gasUsed.toString()
       });
 
-      // 제안 ID 추출 - 트랜잭션 해시 기반으로 임시 ID 생성
-      const proposalId = Date.now(); // 임시 ID (실제로는 이벤트에서 추출해야 함)
+      // 제안 ID 추출 - proposals 배열의 길이로 계산
+      const proposalContract = await this.createContractInstance('Proposal');
+      const allProposals = await proposalContract.getAllProposals();
+      const proposalId = allProposals.length - 1; // 새로 생성된 제안의 인덱스
 
       console.log('제안 생성 완료, ID:', proposalId);
       return proposalId;
@@ -228,9 +230,40 @@ class ContractService {
   }
 
   async getAllProposals(): Promise<any[]> {
-    const proposalContract = await this.createContractInstance('Proposal');
-    // 구현 필요 - Proposal 컨트랙트에 getAllProposals 함수 추가 필요
-    return [];
+    try {
+      const proposalContract = await this.createContractInstance('Proposal');
+      
+      // Proposal 컨트랙트에서 모든 제안 가져오기
+      const proposals = await proposalContract.getAllProposals();
+      
+      console.log('블록체인에서 가져온 제안들:', proposals);
+      
+      // 제안 데이터를 프론트엔드 형식으로 변환
+      const formattedProposals = proposals.map((proposal: any, index: number) => ({
+        id: index,
+        title: proposal.title,
+        description: proposal.description,
+        amount: ethers.formatEther(proposal.amount),
+        recipient: proposal.recipient,
+        status: proposal.status,
+        votesFor: proposal.votesFor.toString(),
+        votesAgainst: proposal.votesAgainst.toString(),
+        votesAbstain: proposal.votesAbstain.toString(),
+        startTime: new Date(Number(proposal.startTime) * 1000).toLocaleString(),
+        proposer: proposal.proposer,
+        requireVote: proposal.requireVote,
+        sanctionType: proposal.sanctionType,
+        author: `@${proposal.proposer.slice(0, 6)}...${proposal.proposer.slice(-4)}`,
+        timestamp: `${Math.floor((Date.now() - Number(proposal.startTime) * 1000) / (1000 * 60 * 60))}시간 전`,
+        summary: 'TL;DR',
+        timeLeft: '3h 42m' // 임시 데이터
+      }));
+      
+      return formattedProposals;
+    } catch (error) {
+      console.error('제안 목록 가져오기 오류:', error);
+      return [];
+    }
   }
 
   // Glass Score 관련 함수들

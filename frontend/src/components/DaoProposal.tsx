@@ -11,6 +11,12 @@ interface Proposal {
   timestamp: string;
   summary: string;
   timeLeft: string;
+  description?: string;
+  amount?: string;
+  status?: string;
+  votesFor?: string;
+  votesAgainst?: string;
+  votesAbstain?: string;
 }
 
 // 디자인과 똑같이 보이도록 만든 임시 데이터
@@ -48,13 +54,27 @@ const DaoProposal: React.FC = () => {
         return;
       }
 
-      // 실제 제안 목록 가져오기 (현재는 더미 데이터 사용)
-      // TODO: getAllProposals 함수 구현 후 실제 데이터 사용
-      setProposals(mockProposals);
+      console.log("제안 목록 로드 시작...");
+
+      // 실제 제안 목록 가져오기
+      const blockchainProposals = await contractService.getAllProposals();
+      
+      console.log("블록체인에서 가져온 제안들:", blockchainProposals);
+      
+      if (blockchainProposals.length > 0) {
+        // 블록체인에서 가져온 제안들을 사용
+        setProposals(blockchainProposals);
+      } else {
+        // 블록체인에 제안이 없으면 더미 데이터 사용
+        console.log("블록체인에 제안이 없어서 더미 데이터 사용");
+        setProposals(mockProposals);
+      }
       
     } catch (error: any) {
       console.error("제안 목록 로드 오류:", error);
       setError(error.message || "제안 목록을 불러오는 중 오류가 발생했습니다.");
+      // 오류 발생 시 더미 데이터 사용
+      setProposals(mockProposals);
     } finally {
       setLoading(false);
     }
@@ -107,8 +127,11 @@ const DaoProposal: React.FC = () => {
               </div>
               <div className="proposal-meta">
                 <span className="proposal-timestamp">{proposal.timestamp}</span>
-                <span className="proposal-summary">{proposal.summary}</span>
+                <span className="proposal-summary">{proposal.description || proposal.summary}</span>
                 <span className="proposal-time-left">{proposal.timeLeft}</span>
+                {proposal.amount && (
+                  <span className="proposal-amount">💰 {proposal.amount} ETH</span>
+                )}
               </div>
               <div className="proposal-actions">
                 <button 

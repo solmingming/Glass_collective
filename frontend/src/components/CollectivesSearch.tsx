@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { generateNftFromTokenId, type NftData } from '../utils/nftUtils';
-import * as d3 from 'd3';
+import { LEGACY_CATEGORY_MAP, type CategoryType } from '../utils/categoryConstants';
+import { daoService, type DAO } from '../services/daoService';
 import '../styles/CollectivesSearch.css';
 import Header from './Header';
 import LogoSidebar from './LogoSidebar';
@@ -15,48 +16,80 @@ interface Collective {
   isActive: boolean;
 }
 
-interface Bubble {
+interface Card {
   id: string;
   name: string;
   participants: number;
+  category: string;
   x: number;
   y: number;
-  vx: number;
-  vy: number;
-  radius: number;
+  z: number;
   scale: number;
   opacity: number;
   zIndex: number;
-  hover: boolean;
-  category: string;
-}
-
-interface SimulationNode extends d3.SimulationNodeDatum {
-  id: string;
-  name: string;
-  memberCount: number;
-  category: string;
-  description: string;
-  radius: number;
+  transform: string;
+  isFocused: boolean;
+  isVisible: boolean;
+  translateY: number;
 }
 
 const CollectivesSearch: React.FC = () => {
   const navigate = useNavigate();
-  const canvasRef = useRef<HTMLDivElement>(null);
-  const simulationRef = useRef<d3.Simulation<Bubble, undefined> | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
-  const [bubbles, setBubbles] = useState<Bubble[]>([]);
-  const [isAnimating, setIsAnimating] = useState(true);
+  const [filteredCategory, setFilteredCategory] = useState<CategoryType | null>(null);
+  const [cards, setCards] = useState<Card[]>([]);
+  const [rotationAngle, setRotationAngle] = useState(0);
+  const [targetRotation, setTargetRotation] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartX, setDragStartX] = useState(0);
+  const [inertia, setInertia] = useState(0);
+  const [velocity, setVelocity] = useState(0);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  // 고품질 컬렉티브 데이터
-  const collectives: Collective[] = [
+  const [showNftModal, setShowNftModal] = useState(false);
+  const [nftCode, setNftCode] = useState('');
+  const [isValidatingNft, setIsValidatingNft] = useState(false);
+  const [nftValidationError, setNftValidationError] = useState('');
+  const [showDragHint, setShowDragHint] = useState(true);
+  const [validatedNftInfo, setValidatedNftInfo] = useState<(NftData & { isValid: boolean }) | null>(null);
+
+  // DAO 서비스에서 데이터 가져오기
+  const [collectives, setCollectives] = useState<DAO[]>([]);
+
+  // 컴포넌트 마운트 시 DAO 데이터 로드
+  useEffect(() => {
+    // 초기 샘플 데이터 설정 (첫 실행 시에만)
+    daoService.initializeSampleData();
+    
+    // 모든 DAO 가져오기
+    const allDAOs = daoService.getAllDAOs();
+    setCollectives(allDAOs);
+  }, []);
+
+  // DAO 데이터 새로고침 함수
+  const refreshDAOs = () => {
+    const allDAOs = daoService.getAllDAOs();
+    setCollectives(allDAOs);
+  };
+
+  // 페이지 포커스 시 DAO 데이터 새로고침
+  useEffect(() => {
+    const handleFocus = () => {
+      refreshDAOs();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
+  // 기존 하드코딩된 데이터 (백업용)
+  const fallbackCollectives: Collective[] = [
     {
-      id: 'DAO_TEST1',
-      name: 'DAO_TEST1_NAME',
-      description: 'DeFi와 투자 전략을 공유하는 금융 공동체',
-      participants: 2340,
-      category: 'finance',
+      id: 'glass-collective',
+      name: 'Glass\nCollective',
+      description: '투명하고 공정한 Web3 공동체',
+      participants: 1250,
+      category: 'glass',
       isActive: true
     },
     {
@@ -68,43 +101,11 @@ const CollectivesSearch: React.FC = () => {
       isActive: true
     },
     {
-      id: 'gaming-collective',
-      name: 'Gaming\nCollective',
-      description: '게임과 메타버스 생태계 구축',
-      participants: 1567,
-      category: 'gaming',
-      isActive: true
-    },
-    {
-      id: 'glass-collective',
-      name: 'Glass\nCollective',
-      description: '투명하고 공정한 Web3 공동체',
-      participants: 1250,
-      category: 'glass',
-      isActive: true
-    },
-    {
-      id: 'eco-collective',
-      name: 'Eco\nCollective',
-      description: '환경 보호를 위한 지속가능한 공동체',
-      participants: 890,
-      category: 'environment',
-      isActive: true
-    },
-    {
-      id: 'music-collective',
-      name: 'Music\nCollective',
-      description: '음악과 오디오 NFT 플랫폼',
-      participants: 789,
-      category: 'music',
-      isActive: true
-    },
-    {
-      id: 'health-collective',
-      name: 'Health\nCollective',
-      description: '웰빙과 건강 정보를 공유하는 공동체',
-      participants: 678,
-      category: 'health',
+      id: 'defi-collective',
+      name: 'DeFi\nCollective',
+      description: '탈중앙화 금융 생태계 구축',
+      participants: 3421,
+      category: 'finance',
       isActive: true
     },
     {
@@ -116,242 +117,320 @@ const CollectivesSearch: React.FC = () => {
       isActive: true
     },
     {
+      id: 'ai-collective',
+      name: 'AI\nCollective',
+      description: '인공지능과 머신러닝 연구 공동체',
+      participants: 2156,
+      category: 'technology',
+      isActive: true
+    },
+    {
+      id: 'music-collective',
+      name: 'Music\nCollective',
+      description: '음악과 오디오 NFT 플랫폼',
+      participants: 789,
+      category: 'music',
+      isActive: true
+    },
+    {
       id: 'education-collective',
       name: 'Education\nCollective',
       description: '블록체인 교육과 지식 공유 플랫폼',
       participants: 432,
       category: 'education',
       isActive: true
+    },
+    {
+      id: 'gaming-collective',
+      name: 'Gaming\nCollective',
+      description: '게임과 메타버스 생태계 구축',
+      participants: 1567,
+      category: 'gaming',
+      isActive: true
+    },
+    {
+      id: 'nft-collective',
+      name: 'NFT\nCollective',
+      description: 'NFT 아트와 디지털 자산 거래',
+      participants: 1876,
+      category: 'art',
+      isActive: true
+    },
+    {
+      id: 'crypto-collective',
+      name: 'Crypto\nCollective',
+      description: '암호화폐 투자와 트레이딩',
+      participants: 2987,
+      category: 'finance',
+      isActive: true
+    },
+    {
+      id: 'web3-collective',
+      name: 'Web3\nCollective',
+      description: '웹3 생태계 개발과 연구',
+      participants: 1654,
+      category: 'technology',
+      isActive: true
+    },
+    {
+      id: 'health-collective',
+      name: 'Health\nCollective',
+      description: '웰빙과 건강 정보를 공유하는 공동체',
+      participants: 678,
+      category: 'health',
+      isActive: true
+    },
+    {
+      id: 'dao-collective',
+      name: 'DAO\nCollective',
+      description: '탈중앙화 자율조직 연구',
+      participants: 1234,
+      category: 'technology',
+      isActive: true
+    },
+    {
+      id: 'eco-collective',
+      name: 'Eco\nCollective',
+      description: '환경 보호를 위한 지속가능한 공동체',
+      participants: 890,
+      category: 'environment',
+      isActive: true
+    },
+    {
+      id: 'blockchain-collective',
+      name: 'Blockchain\nCollective',
+      description: '블록체인 기술 연구와 개발',
+      participants: 1432,
+      category: 'technology',
+      isActive: true
+    },
+    {
+      id: 'creative-collective',
+      name: 'Creative\nCollective',
+      description: '창작자와 아티스트 지원',
+      participants: 654,
+      category: 'art',
+      isActive: true
+    },
+    {
+      id: 'metaverse-collective',
+      name: 'Metaverse\nCollective',
+      description: '메타버스 플랫폼 개발',
+      participants: 987,
+      category: 'gaming',
+      isActive: true
+    },
+    {
+      id: 'innovation-collective',
+      name: 'Innovation\nCollective',
+      description: '혁신 기술 연구와 개발',
+      participants: 1123,
+      category: 'technology',
+      isActive: true
     }
   ];
 
-  // NFT 가입 관련 상태
-  const [showNftModal, setShowNftModal] = useState(false);
-  const [nftCode, setNftCode] = useState('');
-  const [isValidatingNft, setIsValidatingNft] = useState(false);
-  const [nftValidationError, setNftValidationError] = useState('');
-  const [validatedNftInfo, setValidatedNftInfo] = useState<(NftData & { isValid: boolean }) | null>(null);
-
-  // 고품질 버블 크기 계산
-  const getBubbleRadius = (participants: number) => {
-    // 메인 영역의 60%만 차지하도록 조정
-    const mainArea = canvasRef.current ? Math.min(canvasRef.current.offsetWidth, canvasRef.current.offsetHeight) : 800;
-    // 버블 최대/최소 반지름을 전체 영역의 0.10~0.22로 설정 (0.7배 축소)
-    const minRadius = mainArea * 0.10 * 0.8;
-    const maxRadius = mainArea * 0.22 * 0.8;
-    const scale = Math.sqrt(participants) / Math.sqrt(2500);
-    return minRadius + (maxRadius - minRadius) * scale;
-  };
-
-  // 미니멀한 색상 팔레트
-  const getBubbleColor = (category: string, participants: number, scale: number) => {
-    const minimalColors = {
-      finance: '#f8fafc',
-      technology: '#f1f5f9',
-      gaming: '#f8fafc',
-      glass: '#f1f5f9',
-      environment: '#f8fafc',
-      music: '#f1f5f9',
-      health: '#f8fafc',
-      art: '#f1f5f9',
-      education: '#f8fafc'
+  // 카테고리별 컬러 매핑 (세련된 색감)
+  const getCategoryColor = (category: string) => {
+    const categoryColors = {
+      finance: '#6366F1',      // 인디고 블루
+      technology: '#0EA5E9',   // 스카이 블루
+      gaming: '#8B5CF6',       // 바이올렛
+      glass: '#06B6D4',        // 사이안
+      environment: '#10B981',   // 에메랄드
+      music: '#F59E0B',        // 앰버
+      health: '#EF4444',       // 로즈
+      art: '#EC4899',          // 핑크
+      education: '#84CC16'      // 라임
     };
 
-    const baseColor = minimalColors[category as keyof typeof minimalColors] || '#f8fafc';
-    
-    // 미니멀한 투명도
-    const opacity = 0.95;
-    
-    return {
-      background: baseColor,
-      opacity: opacity,
-      borderColor: 'rgba(0, 0, 0, 0.08)',
-      glowColor: 'transparent',
-      shadowColor: 'transparent'
-    };
+    return categoryColors[category as keyof typeof categoryColors] || '#3B82F6';
   };
 
-  // 텍스트 표시 여부 결정 (더 큰 버블에서만 전체 텍스트 표시)
-  const shouldShowFullText = (radius: number) => radius > 90;
-
-  // 폰트 크기 계산 (버블 크기에 비례, 절반으로)
-  const getFontSize = (radius: number, isTitle: boolean = true) => {
-    // 기존보다 절반으로
-    const baseSize = radius * (isTitle ? 0.19 : 0.11);
-    const min = radius / 20;
-    const max = radius / 7;
-    return Math.max(min, Math.min(max, baseSize));
-  };
-
-  // 고품질 d3.forceSimulation 초기화
-  const initializeSimulation = useCallback(() => {
-    const filtered = collectives.filter(collective =>
-      collective.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      collective.description.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const containerWidth = rect.width;
-    const containerHeight = rect.height;
-    const centerX = containerWidth / 2;
-    const centerY = containerHeight / 2;
-
-    // 고품질 버블 데이터 생성
-    const newBubbles = filtered.map((collective, index) => {
-      const radius = getBubbleRadius(collective.participants);
-      const angle = (index / filtered.length) * Math.PI * 2;
-      const maxDistance = Math.min(containerWidth, containerHeight) * 0.7; // 컨테이너 크기의 30%로 제한
-      const distance = radius + 20 + Math.random() * (maxDistance - radius - 20);
+  // 카테고리 필터링 함수
+  const getFilteredCollectives = () => {
+    return collectives.filter(collective => {
+      const matchesSearch = collective.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        collective.description.toLowerCase().includes(searchTerm.toLowerCase());
       
+      const legacyCategory = collective.category as keyof typeof LEGACY_CATEGORY_MAP;
+      const mappedCategory = LEGACY_CATEGORY_MAP[legacyCategory] || 'tech';
+      const matchesCategory = !filteredCategory || mappedCategory === filteredCategory;
+      
+      return matchesSearch && matchesCategory;
+    });
+  };
+
+  // 2D 원형 레이아웃 계산 (무한 스크롤)
+  const calculate2DCircularLayout = useCallback(() => {
+    const filtered = getFilteredCollectives();
+    const container = containerRef.current;
+    if (!container) return [];
+
+    const containerWidth = container.offsetWidth;
+    const containerHeight = container.offsetHeight;
+    
+    // 원형 디스크 중심
+    const centerX = containerWidth / 2;
+    const centerY = containerHeight + 360; // 10% 더 위로 올림 (400 -> 360)
+    
+        // 2D 원형 파라미터
+    const radius = 600; // 고정 반지름(px)
+    const cardCount = filtered.length;
+    
+    return filtered.map((collective, index) => {
+      const angleStep = 360 / cardCount;
+      const baseAngle = (-45 + angleStep * index) + rotationAngle; // 왼쪽 부분이 보이도록 각도 조정
+      const transform = `
+        rotate(${baseAngle}deg)
+        translate(${radius}px)
+      `;
+      // 각도를 0-360 범위로 정규화
+      const normalizedAngle = ((baseAngle % 360) + 360) % 360;
+      
+      // 중앙 기준으로의 거리 계산 (0도가 중앙)
+      const distanceFromCenter = Math.min(normalizedAngle, 360 - normalizedAngle);
+      const maxDistance = 180;
+      const scale = 1; // 모든 카드 동일한 크기
+      const opacity = 1; // 모든 카드 동일한 투명도
+      const isFocused = false; // 포커스 효과 제거
+      
+      // 모든 카드 동일한 zIndex
+      const zIndex = 100;
+      const translateY = 0; // 위로 이동 제거
+      const isVisible = true;
       return {
         id: collective.id,
         name: collective.name,
         participants: collective.participants,
         category: collective.category,
-        x: centerX + Math.cos(angle) * distance,
-        y: centerY + Math.sin(angle) * distance,
-        vx: 0,
-        vy: 0,
-        radius: radius,
-        scale: 1,
-        opacity: 0.9,
-        zIndex: 1,
-        hover: false
+        x: centerX,
+        y: centerY,
+        z: 0,
+        scale,
+        opacity,
+        zIndex,
+        transform,
+        isFocused,
+        isVisible,
+        translateY
       };
     });
+  }, [searchTerm, filteredCategory, rotationAngle]);
 
-    setBubbles(newBubbles);
-
-    // 기존 시뮬레이션 정리
-    if (simulationRef.current) {
-      simulationRef.current.stop();
-    }
-
-    // 둥둥 떠다니는 d3.forceSimulation 생성
-    const simulation = d3.forceSimulation<Bubble>(newBubbles)
-      .force('center', d3.forceCenter(centerX, centerY).strength(0.03)) // 더 약한 중앙 끌림
-      .force('charge', d3.forceManyBody().strength(-12)) // 약한 반발력
-      .force('collide', d3.forceCollide<Bubble>().radius((d: Bubble) => d.radius + 40).strength(1)) // 완전히 넓은 간격, 절대 겹치지 않게
-      .force('x', d3.forceX(centerX).strength(0.015)) // 매우 약한 X축 중력
-      .force('y', d3.forceY(centerY).strength(0.015)) // 매우 약한 Y축 중력
-      .alphaDecay(0.025) // 부드러운 감속
-      .velocityDecay(0.35) // 적당한 마찰
-      .on('tick', () => {
-        // 경계 제한 로직 추가 (Spring Easing)
-        const updatedBubbles = simulation.nodes().map(bubble => {
-          let newX = bubble.x;
-          let newY = bubble.y;
-          let newVx = bubble.vx;
-          let newVy = bubble.vy;
-
-          // Spring 상수 설정
-          const springStrength = 0.3;
-          const damping = 0.8;
-          const boundaryPadding = 5; // 경계에서 약간의 여백
-
-          // X축 경계 제한 (Spring Easing)
-          if (newX - bubble.radius < boundaryPadding) {
-            const overshoot = boundaryPadding - (newX - bubble.radius);
-            const springForce = overshoot * springStrength;
-            newVx = newVx * damping + springForce;
-            newX = bubble.radius + boundaryPadding;
-          } else if (newX + bubble.radius > containerWidth - boundaryPadding) {
-            const overshoot = (newX + bubble.radius) - (containerWidth - boundaryPadding);
-            const springForce = -overshoot * springStrength;
-            newVx = newVx * damping + springForce;
-            newX = containerWidth - bubble.radius - boundaryPadding;
-          }
-
-          // Y축 경계 제한 (Spring Easing)
-          if (newY - bubble.radius < boundaryPadding) {
-            const overshoot = boundaryPadding - (newY - bubble.radius);
-            const springForce = overshoot * springStrength;
-            newVy = newVy * damping + springForce;
-            newY = bubble.radius + boundaryPadding;
-          } else if (newY + bubble.radius > containerHeight - boundaryPadding) {
-            const overshoot = (newY + bubble.radius) - (containerHeight - boundaryPadding);
-            const springForce = -overshoot * springStrength;
-            newVy = newVy * damping + springForce;
-            newY = containerHeight - bubble.radius - boundaryPadding;
-          }
-
-          // 속도 제한 (과도한 튕김 방지)
-          const maxVelocity = 2;
-          newVx = Math.max(-maxVelocity, Math.min(maxVelocity, newVx));
-          newVy = Math.max(-maxVelocity, Math.min(maxVelocity, newVy));
-
-          return {
-            ...bubble,
-            x: newX,
-            y: newY,
-            vx: newVx,
-            vy: newVy
-          };
-        });
-
-        setBubbles(updatedBubbles);
-      });
-
-    simulationRef.current = simulation;
-  }, [searchTerm]);
-
-  // 고품질 마우스 이벤트 핸들러
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const rect = canvas.getBoundingClientRect();
-    setMouse({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    });
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    setMouse({ x: 0, y: 0 });
-  }, []);
-
-  // 초기화 및 애니메이션 시작
+  // 레이아웃 업데이트
   useEffect(() => {
-    initializeSimulation();
-    const timer = setTimeout(() => setIsAnimating(false), 1200);
-    return () => clearTimeout(timer);
-  }, [initializeSimulation]);
+    const newCards = calculate2DCircularLayout();
+    setCards(newCards);
+  }, [calculate2DCircularLayout]);
 
-  // 검색어 변경 시 시뮬레이션 재시작
+  // 물리 기반 부드러운 애니메이션
   useEffect(() => {
-    initializeSimulation();
-  }, [searchTerm, initializeSimulation]);
+    const physicsTimer = setInterval(() => {
+      if (!isDragging) {
+        // 스프링 물리 효과
+        const springStrength = 0.08; // 더 강한 스프링
+        const damping = 0.85; // 더 빠른 감쇠
+        
+        const distance = targetRotation - rotationAngle;
+        const springForce = distance * springStrength;
+        
+        setVelocity(prev => (prev + springForce) * damping);
+        setRotationAngle(prev => prev + velocity);
+        
+        // 휠 관성 효과
+        if (Math.abs(inertia) > 0.05) {
+          setRotationAngle(prev => prev + inertia);
+          setInertia(prev => prev * 0.92); // 더 부드러운 관성 감소
+        }
+      }
+    }, 16);
+    
+    return () => clearInterval(physicsTimer);
+  }, [rotationAngle, targetRotation, velocity, inertia, isDragging]);
 
-  // 컴포넌트 언마운트 시 시뮬레이션 정리
+  // 자동 회전 효과
   useEffect(() => {
-    return () => {
-      if (simulationRef.current) {
-        simulationRef.current.stop();
+    const autoRotateTimer = setInterval(() => {
+      if (!isDragging && Math.abs(inertia) < 0.1 && Math.abs(velocity) < 0.2) {
+        setTargetRotation(prev => prev + 0.5); // 더 명확한 자동 회전
+      }
+    }, 50); // 더 빠른 간격으로 체크
+    
+    return () => clearInterval(autoRotateTimer);
+  }, [isDragging, inertia, velocity]);
+
+  // 키보드 네비게이션
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        setTargetRotation(prev => prev - 15); // 더 큰 키보드 제어
+        setInertia(0); // 관성 초기화
+        setVelocity(0); // 속도 초기화
+      } else if (e.key === 'ArrowRight') {
+        setTargetRotation(prev => prev + 15); // 더 큰 키보드 제어
+        setInertia(0); // 관성 초기화
+        setVelocity(0); // 속도 초기화
       }
     };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // 윈도우 리사이즈 시 시뮬레이션 재시작
-  // useEffect(() => {
-  //   const handleResize = () => {
-  //     if (simulationRef.current) {
-  //       simulationRef.current.stop();
-  //       setTimeout(() => {
-  //         initializeSimulation();
-  //       }, 100);
-  //     }
-  //   };
+  // 마우스 드래그 핸들러
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragStartX(e.clientX);
+    setInertia(0); // 드래그 시작 시 관성 초기화
+    setShowDragHint(false); // 드래그 시작하면 힌트 숨기기
+    // 자동 회전 즉시 멈춤
+  }, []);
 
-  //   window.addEventListener('resize', handleResize);
-  //   return () => window.removeEventListener('resize', handleResize);
-  // }, [initializeSimulation]);
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging) return;
+    
+    const deltaX = e.clientX - dragStartX;
+    const sensitivity = 0.3; // 드래그 감도 대폭 감소 (더 자연스럽게)
+    const newRotation = rotationAngle + deltaX * sensitivity;
+    
+    setRotationAngle(newRotation);
+    setTargetRotation(newRotation);
+    setDragStartX(e.clientX);
+  }, [isDragging, dragStartX, rotationAngle]);
 
-  // 버블 클릭 핸들러
-  const handleBubbleClick = (id: string) => {
+  const handleMouseUp = useCallback((e?: React.MouseEvent) => {
+    if (isDragging) {
+      const currentX = e?.clientX || dragStartX;
+      const deltaX = currentX - dragStartX;
+      const sensitivity = 0.3; // 드래그 감도 대폭 감소
+      const velocity = deltaX * sensitivity * 0.1; // 더 부드러운 관성 효과
+      setInertia(velocity);
+      setVelocity(velocity * 0.8); // 더 강한 속도 기반 관성
+    }
+    setIsDragging(false);
+  }, [isDragging, dragStartX]);
+
+  // 카드 클릭 핸들러
+  const handleCardClick = (id: string) => {
+    // 클릭된 카드를 찾아서 위로 올라오는 애니메이션 적용
+    const clickedCard = cards.find(card => card.id === id);
+    if (clickedCard) {
+      // 카드를 위로 이동시키는 애니메이션
+      const cardElement = document.querySelector(`[data-card-id="${id}"]`) as HTMLElement;
+      if (cardElement) {
+        cardElement.style.transition = 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        cardElement.style.transform += ' translateY(-30px) scale(1.05)';
+        cardElement.style.zIndex = '9999';
+        
+        // 애니메이션 완료 후 페이지 이동
+        setTimeout(() => {
+          navigate(`/collective/${id}/overview`);
+        }, 600);
+        return;
+      }
+    }
+    // 애니메이션이 적용되지 않으면 바로 이동
     navigate(`/collective/${id}/overview`);
   };
 
@@ -360,7 +439,7 @@ const CollectivesSearch: React.FC = () => {
     navigate('/create-dao');
   };
 
-  // NFT 모달 열기
+  // NFT 모달 관련 함수들
   const handleJoinWithNft = () => {
     setShowNftModal(true);
     setNftCode('');
@@ -368,7 +447,6 @@ const CollectivesSearch: React.FC = () => {
     setValidatedNftInfo(null);
   };
 
-  // NFT 코드 검증 및 DAO 가입 함수
   const handleJoinWithNftCode = async () => {
     if (!nftCode.trim()) {
       setNftValidationError('NFT 코드를 입력해주세요.');
@@ -380,19 +458,13 @@ const CollectivesSearch: React.FC = () => {
     setValidatedNftInfo(null);
 
     try {
-      // 실제로는 블록체인에서 NFT 정보를 조회
-      // const nftInfo = await validateNFTCode(nftCode);
-      
-      // 시뮬레이션: NFT 코드 검증
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // 토큰 ID 패턴 검증 (예: 1703234567890-1234 형태 - 13자리 타임스탬프 + 하이픈 + 1-4자리 랜덤)
       const tokenIdPattern = /^\d{13}-\d{1,4}$/;
       if (!tokenIdPattern.test(nftCode)) {
         throw new Error('유효하지 않은 NFT 코드 형식입니다. (예: 1703234567890-1234)');
       }
 
-      // 공통 유틸리티 함수를 사용하여 일관된 NFT 정보 생성
       const nftInfo = generateNftFromTokenId(nftCode, 'Tech Innovators', 'tech-innovators');
       setValidatedNftInfo({
         ...nftInfo,
@@ -408,7 +480,6 @@ const CollectivesSearch: React.FC = () => {
     }
   };
 
-  // NFT로 DAO 가입 확인
   const handleConfirmJoinWithNft = () => {
     if (validatedNftInfo && validatedNftInfo.isValid) {
       console.log('NFT 검증 성공:', validatedNftInfo);
@@ -417,7 +488,6 @@ const CollectivesSearch: React.FC = () => {
     }
   };
 
-  // NFT 모달 닫기
   const handleCloseNftModal = () => {
     setShowNftModal(false);
     setNftCode('');
@@ -435,25 +505,26 @@ const CollectivesSearch: React.FC = () => {
     }
   }, []);
 
-  //주소 포맷 함수
+  // 드래그 힌트 자동 숨김 타이머
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowDragHint(false);
+    }, 5000); // 5초 후 자동 숨김
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const formatAddress = (address: string | null) => {
     if (!address) return '';
     return '0x' + address.slice(2, 10) + '...';
   };
-  
-  const tabList = [
-    { key: 'all', path: '/collectives-search', label: 'All' },
-    { key: 'my', path: '/collectives-search/my', label: 'My DAOs' },
-    { key: 'fav', path: '/collectives-search/favorites', label: 'Favorites' },
-  ];
-  const [currentTab, setCurrentTab] = useState(0);
-  const handleTabClick = (idx: number) => setCurrentTab(idx);
   
   return (
     <div className="collectives-search-page" style={{ display: 'flex', height: '100vh' }}>
       <LogoSidebar />
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         <Header walletAddress={formatAddress(walletAddress)} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        
         <div style={{ display: 'flex', flex: 1, minHeight: 0, minWidth: 0 }}>
           <div className="main-content" style={{ flex: 1, minWidth: 0, position: 'relative' }}>
             {/* Create 버튼 */}
@@ -465,29 +536,37 @@ const CollectivesSearch: React.FC = () => {
                 top: '20px',
                 left: '20px',
                 zIndex: 1000,
-                padding: '12px 24px',
-                backgroundColor: '#000000',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: '8px',
+                padding: '14px 20px',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                color: '#1f2937',
+                border: '1px solid rgba(0, 0, 0, 0.1)',
+                borderRadius: '12px',
                 fontSize: '14px',
                 fontWeight: '600',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: '0 2px 12px rgba(0, 0, 0, 0.08)',
+                backdropFilter: 'blur(10px)',
+                fontFamily: 'Space Grotesk, sans-serif',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#333333';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)';
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 1)';
+                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.12)';
+                e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.15)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#000000';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 2px 12px rgba(0, 0, 0, 0.08)';
+                e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.1)';
               }}
             >
-              Create
+              <span style={{ fontSize: '16px' }}>+</span>
+              Create Collective
             </button>
             
             {/* Join with NFT 버튼 */}
@@ -496,143 +575,244 @@ const CollectivesSearch: React.FC = () => {
               style={{
                 position: 'absolute',
                 top: '20px',
-                left: '120px',
+                left: '200px',
                 zIndex: 1000,
-                padding: '12px 24px',
-                background: 'linear-gradient(45deg, #667eea, #764ba2)',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: '8px',
+                padding: '14px 20px',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                color: '#6366f1',
+                border: '1px solid rgba(99, 102, 241, 0.2)',
+                borderRadius: '12px',
                 fontSize: '14px',
                 fontWeight: '600',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: '0 2px 12px rgba(99, 102, 241, 0.08)',
+                backdropFilter: 'blur(10px)',
+                fontFamily: 'Space Grotesk, sans-serif',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 16px rgba(102, 126, 234, 0.3)';
+                e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.15)';
+                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 8px 25px rgba(99, 102, 241, 0.15)';
+                e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.3)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+                e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.1)';
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 2px 12px rgba(99, 102, 241, 0.08)';
+                e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.2)';
               }}
             >
-              🎫 Join with NFT
+              <span style={{ fontSize: '16px' }}>🎫</span>
+              Join with NFT
             </button>
 
-            {/* 둥둥 떠다니는 Bubble Canvas */}
+            {/* 2D 색상환 컨테이너 */}
             <div 
-              ref={canvasRef}
-              className={`bubble-canvas ${isAnimating ? 'animating' : ''}`}
+              ref={containerRef}
+              className="circle-wrapper"
+              onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
-              onMouseLeave={handleMouseLeave}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              style={{ 
+                cursor: isDragging ? 'grabbing' : 'grab',
+                position: 'relative',
+                width: '100%',
+                height: '100%',
+                overflow: 'hidden',
+                userSelect: 'none'
+              }}
             >
-              {bubbles.map((bubble) => {
-                const { background, opacity, borderColor, glowColor, shadowColor } = getBubbleColor(bubble.category, bubble.participants, bubble.scale);
-                const showFullText = shouldShowFullText(bubble.radius);
-                
-                // 고품질 마우스 반응 계산
-                const dx = mouse.x - bubble.x;
-                const dy = mouse.y - bubble.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                const maxDistance = 180;
-                
-                let scale = 1;
-                let zIndex = 1;
-                let enhancedOpacity = opacity;
-                
-                if (distance < maxDistance) {
-                  const factor = 1 - distance / maxDistance;
-                  scale = 1 + 0.12 * factor;
-                  zIndex = Math.floor(15 * factor);
-                  enhancedOpacity = Math.min(0.98, opacity + 0.1 * factor);
-                }
+              {/* 드래그 힌트 오버레이 */}
+              <div 
+                style={{
+                  position: 'absolute',
+                  top: '15%',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  zIndex: 999,
+                  pointerEvents: 'none',
+                  opacity: (isDragging || !showDragHint) ? 0 : 1,
+                  transition: 'opacity 0.3s ease',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '20px',
+                  background: 'rgba(0, 0, 0, 0.8)',
+                  padding: '24px 32px',
+                  borderRadius: '16px',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
+                }}
+              >
+                <div style={{
+                  fontSize: '28px',
+                  fontWeight: '700',
+                  color: '#ffffff',
+                  textAlign: 'center',
+                  fontFamily: 'Space Grotesk, sans-serif',
+                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)'
+                }}>
+                  🎯 드래그하여 탐색하세요
+                </div>
+                <div style={{
+                  fontSize: '18px',
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  textAlign: 'center',
+                  fontFamily: 'Space Grotesk, sans-serif'
+                }}>
+                  ← → 방향키로도 조작 가능
+                </div>
+                <div style={{
+                  width: '70px',
+                  height: '70px',
+                  border: '3px solid rgba(255, 255, 255, 0.4)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  animation: 'pulse 2s infinite, float 3s ease-in-out infinite',
+                  background: 'rgba(255, 255, 255, 0.15)',
+                  backdropFilter: 'blur(10px)',
+                  boxShadow: '0 0 30px rgba(255, 255, 255, 0.4)'
+                }}>
+                  <span style={{ 
+                    fontSize: '28px',
+                    animation: 'float 2s ease-in-out infinite'
+                  }}>👆</span>
+                </div>
+                <div style={{
+                  fontSize: '16px',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  textAlign: 'center',
+                  fontFamily: 'Space Grotesk, sans-serif',
+                  animation: 'glow 2s ease-in-out infinite'
+                }}>
+                  💡 마우스를 클릭하고 드래그하세요
+                </div>
+              </div>
+              {/* 카드들 */}
+              {cards.filter(card => card.isVisible).map((card) => {
+                const backgroundColor = getCategoryColor(card.category);
                 
                 return (
                   <div
-                    key={bubble.id}
-                    className="collective-bubble"
+                    key={card.id}
+                    data-card-id={card.id}
+                    className="circle-card"
                     style={{
                       position: 'absolute',
-                      left: `${bubble.x - bubble.radius}px`,
-                      top: `${bubble.y - bubble.radius}px`,
-                      width: `${bubble.radius * 2}px`,
-                      height: `${bubble.radius * 2}px`,
-                      background: background,
-                      border: `1px solid ${borderColor}`,
-                      transform: `scale(${scale})`,
-                      opacity: enhancedOpacity,
-                      zIndex: zIndex,
-                      borderRadius: '50%',
+                      left: `${card.x - 110}px`,
+                      top: `${card.y - 170}px`,
+                      transformOrigin: 'center center',
+                      width: '180px',
+                      height: '280px',
+                      background: `linear-gradient(135deg, ${backgroundColor} 0%, ${backgroundColor}90 50%, ${backgroundColor}70 100%)`,
+                      borderRadius: '8px',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
                       justifyContent: 'center',
                       cursor: 'pointer',
-                      transition: 'all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                      boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
-                      color: '#374151',
+                      transform: `${card.transform} scale(${card.scale}) rotate(90deg) translateY(${card.translateY}px) ${Math.abs(inertia) > 1.5 ? 'rotate(' + (Math.random() * 8 - 4) + 'deg)' : ''}`,
+                      opacity: Math.abs(inertia) > 1.5 
+                        ? Math.min(1, card.opacity + 0.2)
+                        : card.opacity,
+                      zIndex: card.zIndex,
+                      transition: Math.abs(inertia) > 1.5 
+                        ? 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                        : 'all 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                      boxShadow: Math.abs(inertia) > 0.8 
+                        ? `0 4px 16px rgba(0, 0, 0, 0.08), 0 0 30px rgba(255, 255, 255, 0.3), 0 0 60px rgba(255, 255, 255, 0.2)`
+                        : '0 6px 20px rgba(0, 0, 0, 0.1)',
+                      color: 'white',
                       textAlign: 'center',
-                      padding: `${bubble.radius * 0.15}px`,
+                      padding: '24px 16px',
                       userSelect: 'none',
-                      backdropFilter: 'blur(8px)',
-                      WebkitBackdropFilter: 'blur(8px)'
+                      border: 'none',
+                      fontFamily: 'Space Grotesk, -apple-system, BlinkMacSystemFont, sans-serif',
+                      backdropFilter: 'blur(5px)',
+                      WebkitBackdropFilter: 'blur(5px)'
                     }}
-                    onClick={() => handleBubbleClick(bubble.id)}
+                    onClick={() => handleCardClick(card.id)}
                   >
-                    {shouldShowFullText(bubble.radius) ? (
-                      <>
-                        <div 
-                          className="bubble-title"
-                          style={{
-                            fontSize: `${getFontSize(bubble.radius, true)}px`,
-                            lineHeight: '1.1',
-                            marginBottom: `${bubble.radius * 0.05}px`,
-                            maxWidth: `${bubble.radius * 1.6}px`,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          {bubble.name}
-                        </div>
-                        <div 
-                          className="bubble-count"
-                          style={{
-                            fontSize: `${getFontSize(bubble.radius, false)}px`,
-                            lineHeight: '1',
-                            maxWidth: `${bubble.radius * 1.4}px`,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          {bubble.participants.toLocaleString()} participants
-                        </div>
-                      </>
-                    ) : (
-                      <div 
-                        className="bubble-count-only"
-                        style={{
-                          fontSize: `${getFontSize(bubble.radius, true)}px`,
-                          lineHeight: '1.1',
-                          maxWidth: `${bubble.radius * 1.6}px`,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
-                        }}
-                      >
-                        {bubble.participants.toLocaleString()}
-                      </div>
-                    )}
+                    {/* 컬렉티브 사진 */}
+                    <div 
+                      className="card-image"
+                      style={{
+                        width: '70px',
+                        height: '70px',
+                        borderRadius: '50%',
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: '18px',
+                        marginTop: '-8px',
+                        border: '2px solid rgba(255, 255, 255, 0.3)',
+                        transition: 'all 0.3s ease',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      <span style={{ 
+                        fontSize: '28px',
+                        opacity: 0.8
+                      }}>
+                        {card.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    
+                    {/* 컬렉티브 이름 */}
+                    <div 
+                      className="card-title"
+                      style={{
+                        fontSize: '16px',
+                        fontWeight: '700',
+                        lineHeight: '1.2',
+                        marginBottom: '12px',
+                        letterSpacing: '0.01em',
+                        opacity: 0.95,
+                        transition: 'all 0.3s ease',
+                        wordBreak: 'break-word',
+                        textAlign: 'center',
+                        textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)'
+                      }}
+                    >
+                      {card.name}
+                    </div>
+                    
+                    {/* 컬렉티브 회원수 */}
+                    <div 
+                      className="card-participants"
+                      style={{
+                        fontSize: '11px',
+                        fontWeight: '500',
+                        opacity: 0.8,
+                        letterSpacing: '0.02em',
+                        transition: 'all 0.3s ease',
+                        textAlign: 'center',
+                        textShadow: '0 1px 1px rgba(0, 0, 0, 0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '3px'
+                      }}
+                    >
+                      <span>{card.participants.toLocaleString()}</span>
+                      <span style={{ fontSize: '9px', opacity: 0.7 }}>members</span>
+                    </div>
                   </div>
                 );
               })}
             </div>
 
             {/* 검색 결과 없음 */}
-            {bubbles.length === 0 && searchTerm && (
+            {cards.length === 0 && searchTerm && (
               <div className="no-results">
                 <p>검색 결과가 없습니다.</p>
                 <p>다른 검색어를 시도해보세요.</p>

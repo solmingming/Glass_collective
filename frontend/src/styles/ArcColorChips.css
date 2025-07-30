@@ -1,0 +1,214 @@
+/* Arc Color Chips Styles */
+.arc-color-chips-container {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 20px;
+  margin: 20px 0;
+}
+
+.arc-chips-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arc-chip {
+  position: absolute;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform-origin: center;
+}
+
+.arc-chip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.arc-chip:hover::before {
+  opacity: 1;
+}
+
+.arc-chip.selected {
+  box-shadow: 0 0 0 3px #fff, 0 0 0 6px currentColor, 0 12px 40px rgba(0, 0, 0, 0.3);
+  transform: scale(1.1);
+}
+
+.chip-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 2;
+  transform: none; /* 텍스트 회전 방지 */
+}
+
+.chip-icon {
+  font-size: 14px;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.chip-name {
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.center-pointer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 4px;
+  background: #000;
+  border-radius: 50%;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.clear-filter-btn {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 10;
+}
+
+.clear-filter-btn:hover {
+  background: rgba(0, 0, 0, 0.15);
+  border-color: rgba(0, 0, 0, 0.3);
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .arc-color-chips-container {
+    height: 200px;
+    margin: 15px 0;
+  }
+  
+  .arc-chip {
+    width: 55px;
+    height: 55px;
+  }
+  
+  .chip-icon {
+    font-size: 12px;
+  }
+  
+  .chip-name {
+    font-size: 8px;
+  }
+  
+  .clear-filter-btn {
+    bottom: 15px;
+    font-size: 11px;
+    padding: 6px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .arc-color-chips-container {
+    height: 180px;
+    margin: 10px 0;
+  }
+  
+  .arc-chip {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .chip-icon {
+    font-size: 10px;
+  }
+  
+  .chip-name {
+    font-size: 7px;
+  }
+  
+  .clear-filter-btn {
+    bottom: 10px;
+    font-size: 10px;
+    padding: 5px 10px;
+  }
+}
+
+/* 모바일 터치 최적화 */
+.arc-color-chips-container {
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 부드러운 애니메이션 */
+.arc-chip {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* 선택된 칩의 특별한 애니메이션 */
+.arc-chip.selected {
+  animation: selectedPulse 2s ease-in-out infinite;
+}
+
+@keyframes selectedPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 3px #fff, 0 0 0 6px currentColor, 0 12px 40px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 3px #fff, 0 0 0 6px currentColor, 0 12px 40px rgba(0, 0, 0, 0.3), 0 0 20px currentColor;
+  }
+} 

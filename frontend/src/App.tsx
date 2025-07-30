@@ -7,6 +7,7 @@ import CollectivesSearch from './components/CollectivesSearch';
 import ScrollProgress from './components/ScrollProgress';
 import MouseFollower from './components/MouseFollower';
 import CreateDAO from './components/CreateDAO';
+import { daoService } from './services/daoService';
 
 // DAO 페이지 컴포넌트들
 import LogoSidebar from './components/LogoSidebar';
@@ -105,6 +106,11 @@ const LandingApp: React.FC = () => {
 };
 
 function App() {
+  // 앱 시작 시 DAO 서비스 초기화
+  useEffect(() => {
+    daoService.initializeSampleData();
+  }, []);
+
   return (
     <Router>
       <Routes>

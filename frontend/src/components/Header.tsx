@@ -83,8 +83,8 @@ const Header: React.FC<HeaderProps> = ({ walletAddress, searchTerm, setSearchTer
               <span className="loading-balance">⏳</span>
             ) : (
               <>
+                <span className="eth-icon">Ξ</span>
                 <span className="eth-amount">{formatEthBalance(ethBalance)}</span>
-                <span className="eth-symbol">ETH</span>
               </>
             )}
           </div>

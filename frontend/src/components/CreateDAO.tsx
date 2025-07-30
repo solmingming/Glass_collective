@@ -1,7 +1,11 @@
-import React, { useState, type ChangeEvent } from 'react';
+import React, { useState, useEffect, useRef, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createNewNft, generateInviteCode, type NftData } from '../utils/nftUtils';
+import { CATEGORY_COLOR_MAP, type CategoryType } from '../utils/categoryConstants';
+import { daoService } from '../services/daoService';
 import '../styles/CreateDAO.css';
+import '../styles/ArcColorChips.css';
+import ArcColorChips from './ArcColorChips';
 
 // 각 규칙의 상태를 관리하기 위한 타입 정의
 interface RuleSettings {
@@ -28,6 +32,7 @@ const CreateDao: React.FC = () => {
   // 프로필 정보 상태
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<CategoryType | null>(null);
   const [collectiveType, setCollectiveType] = useState<'public' | 'private'>('public');
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [inviteCode, setInviteCode] = useState<string>('');
@@ -35,6 +40,11 @@ const CreateDao: React.FC = () => {
   // NFT 초대장 관련 상태
   const [nftInvitation, setNftInvitation] = useState<NftData | null>(null);
   const [isGeneratingNFT, setIsGeneratingNFT] = useState(false);
+  
+  // 카테고리 드롭다운 상태
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const dropdownButtonRef = useRef<HTMLButtonElement>(null);
 
   // 규칙 설정 상태
   const [rules, setRules] = useState<RuleSettings>({
@@ -101,28 +111,137 @@ const CreateDao: React.FC = () => {
 
   // 최종 "Create Collective" 버튼 클릭 핸들러
   const handleSubmit = () => {
-    const collectiveData = {
-      name,
-      description,
-      collectiveType,
-      profileImage, // 실제로는 업로드된 이미지의 URL이 될 것입니다.
-      inviteCode, // private일 때만 값이 있음
-      nftInvitation, // NFT 초대장 데이터
-      rules,
-    };
-    console.log('Creating Collective with data:', collectiveData);
-    // TODO: 이 데이터를 사용하여 스마트 컨트랙트의 생성 함수를 호출합니다.
-    
-    // Collective 생성 후 collectives-search 페이지로 이동
-    navigate('/collectives-search');
+    if (!name.trim() || !description.trim() || !selectedCategory) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      const newDAO = daoService.addDAO({
+        name: name.trim(),
+        description: description.trim(),
+        participants: 1, // 생성자는 자동으로 첫 번째 참가자
+        category: selectedCategory,
+        isActive: true,
+        collectiveType,
+        inviteCode: collectiveType === 'private' ? inviteCode : undefined,
+        nftInvitation: collectiveType === 'private' ? nftInvitation : undefined,
+        rules
+      });
+
+      console.log('DAO created successfully:', newDAO);
+      
+      // 성공 메시지와 함께 collectives-search 페이지로 이동
+      alert('Collective created successfully!');
+      navigate('/collectives-search');
+    } catch (error) {
+      console.error('Error creating DAO:', error);
+      alert('Failed to create collective. Please try again.');
+    }
   };
+
+  // 카테고리 선택 핸들러
+  const handleCategorySelect = (category: CategoryType | null) => {
+    setSelectedCategory(category);
+  };
+  
+  // 드롭다운 위치 계산 함수
+  const calculateDropdownPosition = () => {
+    if (dropdownButtonRef.current) {
+      const rect = dropdownButtonRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const windowWidth = window.innerWidth;
+      const dropdownHeight = 200; // 예상 드롭다운 높이
+      const dropdownWidth = 250; // 예상 드롭다운 너비
+      
+      // 아래쪽 공간이 부족하면 위쪽에 표시
+      const shouldShowAbove = rect.bottom + dropdownHeight > windowHeight;
+      
+      // 오른쪽 공간이 부족하면 왼쪽으로 조정
+      let left = rect.left;
+      if (left + dropdownWidth > windowWidth) {
+        left = windowWidth - dropdownWidth - 10;
+      }
+      
+      // 왼쪽 경계 체크
+      if (left < 10) {
+        left = 10;
+      }
+      
+      setDropdownPosition({
+        top: shouldShowAbove ? rect.top - dropdownHeight - 8 : rect.bottom + 4,
+        left: left
+      });
+    }
+  };
+
+  // 드롭다운 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.category-dropdown-container')) {
+        setIsCategoryDropdownOpen(false);
+      }
+    };
+
+    const handleResize = () => {
+      if (isCategoryDropdownOpen) {
+        calculateDropdownPosition();
+      }
+    };
+
+    if (isCategoryDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('resize', handleResize);
+      calculateDropdownPosition();
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [isCategoryDropdownOpen]);
 
   return (
     <div className="create-dao-container">
       <header className="page-header">
         <h1 className="page-title">Create Collective</h1>
-        <button className="submit-button" onClick={handleSubmit}>
-          create collective
+        <button 
+          className="submit-button" 
+          onClick={handleSubmit}
+          style={{
+            padding: '16px 32px',
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            color: '#1f2937',
+            border: '1px solid rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+            fontSize: '16px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: '0 2px 12px rgba(0, 0, 0, 0.08)',
+            backdropFilter: 'blur(10px)',
+            fontFamily: 'Space Grotesk, sans-serif',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            textTransform: 'none'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 1)';
+            e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+            e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.12)';
+            e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = '0 2px 12px rgba(0, 0, 0, 0.08)';
+            e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.1)';
+          }}
+        >
+          <span style={{ fontSize: '18px' }}>✨</span>
+          Create Collective
         </button>
       </header>
 
@@ -164,6 +283,140 @@ const CreateDao: React.FC = () => {
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
             />
+          </div>
+
+          {/* 카테고리 선택 섹션 */}
+          <div className="form-group">
+            <label>Category:</label>
+            <div 
+              className="category-dropdown-container"
+              style={{ position: 'relative' }}
+            >
+              <button 
+                ref={dropdownButtonRef}
+                className="category-dropdown-button"
+                onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                style={{
+                  padding: '14px 20px',
+                  backgroundColor: selectedCategory 
+                    ? CATEGORY_COLOR_MAP[selectedCategory].color + '20'
+                    : 'rgba(255, 255, 255, 0.95)',
+                  color: selectedCategory 
+                    ? CATEGORY_COLOR_MAP[selectedCategory].color
+                    : '#6b7280',
+                  border: '1px solid rgba(0, 0, 0, 0.1)',
+                  borderRadius: '12px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  fontFamily: 'Space Grotesk, sans-serif',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                  backdropFilter: 'blur(10px)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = selectedCategory 
+                    ? CATEGORY_COLOR_MAP[selectedCategory].color + '30'
+                    : 'rgba(255, 255, 255, 1)';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = selectedCategory 
+                    ? CATEGORY_COLOR_MAP[selectedCategory].color + '20'
+                    : 'rgba(255, 255, 255, 0.95)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <span>
+                  {selectedCategory 
+                    ? CATEGORY_COLOR_MAP[selectedCategory].name
+                    : 'Select a category'
+                  }
+                </span>
+                <span style={{ 
+                  fontSize: '12px',
+                  transition: 'transform 0.3s ease',
+                  transform: isCategoryDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'
+                }}>
+                  ▼
+                </span>
+              </button>
+              
+              {isCategoryDropdownOpen && (
+                <div 
+                  className="category-dropdown-menu"
+                  style={{
+                    position: 'fixed',
+                    top: `${dropdownPosition.top}px`,
+                    left: `${dropdownPosition.left}px`,
+                    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                    border: '1px solid rgba(0, 0, 0, 0.1)',
+                    borderRadius: '12px',
+                    padding: '8px',
+                    zIndex: 9999,
+                    backdropFilter: 'blur(10px)',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    minWidth: '200px',
+                    width: 'auto',
+                    animation: 'dropdownFadeIn 0.2s ease-out'
+                  }}
+                >
+                  {Object.entries(CATEGORY_COLOR_MAP).map(([key, { name, color }]) => (
+                    <button
+                      key={key}
+                      className="category-option"
+                      onClick={() => {
+                        handleCategorySelect(key as CategoryType);
+                        setIsCategoryDropdownOpen(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        backgroundColor: 'transparent',
+                        color: '#1f2937',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        textAlign: 'left',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        fontFamily: 'Space Grotesk, sans-serif'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = color + '15';
+                        e.currentTarget.style.color = color;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.color = '#1f2937';
+                      }}
+                    >
+                      <div 
+                        style={{
+                          width: '12px',
+                          height: '12px',
+                          borderRadius: '50%',
+                          backgroundColor: color,
+                          flexShrink: 0
+                        }}
+                      />
+                      {name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="form-group">
@@ -216,15 +469,44 @@ const CreateDao: React.FC = () => {
                     onClick={generateNFTInvitation}
                     disabled={isGeneratingNFT}
                     type="button"
+                    style={{
+                      padding: '14px 24px',
+                      backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                      color: '#a855f7',
+                      border: '1px solid rgba(168, 85, 247, 0.2)',
+                      borderRadius: '12px',
+                      fontSize: '15px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      fontFamily: 'Space Grotesk, sans-serif',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      opacity: isGeneratingNFT ? 0.6 : 1
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isGeneratingNFT) {
+                        e.currentTarget.style.backgroundColor = 'rgba(168, 85, 247, 0.15)';
+                        e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                        e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.3)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(168, 85, 247, 0.1)';
+                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                      e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.2)';
+                    }}
                   >
                     {isGeneratingNFT ? (
                       <>
-                        <span className="loading-spinner">⏳</span>
+                        <span style={{ fontSize: '16px', animation: 'spin 1s linear infinite' }}>⏳</span>
                         Generating NFT...
                       </>
                     ) : (
                       <>
-                        🎨 Generate NFT Invitation
+                        <span style={{ fontSize: '16px' }}>🎨</span>
+                        Generate NFT Invitation
                       </>
                     )}
                   </button>
@@ -256,8 +538,37 @@ const CreateDao: React.FC = () => {
                       onClick={generateNFTInvitation}
                       disabled={isGeneratingNFT}
                       type="button"
+                      style={{
+                        padding: '12px 20px',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        color: '#6366f1',
+                        border: '1px solid rgba(99, 102, 241, 0.2)',
+                        borderRadius: '10px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        fontFamily: 'Space Grotesk, sans-serif',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        opacity: isGeneratingNFT ? 0.6 : 1
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isGeneratingNFT) {
+                          e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.15)';
+                          e.currentTarget.style.transform = 'translateY(-1px) scale(1.02)';
+                          e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.3)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.1)';
+                        e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                        e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.2)';
+                      }}
                     >
-                      🔄 Regenerate
+                      <span style={{ fontSize: '14px' }}>🔄</span>
+                      Regenerate
                     </button>
                     <button 
                       className="copy-nft-btn" 
@@ -276,8 +587,34 @@ const CreateDao: React.FC = () => {
                           }
                         }
                       }}
+                      style={{
+                        padding: '12px 20px',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        color: '#22c55e',
+                        border: '1px solid rgba(34, 197, 94, 0.2)',
+                        borderRadius: '10px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        fontFamily: 'Space Grotesk, sans-serif',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(34, 197, 94, 0.15)';
+                        e.currentTarget.style.transform = 'translateY(-1px) scale(1.02)';
+                        e.currentTarget.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
+                        e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                        e.currentTarget.style.borderColor = 'rgba(34, 197, 94, 0.2)';
+                      }}
                     >
-                      📋 Copy Token ID
+                      <span style={{ fontSize: '14px' }}>📋</span>
+                      Copy Token ID
                     </button>
                   </div>
                   <p className="nft-usage-note">

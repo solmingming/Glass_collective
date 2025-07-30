@@ -103,10 +103,16 @@
 
 .proposal-timestamp,
 .proposal-summary,
-.proposal-time-left {
+.proposal-time-left,
+.proposal-amount {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.proposal-amount {
+  color: #3cb371;
+  font-weight: 500;
 }
 
 .proposal-actions {

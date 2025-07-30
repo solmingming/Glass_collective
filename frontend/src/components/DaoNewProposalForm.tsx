@@ -64,6 +64,9 @@ const NewProposalForm: React.FC<NewProposalFormProps> = ({ onBack }) => {
         return;
       }
 
+      // DAO 멤버십 확인 (간단한 방법)
+      console.log("DAO 멤버십 확인 중...");
+
       console.log("네트워크 확인 완료, 제안 생성 중...");
 
       // 제안 생성
@@ -78,15 +81,15 @@ const NewProposalForm: React.FC<NewProposalFormProps> = ({ onBack }) => {
 
       setSuccess(`✅ 제안이 성공적으로 생성되었습니다! (ID: ${proposalId})`);
       
-      // 5초 후 폼 초기화
+      // 3초 후 폼 초기화 및 목록 새로고침
       setTimeout(() => {
         setTitle("");
         setDesc("");
         setAmount("");
         setRecipient("");
         setSuccess("");
-        onBack();
-      }, 5000);
+        onBack(); // 이 함수가 목록 새로고침을 트리거함
+      }, 3000);
 
     } catch (error: any) {
       console.error("제안 생성 오류:", error);

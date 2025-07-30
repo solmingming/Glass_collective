@@ -1,34 +1,25 @@
 import { ethers } from 'ethers';
 
-// ABI 파일들 import
-import GovernanceTokenABI from '../contracts/GovernanceToken.sol/GovernanceToken.json';
-import EnhancedProposalABI from '../contracts/EnhancedProposal.sol/EnhancedProposal.json';
-import VotingABI from '../contracts/Voting.sol/Voting.json';
+// ABI 파일들 import (현재 배포된 컨트랙트들)
+import DAOABI from '../contracts/DAO.sol/DAO.json';
+import ProposalABI from '../contracts/Proposal.sol/Proposal.json';
 import ExecutionABI from '../contracts/Execution.sol/Execution.json';
 import VaultABI from '../contracts/Vault.sol/Vault.json';
-import AutoExecutionABI from '../contracts/AutoExecution.sol/AutoExecution.json';
-import CorruptionMonitorABI from '../contracts/CorruptionMonitor.sol/CorruptionMonitor.json';
 
 // 컨트랙트 ABI 타입 정의
 export interface ContractABIs {
-  GovernanceToken: any[];
-  EnhancedProposal: any[];
-  Voting: any[];
+  DAO: any[];
+  Proposal: any[];
   Execution: any[];
   Vault: any[];
-  AutoExecution: any[];
-  CorruptionMonitor: any[];
 }
 
 // 컨트랙트 주소 타입 정의
 export interface ContractAddresses {
-  GovernanceToken: string;
-  EnhancedProposal: string;
-  Voting: string;
+  DAO: string;
+  Proposal: string;
   Execution: string;
   Vault: string;
-  AutoExecution: string;
-  CorruptionMonitor: string;
 }
 
 // 네트워크 설정
@@ -41,45 +32,55 @@ export const NETWORKS = {
   SEPOLIA: {
     chainId: 11155111,
     name: 'Sepolia Testnet',
-    rpcUrl: 'https://sepolia.infura.io/v3/YOUR_PROJECT_ID'
+    rpcUrl: 'https://eth-sepolia.g.alchemy.com/v2/JwmYsRJLt8dFHUIWtNARe'
   }
 };
 
-// 기본 컨트랙트 주소 (배포 후 업데이트 필요)
-const DEFAULT_ADDRESSES: ContractAddresses = {
-  GovernanceToken: '0x...', // 배포 후 실제 주소로 변경
-  EnhancedProposal: '0x...',
-  Voting: '0x...',
-  Execution: '0x...',
-  Vault: '0x...',
-  AutoExecution: '0x...',
-  CorruptionMonitor: '0x...'
+// Sepolia에 배포된 컨트랙트 주소
+const SEPOLIA_ADDRESSES: ContractAddresses = {
+  DAO: '0x93D43C2b4DA4Ce841125276a5FC3d447846f5a62',
+  Proposal: '0x3b252B33A7596d116420F54A987012097afaf2F1',
+  Execution: '0x8E04122a1254477053Ca60a445aCd2a60F887ed3',
+  Vault: '0x3fBa889931249C2AA907633da210429dC48F9515'
 };
 
-// 컨트랙트 ABI (실제 ABI 사용)
+// 기본 컨트랙트 주소 (로컬 개발용)
+const DEFAULT_ADDRESSES: ContractAddresses = {
+  DAO: '0x0000000000000000000000000000000000000000', // 로컬 배포 시 실제 주소로 변경
+  Proposal: '0x0000000000000000000000000000000000000000',
+  Execution: '0x0000000000000000000000000000000000000000',
+  Vault: '0x0000000000000000000000000000000000000000'
+};
+
+// 컨트랙트 ABI
 const CONTRACT_ABIS: ContractABIs = {
-  GovernanceToken: GovernanceTokenABI.abi,
-  EnhancedProposal: EnhancedProposalABI.abi,
-  Voting: VotingABI.abi,
+  DAO: DAOABI.abi,
+  Proposal: ProposalABI.abi,
   Execution: ExecutionABI.abi,
-  Vault: VaultABI.abi,
-  AutoExecution: AutoExecutionABI.abi,
-  CorruptionMonitor: CorruptionMonitorABI.abi
+  Vault: VaultABI.abi
 };
 
 class ContractService {
-  private provider: ethers.Provider | null = null;
+  private provider: ethers.BrowserProvider | ethers.JsonRpcProvider | null = null;
   private signer: ethers.Signer | null = null;
   private contracts: any = {};
+  private currentNetwork: 'localhost' | 'sepolia' = 'localhost';
 
   // Provider 초기화
   async initializeProvider() {
     if (typeof window !== 'undefined' && window.ethereum) {
       this.provider = new ethers.BrowserProvider(window.ethereum);
       this.signer = await this.provider.getSigner();
+      
+      // 네트워크 확인
+      const network = await this.provider.getNetwork();
+      if (network.chainId === BigInt(11155111)) {
+        this.currentNetwork = 'sepolia';
+      }
     } else {
       // 로컬 네트워크 연결
       this.provider = new ethers.JsonRpcProvider(NETWORKS.LOCALHOST.rpcUrl);
+      this.signer = await this.provider.getSigner();
     }
   }
 
@@ -89,22 +90,26 @@ class ContractService {
       await this.initializeProvider();
     }
 
-    const contractAddress = address || DEFAULT_ADDRESSES[contractName];
-    const abi = CONTRACT_ABIS[contractName];
+    // Sepolia 네트워크인지 확인
+    if (this.currentNetwork === 'sepolia') {
+      const contractAddress = address || SEPOLIA_ADDRESSES[contractName];
+      const abi = CONTRACT_ABIS[contractName];
 
-    if (!this.signer) {
-      throw new Error('지갑이 연결되지 않았습니다.');
+      if (!this.signer) {
+        throw new Error('지갑이 연결되지 않았습니다.');
+      }
+
+      return new ethers.Contract(contractAddress, abi, this.signer);
+    } else {
+      throw new Error('Sepolia 네트워크에 연결해주세요.');
     }
-
-    return new ethers.Contract(contractAddress, abi, this.signer);
   }
 
   // 지갑 연결
   async connectWallet(): Promise<string> {
     if (typeof window !== 'undefined' && window.ethereum) {
-      const accounts = await window.ethereum.request({
-        method: 'eth_requestAccounts'
-      });
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      await this.initializeProvider();
       return accounts[0];
     }
     throw new Error('MetaMask가 설치되지 않았습니다.');
@@ -112,119 +117,132 @@ class ContractService {
 
   // 네트워크 확인
   async checkNetwork(): Promise<boolean> {
-    if (!this.provider) return false;
+    if (!this.provider) {
+      await this.initializeProvider();
+    }
     
-    const network = await this.provider.getNetwork();
-    const expectedChainId = NETWORKS.LOCALHOST.chainId; // 또는 SEPOLIA
-    
-    return network.chainId === BigInt(expectedChainId);
+    const network = await this.provider!.getNetwork();
+    return network.chainId === BigInt(11155111); // Sepolia
   }
 
-  // GovernanceToken 관련 함수들
-  async getTokenBalance(address: string): Promise<string> {
-    const contract = await this.createContractInstance('GovernanceToken');
-    const balance = await contract.balanceOf(address);
-    return ethers.formatEther(balance);
+  // DAO 관련 함수들
+  async joinDAO(): Promise<void> {
+    const daoContract = await this.createContractInstance('DAO');
+    const entryFee = await daoContract.entryFee();
+    await daoContract.joinDAO({ value: entryFee });
   }
 
-  async getStakedBalance(address: string): Promise<string> {
-    const contract = await this.createContractInstance('GovernanceToken');
-    const balance = await contract.stakedBalanceOf(address);
-    return ethers.formatEther(balance);
-  }
-
-  async getVotingPower(address: string): Promise<string> {
-    const contract = await this.createContractInstance('GovernanceToken');
-    const power = await contract.getVotingPower(address);
-    return ethers.formatEther(power);
-  }
-
-  async stake(amount: string): Promise<void> {
-    const contract = await this.createContractInstance('GovernanceToken');
-    const amountWei = ethers.parseEther(amount);
-    const tx = await contract.stake(amountWei);
-    await tx.wait();
-  }
-
-  async unstake(amount: string): Promise<void> {
-    const contract = await this.createContractInstance('GovernanceToken');
-    const amountWei = ethers.parseEther(amount);
-    const tx = await contract.unstake(amountWei);
-    await tx.wait();
-  }
-
-  // EnhancedProposal 관련 함수들
   async createProposal(
     title: string,
     description: string,
     amount: string,
     recipient: string,
-    category: number
+    requireVote: boolean = true,
+    sanctionType: string = '',
+    beforeValue: number = 0,
+    afterValue: number = 0,
+    targetMember: string = '0x0000000000000000000000000000000000000000'
   ): Promise<number> {
-    const contract = await this.createContractInstance('EnhancedProposal');
-    const amountWei = ethers.parseEther(amount);
-    const tx = await contract.createProposal(title, description, amountWei, recipient, category);
-    const receipt = await tx.wait();
-    
-    // 이벤트에서 proposalId 추출
-    const event = receipt.logs.find((log: any) => 
-      log.eventName === 'ProposalCreated'
-    );
-    return event?.args?.proposalId || 0;
+    try {
+      const daoContract = await this.createContractInstance('DAO');
+      
+      console.log('제안 생성 시작:', {
+        title,
+        description,
+        amount,
+        recipient,
+        requireVote,
+        sanctionType
+      });
+
+      // 트랜잭션 실행
+      const tx = await daoContract.createProposal(
+        title,
+        description,
+        ethers.parseEther(amount),
+        recipient,
+        requireVote,
+        sanctionType,
+        beforeValue,
+        afterValue,
+        targetMember
+      );
+
+      console.log('트랜잭션 전송됨:', tx.hash);
+
+      // 트랜잭션 완료 대기
+      const receipt = await tx.wait();
+      
+      console.log('트랜잭션 완료:', {
+        hash: receipt.hash,
+        blockNumber: receipt.blockNumber,
+        gasUsed: receipt.gasUsed.toString()
+      });
+
+      // 제안 ID 추출 - 트랜잭션 해시 기반으로 임시 ID 생성
+      const proposalId = Date.now(); // 임시 ID (실제로는 이벤트에서 추출해야 함)
+
+      console.log('제안 생성 완료, ID:', proposalId);
+      return proposalId;
+
+    } catch (error: any) {
+      console.error('제안 생성 오류:', error);
+      
+      // 구체적인 에러 메시지 추출
+      if (error.reason) {
+        throw new Error(`제안 생성 실패: ${error.reason}`);
+      } else if (error.message) {
+        throw new Error(`제안 생성 실패: ${error.message}`);
+      } else {
+        throw new Error('제안 생성 중 알 수 없는 오류가 발생했습니다.');
+      }
+    }
   }
 
-  async getProposal(proposalId: number): Promise<any> {
-    const contract = await this.createContractInstance('EnhancedProposal');
-    return await contract.getProposal(proposalId);
+  async vote(proposalId: number, choice: number): Promise<void> {
+    const daoContract = await this.createContractInstance('DAO');
+    await daoContract.vote(proposalId, choice);
   }
 
-  async getProposalsByCategory(category: number): Promise<any[]> {
-    const contract = await this.createContractInstance('EnhancedProposal');
-    return await contract.getProposalsByCategory(category);
-  }
-
-  // Voting 관련 함수들
-  async vote(proposalId: number, support: boolean): Promise<void> {
-    const contract = await this.createContractInstance('Voting');
-    const tx = await contract.vote(proposalId, support);
-    await tx.wait();
-  }
-
-  async getVotes(proposalId: number): Promise<[string, string]> {
-    const contract = await this.createContractInstance('Voting');
-    return await contract.getVotes(proposalId);
+  async finalizeProposal(proposalId: number): Promise<void> {
+    const daoContract = await this.createContractInstance('DAO');
+    await daoContract.finalizeProposal(proposalId);
   }
 
   // Vault 관련 함수들
   async getVaultBalance(): Promise<string> {
-    const contract = await this.createContractInstance('Vault');
-    const balance = await contract.getBalance();
+    const vaultContract = await this.createContractInstance('Vault');
+    const balance = await vaultContract.getBalance();
     return ethers.formatEther(balance);
   }
 
   async depositToVault(amount: string): Promise<void> {
-    const contract = await this.createContractInstance('Vault');
-    const amountWei = ethers.parseEther(amount);
-    const tx = await contract.deposit({ value: amountWei });
-    await tx.wait();
+    const vaultContract = await this.createContractInstance('Vault');
+    await vaultContract.receive({ value: ethers.parseEther(amount) });
   }
 
-  // CorruptionMonitor 관련 함수들
-  async getCorruptionIndex(): Promise<number> {
-    const contract = await this.createContractInstance('CorruptionMonitor');
-    return await contract.getCorruptionIndex();
+  // Proposal 관련 함수들
+  async getProposal(proposalId: number): Promise<any> {
+    const proposalContract = await this.createContractInstance('Proposal');
+    return await proposalContract.getProposal(proposalId);
   }
 
-  async updateMetrics(
-    transparencyScore: number,
-    participationRate: number,
-    proposalSuccessRate: number
-  ): Promise<void> {
-    const contract = await this.createContractInstance('CorruptionMonitor');
-    const tx = await contract.updateMetrics(transparencyScore, participationRate, proposalSuccessRate);
-    await tx.wait();
+  async getAllProposals(): Promise<any[]> {
+    const proposalContract = await this.createContractInstance('Proposal');
+    // 구현 필요 - Proposal 컨트랙트에 getAllProposals 함수 추가 필요
+    return [];
+  }
+
+  // Glass Score 관련 함수들
+  async getGlassScore(address: string): Promise<number> {
+    const proposalContract = await this.createContractInstance('Proposal');
+    return await proposalContract.getGlassScore(address);
+  }
+
+  async getAllMembers(): Promise<string[]> {
+    const proposalContract = await this.createContractInstance('Proposal');
+    return await proposalContract.getAllMembers();
   }
 }
 
-export const contractService = new ContractService();
-export default contractService; 
+export default new ContractService(); 

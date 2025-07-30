@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./../styles/DaoProposal.css";
 import NewProposalForm from "./DaoNewProposalForm";
+import contractService from "../services/contractService";
 
 const dummyProposals = [
   {
@@ -48,11 +49,46 @@ const proposalDetails: { [key: string]: { description: string } } = {
 const DaoProposal: React.FC = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [showNewProposal, setShowNewProposal] = useState(false);
+  const [proposals, setProposals] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSelect = (id: number) => setSelectedId(id);
   const handleBack = () => setSelectedId(null);
   const handleNewProposal = () => setShowNewProposal(true);
-  const handleCloseNewProposal = () => setShowNewProposal(false);
+  const handleCloseNewProposal = () => {
+    setShowNewProposal(false);
+    // 새 제안 생성 후 목록 새로고침
+    loadProposals();
+  };
+
+  const loadProposals = async () => {
+    setIsLoading(true);
+    setError("");
+    
+    try {
+      // 네트워크 확인
+      const isCorrectNetwork = await contractService.checkNetwork();
+      if (!isCorrectNetwork) {
+        setError("Sepolia 네트워크에 연결해주세요.");
+        return;
+      }
+
+      // 실제 제안 목록 가져오기 (현재는 더미 데이터 사용)
+      // TODO: getAllProposals 함수 구현 후 실제 데이터 사용
+      setProposals(dummyProposals);
+      
+    } catch (error: any) {
+      console.error("제안 목록 로드 오류:", error);
+      setError(error.message || "제안 목록을 불러오는 중 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProposals();
+  }, []);
 
   return (
     <div className="dao-proposal-container">
@@ -67,21 +103,29 @@ const DaoProposal: React.FC = () => {
           </div>
           {selectedId === null ? (
             <div className="proposal-list">
-              {dummyProposals.map((proposal) => (
-                <div
-                  className="proposal-card"
-                  key={proposal.id}
-                  onClick={() => handleSelect(proposal.id)}
-                >
-                  <div className="proposal-emoji">{proposal.emoji}</div>
-                  <div className="proposal-title">{proposal.title}</div>
-                  <div className="proposal-actions">
-                    <span className="action-yes">✔️</span>
-                    <span className="action-neutral">➖</span>
-                    <span className="action-no">❌</span>
+              {isLoading ? (
+                <div className="loading-message">제안 목록을 불러오는 중...</div>
+              ) : error ? (
+                <div className="error-message">{error}</div>
+              ) : proposals.length === 0 ? (
+                <div className="empty-message">아직 제안이 없습니다. 첫 번째 제안을 만들어보세요!</div>
+              ) : (
+                proposals.map((proposal) => (
+                  <div
+                    className="proposal-card"
+                    key={proposal.id}
+                    onClick={() => handleSelect(proposal.id)}
+                  >
+                    <div className="proposal-emoji">{proposal.emoji}</div>
+                    <div className="proposal-title">{proposal.title}</div>
+                    <div className="proposal-actions">
+                      <span className="action-yes">✔️</span>
+                      <span className="action-neutral">➖</span>
+                      <span className="action-no">❌</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           ) : (
             <div className="proposal-detail-card">

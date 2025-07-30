@@ -15,7 +15,7 @@ contract DAO {
     uint256 public absentPenalty = 0.001 ether;
     uint256 public countToExpel = 5;
     uint256 public scoreToExpel = 20;
-    uint256 public entryFee = 0.05 ether;
+    uint256 public entryFee = 0 ether;
 
     mapping(uint256 => uint256) public proposalDeadline;
     mapping(uint256 => bool) public proposalExecuted;

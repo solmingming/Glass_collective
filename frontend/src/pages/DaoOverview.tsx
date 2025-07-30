@@ -1,19 +1,54 @@
 import React, { useState, useEffect } from "react";
 import GlassScore from "../components/GlassScore";
+import contractService from "../services/contractService";
 import "../styles/DaoOverview.css";
 
 const DaoOverview: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [showJoinButton, setShowJoinButton] = useState(true); // Join 버튼 표시 여부
+  const [showJoinButton, setShowJoinButton] = useState(true);
+  const [walletAddress, setWalletAddress] = useState<string>("");
+  const [isConnected, setIsConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     setIsLoaded(true);
   }, []);
 
-  const handleJoinClick = () => {
-    // Join 버튼 클릭 시 로직
-    console.log("Join button clicked!");
-    // 여기에 실제 join 로직 추가
+  const connectWallet = async () => {
+    try {
+      setIsLoading(true);
+      setError("");
+      const address = await contractService.connectWallet();
+      setWalletAddress(address);
+      setIsConnected(true);
+      console.log("지갑 연결됨:", address);
+    } catch (err) {
+      setError("지갑 연결에 실패했습니다.");
+      console.error("지갑 연결 오류:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleJoinClick = async () => {
+    if (!isConnected) {
+      setError("먼저 지갑을 연결해주세요.");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError("");
+      await contractService.joinDAO();
+      setShowJoinButton(false);
+      console.log("DAO 가입 완료!");
+    } catch (err) {
+      setError("DAO 가입에 실패했습니다.");
+      console.error("DAO 가입 오류:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -41,10 +76,40 @@ const DaoOverview: React.FC = () => {
         {/* Join 버튼 - 우측 상단 */}
         {showJoinButton && (
           <div className="join-section-top">
-            <button className="join-btn" onClick={handleJoinClick}>
-              <span className="join-icon">+</span>
-              <span className="join-text">Join</span>
-            </button>
+            {!isConnected ? (
+              <button className="join-btn" onClick={connectWallet} disabled={isLoading}>
+                <span className="join-icon">🔗</span>
+                <span className="join-text">{isLoading ? "연결 중..." : "지갑 연결"}</span>
+              </button>
+            ) : (
+              <button className="join-btn" onClick={handleJoinClick} disabled={isLoading}>
+                <span className="join-icon">+</span>
+                <span className="join-text">{isLoading ? "가입 중..." : "Join"}</span>
+              </button>
+            )}
+          </div>
+        )}
+        
+        {/* 지갑 주소 표시 */}
+        {isConnected && (
+          <div className="wallet-info">
+            <span className="wallet-address">
+              {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+            </span>
+          </div>
+        )}
+        
+        {/* 에러 메시지 */}
+        {error && (
+          <div className="error-message">
+            {error}
+          </div>
+        )}
+        
+        {/* 성공 메시지 */}
+        {isConnected && !error && (
+          <div className="success-message">
+            ✅ DAO 멤버로 연결되었습니다!
           </div>
         )}
       </div>

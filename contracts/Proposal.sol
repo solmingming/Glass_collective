@@ -38,14 +38,29 @@ contract Proposal is AccessControl {
     event Voted(uint256 indexed proposalId, address indexed voter, uint8 choice);
     event GlassScoreChanged(address indexed member, uint256 newScore);
 
-    constructor(address admin){
-        _grantRole(DEFAULT_ADMIN_ROLE, admin);
-        _grantRole(MEMBER_ROLE, admin);
+    constructor(address initialAdmin, address factoryAddress){
+        _grantRole(DEFAULT_ADMIN_ROLE, initialAdmin);
+
+        if (factoryAddress != address(0)) {
+            _grantRole(DEFAULT_ADMIN_ROLE, factoryAddress);
+        }
+        
+        super.grantRole(MEMBER_ROLE, initialAdmin);
+        members.push(initialAdmin);
+        isMember[initialAdmin] = true;
+        glassScore[initialAdmin] = 50;
+        emit GlassScoreChanged(initialAdmin, 50);
+
+
         _setRoleAdmin(MEMBER_ROLE, DAO_ROLE);
-        members.push(admin);
-        isMember[admin] = true;
-        glassScore[admin] = 50;
     }
+
+    function renounceFactoryAdminRole() external {
+        // DEFAULT_ADMIN_ROLE의 관리자는 자기 자신(DEFAULT_ADMIN_ROLE)입니다.
+        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Caller is not an admin");
+        renounceRole(DEFAULT_ADMIN_ROLE, _msgSender());
+    }
+
     
     function setDaoAddress(address _dao) external onlyRole(DEFAULT_ADMIN_ROLE) {
         daoAddress = _dao;

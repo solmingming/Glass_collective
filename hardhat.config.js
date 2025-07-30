@@ -8,7 +8,16 @@ module.exports = {
       viaIR: true,
       optimizer: {
         enabled: true,
-        runs: 200
+        runs: 1
+      },
+      evmVersion: "paris",
+      outputSelection: {
+        "*": {
+          "*": ["evm.bytecode", "evm.deployedBytecode", "abi"]
+        }
+      },
+      metadata: {
+        bytecodeHash: "none"
       }
     }
   },

@@ -1,20 +1,11 @@
 import React, { useState, useEffect, useRef, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createNewNft, generateInviteCode, type NftData } from '../utils/nftUtils';
+import { contractService, type DAOCreationData, type RuleSettings } from '../services/contractService'; 
 import { CATEGORY_COLOR_MAP, type CategoryType } from '../utils/categoryConstants';
-import { daoService } from '../services/daoService';
 import '../styles/CreateDAO.css';
 import '../styles/ArcColorChips.css';
-import ArcColorChips from './ArcColorChips';
 
-// 각 규칙의 상태를 관리하기 위한 타입 정의
-interface RuleSettings {
-  threshold: number;
-  votingDuration: number;
-  maxKickCount: number;
-  entryFee: number;
-  penaltyFee: number;
-}
 
 // 클라우드 업로드 아이콘 SVG 컴포넌트
 const UploadIcon: React.FC = () => (
@@ -33,10 +24,24 @@ const CreateDao: React.FC = () => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<CategoryType | null>(null);
-  const [collectiveType, setCollectiveType] = useState<'public' | 'private'>('public');
   const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  const [collectiveType, setCollectiveType] = useState<'public' | 'private'>('public');
   const [inviteCode, setInviteCode] = useState<string>('');
-  
+  const [rules, setRules] = useState<RuleSettings>({
+    threshold: 50,
+    votingDuration: 7,
+    entryFee: 0.05,
+    penaltyFee: 0.001,
+    countToExpel: 5,
+    scoreToExpel: 20
+  });
+
+  //블록체인 연동을 위한 새로운 상태 추가 (로딩, 에러, 지갑 주소 관리리)
+  const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+
   // NFT 초대장 관련 상태
   const [nftInvitation, setNftInvitation] = useState<NftData | null>(null);
   const [isGeneratingNFT, setIsGeneratingNFT] = useState(false);
@@ -46,14 +51,21 @@ const CreateDao: React.FC = () => {
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const dropdownButtonRef = useRef<HTMLButtonElement>(null);
 
-  // 규칙 설정 상태
-  const [rules, setRules] = useState<RuleSettings>({
-    threshold: 50,
-    votingDuration: 7,
-    maxKickCount: 5,
-    entryFee: 1,
-    penaltyFee: 5,
-  });
+  
+  // *** 지갑 자동 연결을 위한 useEffect 추가 ***
+  // 페이지가 로드될 때 자동으로 MetaMask 지갑 연결을 시도합니다.
+  useEffect(() => {
+    const connectWalletOnLoad = async () => {
+      try {
+        const address = await contractService.connectWallet();
+        setWalletAddress(address);
+      } catch (e: any) {
+        setError("Please connect your MetaMask wallet to continue.");
+      }
+    };
+    connectWalletOnLoad();
+  }, []); // 빈 배열을 전달하여 컴포넌트 마운트 시 한 번만 실행되도록 합니다.
+
 
   // 랜덤 NFT 초대장 생성 함수
   const generateNFTInvitation = async () => {
@@ -110,33 +122,49 @@ const CreateDao: React.FC = () => {
   };
 
   // 최종 "Create Collective" 버튼 클릭 핸들러
-  const handleSubmit = () => {
+  const handleSubmit = async() => {
+    console.log("Create Collective button clicked!");
+    console.log("Form data:", { name, description, selectedCategory, walletAddress });
+    
     if (!name.trim() || !description.trim() || !selectedCategory) {
-      alert('Please fill in all required fields');
+      console.log("Validation failed: missing required fields");
+      setError('Please fill in all required fields.'); 
       return;
     }
 
+    if (!walletAddress) {
+      console.log("Validation failed: wallet not connected");
+      setError('Please connect your wallet first.'); 
+      return;
+    }
+
+    console.log("Validation passed, starting DAO creation...");
+    
+    // 로딩 상태 시작 및 에러 메시지 초기화
+    setIsCreating(true);
+    setError(null);
+
     try {
-      const newDAO = daoService.addDAO({
+      const newDAOData: DAOCreationData = {
         name: name.trim(),
         description: description.trim(),
-        participants: 1, // 생성자는 자동으로 첫 번째 참가자
-        category: selectedCategory,
-        isActive: true,
-        collectiveType,
-        inviteCode: collectiveType === 'private' ? inviteCode : undefined,
-        nftInvitation: collectiveType === 'private' ? nftInvitation : undefined,
-        rules
-      });
+        category: selectedCategory!,
+        collectiveType: collectiveType,
+        inviteCode: inviteCode,
+        rules: rules,
+      };
 
-      console.log('DAO created successfully:', newDAO);
-      
-      // 성공 메시지와 함께 collectives-search 페이지로 이동
-      alert('Collective created successfully!');
+      console.log("Calling contractService.createDAO with data:", newDAOData);
+      const daoAddress = await contractService.createDAO(newDAOData);
+      console.log("DAO created successfully! Address:", daoAddress);
+      alert(`Collective created successfully!\nDAO Address: ${daoAddress}`);
       navigate('/collectives-search');
-    } catch (error) {
-      console.error('Error creating DAO:', error);
-      alert('Failed to create collective. Please try again.');
+
+    } catch (e: any) {
+      console.error("Error creating DAO:", e);
+      setError(e.message || 'Failed to create collective.');
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -206,9 +234,27 @@ const CreateDao: React.FC = () => {
     <div className="create-dao-container">
       <header className="page-header">
         <h1 className="page-title">Create Collective</h1>
+        
+        {/* 에러 메시지 표시 */}
+        {error && (
+          <div style={{
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            color: '#dc2626',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            marginBottom: '16px',
+            border: '1px solid rgba(239, 68, 68, 0.2)',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}>
+            {error}
+          </div>
+        )}
+        
         <button 
           className="submit-button" 
           onClick={handleSubmit}
+          disabled={isCreating}
           style={{
             padding: '16px 32px',
             backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -241,7 +287,7 @@ const CreateDao: React.FC = () => {
           }}
         >
           <span style={{ fontSize: '18px' }}>✨</span>
-          Create Collective
+          {isCreating ? 'Creating...' : 'Create Collective'}
         </button>
       </header>
 
@@ -648,10 +694,18 @@ const CreateDao: React.FC = () => {
 
           <div className="rule-setting">
             <div className="rule-label">
-              <span>Max Kick Count</span>
-              <span>{rules.maxKickCount} times</span>
+              <span>Count to Expel</span>
+              <span>{rules.countToExpel} times</span>
             </div>
-            <input type="range" name="maxKickCount" min="1" max="20" value={rules.maxKickCount} onChange={handleRuleChange} />
+            <input type="range" name="countToExpel" min="1" max="20" value={rules.countToExpel} onChange={handleRuleChange} />
+          </div>
+
+          <div className="rule-setting">
+            <div className="rule-label">
+              <span>Score to Expel</span>
+              <span>{rules.scoreToExpel} times</span>
+            </div>
+            <input type="range" name="scoreToExpel" min="1" max="50" value={rules.scoreToExpel} onChange={handleRuleChange} />
           </div>
 
           <div className="rule-setting">

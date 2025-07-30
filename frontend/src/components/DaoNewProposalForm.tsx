@@ -1,116 +1,79 @@
 import React, { useState } from "react";
+import { useParams } from "react-router-dom";
 import "./../styles/DaoNewProposalForm.css";
-import contractService from "../services/contractService";
+import { contractService, type ProposalCreationData, type ProposalType } from "../services/contractService";
+import { ethers } from "ethers";
 
 interface NewProposalFormProps {
+  onProposalCreated: () => void;
   onBack: () => void;
 }
 
-const NewProposalForm: React.FC<NewProposalFormProps> = ({ onBack }) => {
+const NewProposalForm: React.FC<NewProposalFormProps> = ({ onProposalCreated, onBack }) => {
+  const { id: daoAddress } = useParams<{ id: string }>();
+
+  // --- *** 1. MODIFIED: 상태 변수 수정 *** ---
+  const [proposalType, setProposalType] = useState<ProposalType | null>(null); // 초기값 null
   const [title, setTitle] = useState("");
-  const [desc, setDesc] = useState("");
+  const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [recipient, setRecipient] = useState("");
+  const [ruleToChange, setRuleToChange] = useState("passCriteria");
+  const [newValue, setNewValue] = useState("");
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   const handleCreateProposal = async () => {
-    // 입력 유효성 검사
-    if (!title.trim()) {
-      setError("제목을 입력해주세요.");
-      return;
+    if (!daoAddress) { setError("DAO address not found."); return; }
+    
+    // --- *** 2. MODIFIED: 라디오 버튼 선택 여부 및 종류별 유효성 검사 강화 *** ---
+    if (!proposalType) {
+      setError("Please select a proposal type."); return;
+    }
+    setError("");
+
+    let validationError = "";
+    switch (proposalType) {
+      case 'treasury-in':
+        if (!title.trim() || !description.trim() || !amount.trim()) 
+          validationError = "Please fill in title, description, and amount.";
+        break;
+      case 'treasury-out':
+        if (!title.trim() || !description.trim() || !amount.trim() || !recipient.trim()) 
+          validationError = "Please fill in all fields for the payout.";
+        if (!ethers.isAddress(recipient)) 
+          validationError = "Invalid recipient address.";
+        break;
+      case 'rule-change':
+        if (!description.trim() || !newValue.trim()) 
+          validationError = "Please provide a description and a new value.";
+        break;
     }
 
-    if (!desc.trim()) {
-      setError("설명을 입력해주세요.");
-      return;
-    }
-
-    if (!amount.trim()) {
-      setError("금액을 입력해주세요.");
-      return;
-    }
-
-    if (!recipient.trim()) {
-      setError("수신자 주소를 입력해주세요.");
-      return;
-    }
-
-    // 금액 형식 검사
-    const amountValue = parseFloat(amount);
-    if (isNaN(amountValue) || amountValue <= 0) {
-      setError("올바른 금액을 입력해주세요.");
-      return;
-    }
-
-    // 주소 형식 검사
-    if (!recipient.startsWith('0x') || recipient.length !== 42) {
-      setError("올바른 이더리움 주소를 입력해주세요.");
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
     setIsLoading(true);
-    setError("");
     setSuccess("");
+    
+    const proposalData: ProposalCreationData = {
+      daoAddress, title, description, proposalType,
+      amount: (proposalType === 'treasury-in' || proposalType === 'treasury-out') ? amount : undefined,
+      recipient: proposalType === 'treasury-out' ? recipient : undefined,
+      ruleToChange: proposalType === 'rule-change' ? ruleToChange : undefined,
+      newValue: proposalType === 'rule-change' ? Number(newValue) : undefined,
+    };
 
     try {
-      console.log("제안 생성 시작...");
-      
-      // 네트워크 확인
-      const isCorrectNetwork = await contractService.checkNetwork();
-      if (!isCorrectNetwork) {
-        setError("Sepolia 네트워크에 연결해주세요.");
-        return;
-      }
-
-      // DAO 멤버십 확인 (간단한 방법)
-      console.log("DAO 멤버십 확인 중...");
-
-      console.log("네트워크 확인 완료, 제안 생성 중...");
-
-      // 제안 생성
-      const proposalId = await contractService.createProposal(
-        title,
-        desc,
-        amount,
-        recipient,
-        1 // category (기본값: 1)
-      );
-
-      console.log("제안 생성 완료:", proposalId);
-
-      setSuccess(`✅ 제안이 성공적으로 생성되었습니다! (ID: ${proposalId})`);
-      
-      // 3초 후 폼 초기화 및 목록 새로고침
-      setTimeout(() => {
-        setTitle("");
-        setDesc("");
-        setAmount("");
-        setRecipient("");
-        setSuccess("");
-        onBack(); // 이 함수가 목록 새로고침을 트리거함
-      }, 3000);
-
-    } catch (error: any) {
-      console.error("제안 생성 오류:", error);
-      
-      // 구체적인 에러 메시지 처리
-      let errorMessage = "제안 생성 중 오류가 발생했습니다.";
-      
-      if (error.message) {
-        if (error.message.includes("DAO: Caller is not a member")) {
-          errorMessage = "DAO 멤버만 제안을 생성할 수 있습니다.";
-        } else if (error.message.includes("Sepolia")) {
-          errorMessage = "Sepolia 네트워크에 연결해주세요.";
-        } else if (error.message.includes("insufficient funds")) {
-          errorMessage = "가스비가 부족합니다. 지갑에 ETH를 충전해주세요.";
-        } else {
-          errorMessage = error.message;
-        }
-      }
-      
-      setError(errorMessage);
+      await contractService.createProposal(proposalData);
+      setSuccess("✅ Proposal created successfully!");
+      setTimeout(() => onProposalCreated(), 2000);
+    } catch (err: any) {
+      setError(err.message || "An error occurred while creating proposal.");
     } finally {
       setIsLoading(false);
     }
@@ -118,88 +81,85 @@ const NewProposalForm: React.FC<NewProposalFormProps> = ({ onBack }) => {
 
   return (
     <div className="new-proposal-container">
-      <div className="new-proposal-main">
-        <div className="new-proposal-header">
-          <button className="back-btn" onClick={onBack}>←</button>
-          <h2>New Proposals</h2>
-          <button 
-            className="publish-btn" 
-            onClick={handleCreateProposal}
-            disabled={isLoading}
-          >
-            {isLoading ? "Creating..." : "Publish ➤"}
-          </button>
+      <div className="new-proposal-header">
+        <button className="back-btn" onClick={onBack}>← Back</button>
+        <h2>Create New Proposal</h2>
+        <button className="publish-btn" onClick={handleCreateProposal} disabled={isLoading || !proposalType}>
+          {isLoading ? "Publishing..." : "Publish ➤"}
+        </button>
+      </div>
+      
+      {/* --- *** 3. NEW: 드롭다운을 라디오 버튼으로 교체 *** --- */}
+      <div className="proposal-type-radio">
+        <h4>Select Proposal Type</h4>
+        <div className="radio-group">
+          <label className={proposalType === 'treasury-in' ? 'active' : ''}>
+            <input type="radio" value="treasury-in" name="proposalType" checked={proposalType === 'treasury-in'} onChange={e => setProposalType(e.target.value as ProposalType)} />
+            💰 Treasury Deposit
+          </label>
+          <label className={proposalType === 'treasury-out' ? 'active' : ''}>
+            <input type="radio" value="treasury-out" name="proposalType" checked={proposalType === 'treasury-out'} onChange={e => setProposalType(e.target.value as ProposalType)} />
+            💸 Treasury Payout
+          </label>
+          <label className={proposalType === 'rule-change' ? 'active' : ''}>
+            <input type="radio" value="rule-change" name="proposalType" checked={proposalType === 'rule-change'} onChange={e => setProposalType(e.target.value as ProposalType)} />
+            📜 Rule Change
+          </label>
         </div>
-        <div className="new-proposal-form">
-          <input
-            className="proposal-title-input"
-            type="text"
-            placeholder="Title *"
-            maxLength={256}
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-          />
-          <div className="input-count">{title.length}/256</div>
-          <textarea
-            className="proposal-desc-input"
-            placeholder="Propose something...*"
-            maxLength={4000}
-            value={desc}
-            onChange={e => setDesc(e.target.value)}
-          />
-          <div className="input-count">{desc.length}/4000</div>
-          
-          <input
-            className="proposal-amount-input"
-            type="text"
-            placeholder="Amount (ETH) * 예: 0.01"
-            value={amount}
-            onChange={e => setAmount(e.target.value)}
-          />
-          
-          <input
-            className="proposal-recipient-input"
-            type="text"
-            placeholder="Recipient Address * 예: 0x1234..."
-            value={recipient}
-            onChange={e => setRecipient(e.target.value)}
-          />
-        </div>
+      </div>
+
+      <div className="new-proposal-form">
+        {/* --- *** 4. MODIFIED: 선택된 라디오 버튼에 따라 다른 입력 필드 렌더링 *** --- */}
         
-        {/* 에러 메시지 */}
-        {error && (
-          <div className="error-message">
-            {error}
-          </div>
+        {/* 공통 입력 필드: 설명 */}
+        <textarea
+          className="proposal-desc-input"
+          placeholder="Describe the purpose of your proposal in detail..."
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+        />
+
+        {/* 입금(treasury-in) 선택 시 */}
+        {proposalType === 'treasury-in' && (
+          <>
+            <input className="proposal-title-input" type="text" placeholder="Title (e.g., Q3 Operational Fund Deposit)" value={title} onChange={e => setTitle(e.target.value)} />
+            <input type="text" placeholder="Amount (ETH) to be deposited" value={amount} onChange={e => setAmount(e.target.value)} />
+          </>
         )}
-        
-        {/* 성공 메시지 */}
-        {success && (
-          <div className="success-message">
-            {success}
+
+        {/* 출금(treasury-out) 선택 시 */}
+        {proposalType === 'treasury-out' && (
+          <>
+            <input className="proposal-title-input" type="text" placeholder="Title (e.g., Marketing Campaign Payout)" value={title} onChange={e => setTitle(e.target.value)} />
+            <input type="text" placeholder="Amount (ETH) to pay out" value={amount} onChange={e => setAmount(e.target.value)} />
+            <input type="text" placeholder="Recipient Address (0x...)" value={recipient} onChange={e => setRecipient(e.target.value)} />
+          </>
+        )}
+
+        {/* 규칙 변경(rule-change) 선택 시 */}
+        {proposalType === 'rule-change' && (
+          <div className="rule-change-inputs">
+            <div>
+              <label>Rule to Change:</label>
+              <select value={ruleToChange} onChange={e => setRuleToChange(e.target.value)}>
+                  <option value="passCriteria">Pass Threshold (%)</option>
+                  <option value="votingDuration">Voting Duration (days)</option>
+                  <option value="entryFee">Entry Fee (ETH)</option>
+                  <option value="absentPenalty">Penalty Fee (ETH)</option>
+                  <option value="countToExpel">Expel Count</option>
+                  <option value="scoreToExpel">Score to Expel</option>
+              </select>
+            </div>
+            <div>
+              <label>New Value:</label>
+              <input type="number" placeholder="Enter new value for the rule" value={newValue} onChange={e => setNewValue(e.target.value)} />
+            </div>
           </div>
         )}
       </div>
-      <div className="proposal-side-info">
-        <div className="choices">
-          <div>Choices</div>
-          <div className="choice for">✔️ For</div>
-          <div className="choice against">❌ Against</div>
-          <div className="choice abstain">➖ Abstain</div>
-        </div>
-        <div className="timeline">
-          <div>Time line</div>
-          <div className="proposal-timeline-item created">
-            <span className="dot" /> created <span className="date">2023.07.17</span>
-          </div>
-          <div className="proposal-timeline-item start">
-            <span className="dot" /> start <span className="date">2023.07.17/00:00</span>
-          </div>
-          <div className="proposal-timeline-item end">
-            <span className="dot" /> end <span className="date">2023.08.01/00:00</span>
-          </div>
-        </div>
-      </div>
+      
+      {error && <div className="error-message">{error}</div>}
+      {success && <div className="success-message">{success}</div>}
     </div>
   );
 };

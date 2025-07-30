@@ -1,25 +1,58 @@
 .logo-sidebar {
-  width: 64px;
-  background: #ffffff;
-  border-right: 1.5px solid #000000;
+  width: 80px;
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  border-right: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 24px;
-  min-width: 64px;
+  min-width: 80px;
   min-height: 0;
   height: 100vh;
+  box-shadow: 2px 0 10px rgba(102, 126, 234, 0.2);
+  position: relative;
+  overflow: hidden;
 }
-.logo-image-wrapper {
-  width: 40px;
-  height: 40px;
+
+.logo-sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(255, 255, 255, 0.05) 100%);
+  pointer-events: none;
+}
+.logo {
+  width: 150px;
+  height: 150px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
+  background: transparent;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  border: none;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
 }
+
+.logo:hover {
+  background: transparent;
+  transform: scale(1.05);
+  box-shadow: none;
+}
+
 .logo-image {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   object-fit: contain;
+  filter: brightness(1.1) contrast(1.1);
+  transition: all 0.3s ease;
+}
+
+.logo:hover .logo-image {
+  filter: brightness(1.2) contrast(1.2);
 }

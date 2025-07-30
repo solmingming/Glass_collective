@@ -1,22 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { generateNftFromTokenId, type NftData } from '../utils/nftUtils';
-import { LEGACY_CATEGORY_MAP, type CategoryType } from '../utils/categoryConstants';
-import { daoService, type DAO } from '../services/daoService';
+// import { LEGACY_CATEGORY_MAP, type CategoryType } from '../utils/categoryConstants';
+import { type CategoryType } from '../utils/categoryConstants';
+import { contractService, type DAO } from '../services/contractService'; 
 import '../styles/CollectivesSearch.css';
 import Header from './Header';
 import LogoSidebar from './LogoSidebar';
 
-interface Collective {
-  id: string;
-  name: string;
-  description: string;
-  participants: number;
-  category: string;
-  isActive: boolean;
-}
-
-interface Card {
+interface Card extends DAO {
   id: string;
   name: string;
   participants: number;
@@ -38,7 +30,14 @@ const CollectivesSearch: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredCategory, setFilteredCategory] = useState<CategoryType | null>(null);
-  const [cards, setCards] = useState<Card[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [cards, setCards] = useState<DAO[]>([]);  ////// 변경
+  // `allDAOs`는 블록체인에서 가져온 원본 데이터를 저장합니다.
+  const [allDAOs, setAllDAOs] = useState<DAO[]>([]);
+  // ``visibleCards``는 필터링과 애니메이션 속성이 적용된, 화면에 실제 보이는 카드 데이터입니다.
+  const [visibleCards, setVisibleCards] = useState<Card[]>([]);
+
   const [rotationAngle, setRotationAngle] = useState(0);
   const [targetRotation, setTargetRotation] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -46,189 +45,188 @@ const CollectivesSearch: React.FC = () => {
   const [inertia, setInertia] = useState(0);
   const [velocity, setVelocity] = useState(0);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const [showNftModal, setShowNftModal] = useState(false);
-  const [nftCode, setNftCode] = useState('');
-  const [isValidatingNft, setIsValidatingNft] = useState(false);
-  const [nftValidationError, setNftValidationError] = useState('');
+  // const [showNftModal, setShowNftModal] = useState(false);
+  // const [nftCode, setNftCode] = useState('');
+  // const [isValidatingNft, setIsValidatingNft] = useState(false);
+  // const [nftValidationError, setNftValidationError] = useState('');
   const [showDragHint, setShowDragHint] = useState(true);
-  const [validatedNftInfo, setValidatedNftInfo] = useState<(NftData & { isValid: boolean }) | null>(null);
+  // const [validatedNftInfo, setValidatedNftInfo] = useState<(NftData & { isValid: boolean }) | null>(null);
+
+  // *** Private DAO 열람을 위한 모달 상태 추가 ***
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPrivateDao, setSelectedPrivateDao] = useState<DAO | null>(null);
+  const [inviteCodeInput, setInviteCodeInput] = useState('');
+  const [joinError, setJoinError] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
 
   // DAO 서비스에서 데이터 가져오기
   const [collectives, setCollectives] = useState<DAO[]>([]);
 
   // 컴포넌트 마운트 시 DAO 데이터 로드
   useEffect(() => {
-    // 초기 샘플 데이터 설정 (첫 실행 시에만)
-    daoService.initializeSampleData();
-    
-    // 모든 DAO 가져오기
-    const allDAOs = daoService.getAllDAOs();
-    setCollectives(allDAOs);
-  }, []);
-
-  // DAO 데이터 새로고침 함수
-  const refreshDAOs = () => {
-    const allDAOs = daoService.getAllDAOs();
-    setCollectives(allDAOs);
-  };
-
-  // 페이지 포커스 시 DAO 데이터 새로고침
-  useEffect(() => {
-    const handleFocus = () => {
-      refreshDAOs();
+    const fetchDAOs = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const fetchedDAOs = await contractService.getAllDAOs();
+        setAllDAOs(fetchedDAOs); 
+      } catch (e: any) {
+        setError(e.message || "Could not fetch collectives.");
+      } finally {
+        setIsLoading(false);
+      }
     };
-
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
+    fetchDAOs();
   }, []);
 
-  // 기존 하드코딩된 데이터 (백업용)
-  const fallbackCollectives: Collective[] = [
-    {
-      id: 'glass-collective',
-      name: 'Glass\nCollective',
-      description: '투명하고 공정한 Web3 공동체',
-      participants: 1250,
-      category: 'glass',
-      isActive: true
-    },
-    {
-      id: 'tech-startup',
-      name: 'Tech\nStartup',
-      description: '혁신적인 기술 스타트업 생태계',
-      participants: 1890,
-      category: 'technology',
-      isActive: true
-    },
-    {
-      id: 'defi-collective',
-      name: 'DeFi\nCollective',
-      description: '탈중앙화 금융 생태계 구축',
-      participants: 3421,
-      category: 'finance',
-      isActive: true
-    },
-    {
-      id: 'art-collective',
-      name: 'Art\nCollective',
-      description: '디지털 아트와 NFT를 통한 창작자 공동체',
-      participants: 567,
-      category: 'art',
-      isActive: true
-    },
-    {
-      id: 'ai-collective',
-      name: 'AI\nCollective',
-      description: '인공지능과 머신러닝 연구 공동체',
-      participants: 2156,
-      category: 'technology',
-      isActive: true
-    },
-    {
-      id: 'music-collective',
-      name: 'Music\nCollective',
-      description: '음악과 오디오 NFT 플랫폼',
-      participants: 789,
-      category: 'music',
-      isActive: true
-    },
-    {
-      id: 'education-collective',
-      name: 'Education\nCollective',
-      description: '블록체인 교육과 지식 공유 플랫폼',
-      participants: 432,
-      category: 'education',
-      isActive: true
-    },
-    {
-      id: 'gaming-collective',
-      name: 'Gaming\nCollective',
-      description: '게임과 메타버스 생태계 구축',
-      participants: 1567,
-      category: 'gaming',
-      isActive: true
-    },
-    {
-      id: 'nft-collective',
-      name: 'NFT\nCollective',
-      description: 'NFT 아트와 디지털 자산 거래',
-      participants: 1876,
-      category: 'art',
-      isActive: true
-    },
-    {
-      id: 'crypto-collective',
-      name: 'Crypto\nCollective',
-      description: '암호화폐 투자와 트레이딩',
-      participants: 2987,
-      category: 'finance',
-      isActive: true
-    },
-    {
-      id: 'web3-collective',
-      name: 'Web3\nCollective',
-      description: '웹3 생태계 개발과 연구',
-      participants: 1654,
-      category: 'technology',
-      isActive: true
-    },
-    {
-      id: 'health-collective',
-      name: 'Health\nCollective',
-      description: '웰빙과 건강 정보를 공유하는 공동체',
-      participants: 678,
-      category: 'health',
-      isActive: true
-    },
-    {
-      id: 'dao-collective',
-      name: 'DAO\nCollective',
-      description: '탈중앙화 자율조직 연구',
-      participants: 1234,
-      category: 'technology',
-      isActive: true
-    },
-    {
-      id: 'eco-collective',
-      name: 'Eco\nCollective',
-      description: '환경 보호를 위한 지속가능한 공동체',
-      participants: 890,
-      category: 'environment',
-      isActive: true
-    },
-    {
-      id: 'blockchain-collective',
-      name: 'Blockchain\nCollective',
-      description: '블록체인 기술 연구와 개발',
-      participants: 1432,
-      category: 'technology',
-      isActive: true
-    },
-    {
-      id: 'creative-collective',
-      name: 'Creative\nCollective',
-      description: '창작자와 아티스트 지원',
-      participants: 654,
-      category: 'art',
-      isActive: true
-    },
-    {
-      id: 'metaverse-collective',
-      name: 'Metaverse\nCollective',
-      description: '메타버스 플랫폼 개발',
-      participants: 987,
-      category: 'gaming',
-      isActive: true
-    },
-    {
-      id: 'innovation-collective',
-      name: 'Innovation\nCollective',
-      description: '혁신 기술 연구와 개발',
-      participants: 1123,
-      category: 'technology',
-      isActive: true
-    }
-  ];
+
+  // // 기존 하드코딩된 데이터 (백업용)
+  // const fallbackCollectives: Collective[] = [
+  //   {
+  //     id: 'glass-collective',
+  //     name: 'Glass\nCollective',
+  //     description: '투명하고 공정한 Web3 공동체',
+  //     participants: 1250,
+  //     category: 'glass',
+  //     isActive: true
+  //   },
+  //   {
+  //     id: 'tech-startup',
+  //     name: 'Tech\nStartup',
+  //     description: '혁신적인 기술 스타트업 생태계',
+  //     participants: 1890,
+  //     category: 'technology',
+  //     isActive: true
+  //   },
+  //   {
+  //     id: 'defi-collective',
+  //     name: 'DeFi\nCollective',
+  //     description: '탈중앙화 금융 생태계 구축',
+  //     participants: 3421,
+  //     category: 'finance',
+  //     isActive: true
+  //   },
+  //   {
+  //     id: 'art-collective',
+  //     name: 'Art\nCollective',
+  //     description: '디지털 아트와 NFT를 통한 창작자 공동체',
+  //     participants: 567,
+  //     category: 'art',
+  //     isActive: true
+  //   },
+  //   {
+  //     id: 'ai-collective',
+  //     name: 'AI\nCollective',
+  //     description: '인공지능과 머신러닝 연구 공동체',
+  //     participants: 2156,
+  //     category: 'technology',
+  //     isActive: true
+  //   },
+  //   {
+  //     id: 'music-collective',
+  //     name: 'Music\nCollective',
+  //     description: '음악과 오디오 NFT 플랫폼',
+  //     participants: 789,
+  //     category: 'music',
+  //     isActive: true
+  //   },
+  //   {
+  //     id: 'education-collective',
+  //     name: 'Education\nCollective',
+  //     description: '블록체인 교육과 지식 공유 플랫폼',
+  //     participants: 432,
+  //     category: 'education',
+  //     isActive: true
+  //   },
+  //   {
+  //     id: 'gaming-collective',
+  //     name: 'Gaming\nCollective',
+  //     description: '게임과 메타버스 생태계 구축',
+  //     participants: 1567,
+  //     category: 'gaming',
+  //     isActive: true
+  //   },
+  //   {
+  //     id: 'nft-collective',
+  //     name: 'NFT\nCollective',
+  //     description: 'NFT 아트와 디지털 자산 거래',
+  //     participants: 1876,
+  //     category: 'art',
+  //     isActive: true
+  //   },
+  //   {
+  //     id: 'crypto-collective',
+  //     name: 'Crypto\nCollective',
+  //     description: '암호화폐 투자와 트레이딩',
+  //     participants: 2987,
+  //     category: 'finance',
+  //     isActive: true
+  //   },
+  //   {
+  //     id: 'web3-collective',
+  //     name: 'Web3\nCollective',
+  //     description: '웹3 생태계 개발과 연구',
+  //     participants: 1654,
+  //     category: 'technology',
+  //     isActive: true
+  //   },
+  //   {
+  //     id: 'health-collective',
+  //     name: 'Health\nCollective',
+  //     description: '웰빙과 건강 정보를 공유하는 공동체',
+  //     participants: 678,
+  //     category: 'health',
+  //     isActive: true
+  //   },
+  //   {
+  //     id: 'dao-collective',
+  //     name: 'DAO\nCollective',
+  //     description: '탈중앙화 자율조직 연구',
+  //     participants: 1234,
+  //     category: 'technology',
+  //     isActive: true
+  //   },
+  //   {
+  //     id: 'eco-collective',
+  //     name: 'Eco\nCollective',
+  //     description: '환경 보호를 위한 지속가능한 공동체',
+  //     participants: 890,
+  //     category: 'environment',
+  //     isActive: true
+  //   },
+  //   {
+  //     id: 'blockchain-collective',
+  //     name: 'Blockchain\nCollective',
+  //     description: '블록체인 기술 연구와 개발',
+  //     participants: 1432,
+  //     category: 'technology',
+  //     isActive: true
+  //   },
+  //   {
+  //     id: 'creative-collective',
+  //     name: 'Creative\nCollective',
+  //     description: '창작자와 아티스트 지원',
+  //     participants: 654,
+  //     category: 'art',
+  //     isActive: true
+  //   },
+  //   {
+  //     id: 'metaverse-collective',
+  //     name: 'Metaverse\nCollective',
+  //     description: '메타버스 플랫폼 개발',
+  //     participants: 987,
+  //     category: 'gaming',
+  //     isActive: true
+  //   },
+  //   {
+  //     id: 'innovation-collective',
+  //     name: 'Innovation\nCollective',
+  //     description: '혁신 기술 연구와 개발',
+  //     participants: 1123,
+  //     category: 'technology',
+  //     isActive: true
+  //   }
+  // ];
 
   // 카테고리별 컬러 매핑 (세련된 색감)
   const getCategoryColor = (category: string) => {
@@ -247,82 +245,58 @@ const CollectivesSearch: React.FC = () => {
     return categoryColors[category as keyof typeof categoryColors] || '#3B82F6';
   };
 
-  // 카테고리 필터링 함수
-  const getFilteredCollectives = () => {
-    return collectives.filter(collective => {
-      const matchesSearch = collective.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        collective.description.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const legacyCategory = collective.category as keyof typeof LEGACY_CATEGORY_MAP;
-      const mappedCategory = LEGACY_CATEGORY_MAP[legacyCategory] || 'tech';
-      const matchesCategory = !filteredCategory || mappedCategory === filteredCategory;
-      
+  // 2D 원형 레이아웃 계산 (무한 스크롤)
+  // *** 5. MODIFIED: 데이터 흐름을 명확하게 하는 레이아웃 업데이트 로직 ***
+  // 이 useEffect는 원본 데이터나 필터, 회전값이 바뀔 때마다 실행되어
+  // 화면에 보일 카드(visibleCards)를 다시 계산합니다.
+  useEffect(() => {
+    // 1. 검색어와 카테고리로 필터링
+    const filtered = allDAOs.filter(dao => {
+      const matchesSearch = dao.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        dao.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = !filteredCategory || dao.category === filteredCategory;
       return matchesSearch && matchesCategory;
     });
-  };
 
-  // 2D 원형 레이아웃 계산 (무한 스크롤)
-  const calculate2DCircularLayout = useCallback(() => {
-    const filtered = getFilteredCollectives();
+    // 2. 필터링된 데이터로 레이아웃 계산
     const container = containerRef.current;
-    if (!container) return [];
+    if (!container) return;
 
     const containerWidth = container.offsetWidth;
     const containerHeight = container.offsetHeight;
-    
-    // 원형 디스크 중심
     const centerX = containerWidth / 2;
-    const centerY = containerHeight + 360; // 10% 더 위로 올림 (400 -> 360)
-    
-        // 2D 원형 파라미터
-    const radius = 600; // 고정 반지름(px)
+    const centerY = containerHeight + 360;
+    const radius = 600;
     const cardCount = filtered.length;
     
-    return filtered.map((collective, index) => {
+    if (cardCount === 0) {
+        setVisibleCards([]);
+        return;
+    }
+    
+    const newLayout: Card[] = filtered.map((dao, index) => {
       const angleStep = 360 / cardCount;
-      const baseAngle = (-45 + angleStep * index) + rotationAngle; // 왼쪽 부분이 보이도록 각도 조정
-      const transform = `
-        rotate(${baseAngle}deg)
-        translate(${radius}px)
-      `;
-      // 각도를 0-360 범위로 정규화
-      const normalizedAngle = ((baseAngle % 360) + 360) % 360;
+      const baseAngle = (-45 + angleStep * index) + rotationAngle;
+      const transform = `rotate(${baseAngle}deg) translate(${radius}px)`;
       
-      // 중앙 기준으로의 거리 계산 (0도가 중앙)
-      const distanceFromCenter = Math.min(normalizedAngle, 360 - normalizedAngle);
-      const maxDistance = 180;
-      const scale = 1; // 모든 카드 동일한 크기
-      const opacity = 1; // 모든 카드 동일한 투명도
-      const isFocused = false; // 포커스 효과 제거
-      
-      // 모든 카드 동일한 zIndex
-      const zIndex = 100;
-      const translateY = 0; // 위로 이동 제거
-      const isVisible = true;
       return {
-        id: collective.id,
-        name: collective.name,
-        participants: collective.participants,
-        category: collective.category,
+        ...dao, // DAO의 모든 데이터를 그대로 가져옴
         x: centerX,
         y: centerY,
         z: 0,
-        scale,
-        opacity,
-        zIndex,
+        scale: 1,
+        opacity: 1,
+        zIndex: 100,
         transform,
-        isFocused,
-        isVisible,
-        translateY
+        isFocused: false,
+        isVisible: true,
+        translateY: 0
       };
     });
-  }, [searchTerm, filteredCategory, rotationAngle]);
 
-  // 레이아웃 업데이트
-  useEffect(() => {
-    const newCards = calculate2DCircularLayout();
-    setCards(newCards);
-  }, [calculate2DCircularLayout]);
+    setVisibleCards(newLayout);
+
+  }, [allDAOs, searchTerm, filteredCategory, rotationAngle]); // 의존성 배열에 모든 관련 상태 포함
 
   // 물리 기반 부드러운 애니메이션
   useEffect(() => {
@@ -412,12 +386,12 @@ const CollectivesSearch: React.FC = () => {
   }, [isDragging, dragStartX]);
 
   // 카드 클릭 핸들러
-  const handleCardClick = (id: string) => {
+  const handleCardClick = (clickedDao: DAO) => {
     // 클릭된 카드를 찾아서 위로 올라오는 애니메이션 적용
-    const clickedCard = cards.find(card => card.id === id);
+    const clickedCard = cards.find(card => card.id === clickedDao.id);
     if (clickedCard) {
       // 카드를 위로 이동시키는 애니메이션
-      const cardElement = document.querySelector(`[data-card-id="${id}"]`) as HTMLElement;
+      const cardElement = document.querySelector(`[data-card-id="${clickedDao.id}"]`) as HTMLElement;
       if (cardElement) {
         cardElement.style.transition = 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
         cardElement.style.transform += ' translateY(-30px) scale(1.05)';
@@ -425,13 +399,31 @@ const CollectivesSearch: React.FC = () => {
         
         // 애니메이션 완료 후 페이지 이동
         setTimeout(() => {
-          navigate(`/collective/${id}/overview`);
+          if (clickedDao.collectiveType === 'public') {
+            // Public DAO는 즉시 상세 페이지로 이동
+            navigate(`/collective/${clickedDao.id}/overview`);
+          } else {
+            // Private DAO는 인증 코드 입력 모달을 엽니다.
+            setSelectedPrivateDao(clickedDao);
+            setIsModalOpen(true);
+            setInviteCodeInput(''); // 입력 필드 초기화
+            setJoinError('');       // 에러 메시지 초기화
+          }
         }, 600);
         return;
       }
     }
     // 애니메이션이 적용되지 않으면 바로 이동
-    navigate(`/collective/${id}/overview`);
+    if (clickedDao.collectiveType === 'public') {
+      // Public DAO는 즉시 상세 페이지로 이동
+      navigate(`/collective/${clickedDao.id}/overview`);
+    } else {
+      // Private DAO는 인증 코드 입력 모달을 엽니다.
+      setSelectedPrivateDao(clickedDao);
+      setIsModalOpen(true);
+      setInviteCodeInput(''); // 입력 필드 초기화
+      setJoinError('');       // 에러 메시지 초기화
+    }
   };
 
   // Create 버튼 클릭 핸들러
@@ -439,62 +431,62 @@ const CollectivesSearch: React.FC = () => {
     navigate('/create-dao');
   };
 
-  // NFT 모달 관련 함수들
-  const handleJoinWithNft = () => {
-    setShowNftModal(true);
-    setNftCode('');
-    setNftValidationError('');
-    setValidatedNftInfo(null);
-  };
+  // // NFT 모달 관련 함수들
+  // const handleJoinWithNft = () => {
+  //   setShowNftModal(true);
+  //   setNftCode('');
+  //   setNftValidationError('');
+  //   setValidatedNftInfo(null);
+  // };
 
-  const handleJoinWithNftCode = async () => {
-    if (!nftCode.trim()) {
-      setNftValidationError('NFT 코드를 입력해주세요.');
-      return;
-    }
+  // const handleJoinWithNftCode = async () => {
+  //   if (!nftCode.trim()) {
+  //     setNftValidationError('NFT 코드를 입력해주세요.');
+  //     return;
+  //   }
 
-    setIsValidatingNft(true);
-    setNftValidationError('');
-    setValidatedNftInfo(null);
+  //   setIsValidatingNft(true);
+  //   setNftValidationError('');
+  //   setValidatedNftInfo(null);
 
-    try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+  //   try {
+  //     await new Promise(resolve => setTimeout(resolve, 2000));
       
-      const tokenIdPattern = /^\d{13}-\d{1,4}$/;
-      if (!tokenIdPattern.test(nftCode)) {
-        throw new Error('유효하지 않은 NFT 코드 형식입니다. (예: 1703234567890-1234)');
-      }
+  //     const tokenIdPattern = /^\d{13}-\d{1,4}$/;
+  //     if (!tokenIdPattern.test(nftCode)) {
+  //       throw new Error('유효하지 않은 NFT 코드 형식입니다. (예: 1703234567890-1234)');
+  //     }
 
-      const nftInfo = generateNftFromTokenId(nftCode, 'Tech Innovators', 'tech-innovators');
-      setValidatedNftInfo({
-        ...nftInfo,
-        isValid: true
-      });
+  //     const nftInfo = generateNftFromTokenId(nftCode, 'Tech Innovators', 'tech-innovators');
+  //     setValidatedNftInfo({
+  //       ...nftInfo,
+  //       isValid: true
+  //     });
 
-    } catch (error) {
-      console.error('NFT 검증 실패:', error);
-      setNftValidationError(error instanceof Error ? error.message : 'NFT 검증에 실패했습니다.');
-      setValidatedNftInfo(null);
-    } finally {
-      setIsValidatingNft(false);
-    }
-  };
+  //   } catch (error) {
+  //     console.error('NFT 검증 실패:', error);
+  //     setNftValidationError(error instanceof Error ? error.message : 'NFT 검증에 실패했습니다.');
+  //     setValidatedNftInfo(null);
+  //   } finally {
+  //     setIsValidatingNft(false);
+  //   }
+  // };
 
-  const handleConfirmJoinWithNft = () => {
-    if (validatedNftInfo && validatedNftInfo.isValid) {
-      console.log('NFT 검증 성공:', validatedNftInfo);
-      navigate(`/collective/${validatedNftInfo.collectiveId}/overview`);
-      handleCloseNftModal();
-    }
-  };
+  // const handleConfirmJoinWithNft = () => {
+  //   if (validatedNftInfo && validatedNftInfo.isValid) {
+  //     console.log('NFT 검증 성공:', validatedNftInfo);
+  //     navigate(`/collective/${validatedNftInfo.collectiveId}/overview`);
+  //     handleCloseNftModal();
+  //   }
+  // };
 
-  const handleCloseNftModal = () => {
-    setShowNftModal(false);
-    setNftCode('');
-    setNftValidationError('');
-    setIsValidatingNft(false);
-    setValidatedNftInfo(null);
-  };
+  // const handleCloseNftModal = () => {
+  //   setShowNftModal(false);
+  //   setNftCode('');
+  //   setNftValidationError('');
+  //   setIsValidatingNft(false);
+  //   setValidatedNftInfo(null);
+  // };
 
   // 메타마스크 지갑 ID 불러옴
   useEffect(() => {
@@ -519,11 +511,42 @@ const CollectivesSearch: React.FC = () => {
     return '0x' + address.slice(2, 10) + '...';
   };
   
+  // *** NEW: 초대 코드 검증 및 페이지 이동 핸들러 ***
+  const handleVerifyCodeAndNavigate = async () => {
+    if (!selectedPrivateDao || !inviteCodeInput.trim()) {
+      setJoinError('Please enter an invite code.');
+      return;
+    }
+    
+    setIsVerifying(true);
+    setJoinError('');
+
+    try {
+      // contractService를 호출하여 코드를 온체인 해시값과 비교
+      const isValid = await contractService.verifyInviteCode(selectedPrivateDao.id, inviteCodeInput);
+
+      if (isValid) {
+        // 검증 성공 시, state에 코드를 담아 Overview 페이지로 이동
+        setIsModalOpen(false);
+        navigate(`/collective/${selectedPrivateDao.id}/overview`, {
+          state: { inviteCode: inviteCodeInput }
+        });
+      } else {
+        setJoinError('Invalid invite code. Please try again.');
+      }
+    } catch (error) {
+      console.error("Verification error:", error);
+      setJoinError('An error occurred during verification.');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
   return (
     <div className="collectives-search-page" style={{ display: 'flex', height: '100vh' }}>
       <LogoSidebar />
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        <Header walletAddress={formatAddress(walletAddress)} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        <Header walletAddress={walletAddress ?? undefined} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         
         <div style={{ display: 'flex', flex: 1, minHeight: 0, minWidth: 0 }}>
           <div className="main-content" style={{ flex: 1, minWidth: 0, position: 'relative' }}>
@@ -569,7 +592,7 @@ const CollectivesSearch: React.FC = () => {
               Create Collective
             </button>
             
-            {/* Join with NFT 버튼 */}
+            {/* Join with NFT 버튼
             <button 
               onClick={handleJoinWithNft}
               style={{
@@ -608,7 +631,7 @@ const CollectivesSearch: React.FC = () => {
             >
               <span style={{ fontSize: '16px' }}>🎫</span>
               Join with NFT
-            </button>
+            </button> */}
 
             {/* 2D 색상환 컨테이너 */}
             <div 
@@ -697,14 +720,14 @@ const CollectivesSearch: React.FC = () => {
                 </div>
               </div>
               {/* 카드들 */}
-              {cards.filter(card => card.isVisible).map((card) => {
+              {visibleCards.map((card) => {
                 const backgroundColor = getCategoryColor(card.category);
                 
                 return (
                   <div
                     key={card.id}
                     data-card-id={card.id}
-                    className="circle-card"
+                    className={`circle-card ${card.collectiveType === 'private' ? 'private' : ''}`}
                     style={{
                       position: 'absolute',
                       left: `${card.x - 110}px`,
@@ -739,8 +762,13 @@ const CollectivesSearch: React.FC = () => {
                       backdropFilter: 'blur(5px)',
                       WebkitBackdropFilter: 'blur(5px)'
                     }}
-                    onClick={() => handleCardClick(card.id)}
+                    onClick={() => handleCardClick(card)}
                   >
+
+                    {card.collectiveType === 'private' && (
+                        <div className="private-lock-icon">🔒</div>
+                    )}
+
                     {/* 컬렉티브 사진 */}
                     <div 
                       className="card-image"
@@ -822,7 +850,7 @@ const CollectivesSearch: React.FC = () => {
         </div>
       </div>
 
-      {/* NFT 코드 입력 모달 */}
+      {/* NFT 코드 입력 모달
       {showNftModal && (
         <div style={{
           position: 'fixed',
@@ -847,7 +875,7 @@ const CollectivesSearch: React.FC = () => {
             boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
             position: 'relative'
           }}>
-            {/* 닫기 버튼 */}
+            {/* 닫기 버튼 *
             <button
               onClick={handleCloseNftModal}
               style={{
@@ -950,7 +978,7 @@ const CollectivesSearch: React.FC = () => {
               )}
             </div>
 
-            {/* NFT 정보 표시 */}
+            {/* NFT 정보 표시 *
             {validatedNftInfo && (
               <div style={{
                 marginTop: '24px',
@@ -1122,6 +1150,32 @@ const CollectivesSearch: React.FC = () => {
                 </button>
               )}
             </div>
+          </div>
+        </div>
+      )} */}
+      {/* *** 14. MODIFIED: NFT 모달을 Private DAO 인증 모달로 교체 *** */}
+      {isModalOpen && selectedPrivateDao && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <button className="modal-close-btn" onClick={() => setIsModalOpen(false)}>×</button>
+            <h2>Private Collective Access</h2>
+            <p>Please provide the invite code to view the content of <strong>{selectedPrivateDao.name}</strong>.</p>
+            <input
+              type="text"
+              className="modal-input"
+              value={inviteCodeInput}
+              onChange={(e) => setInviteCodeInput(e.target.value)}
+              placeholder="Enter invite code"
+              onKeyPress={(e) => e.key === 'Enter' && handleVerifyCodeAndNavigate()}
+            />
+            {joinError && <p className="modal-error">{joinError}</p>}
+            <button 
+              className="modal-submit-btn" 
+              onClick={handleVerifyCodeAndNavigate}
+              disabled={isVerifying}
+            >
+              {isVerifying ? 'Verifying...' : 'View Collective'}
+            </button>
           </div>
         </div>
       )}

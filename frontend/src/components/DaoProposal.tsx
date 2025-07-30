@@ -1,199 +1,172 @@
-import React, { useState, useEffect } from "react";
-import "./../styles/DaoProposal.css";
-import NewProposalForm from "./DaoNewProposalForm";
-import contractService from "../services/contractService";
+import React, { useState, useEffect, useCallback } from "react";
+import { useParams } from "react-router-dom";
+import NewProposalForm from "./DaoNewProposalForm"; // 폼 컴포넌트 import
+import { contractService } from "../services/contractService";
+import "../styles/DaoProposal.css";
 
-// 실제 데이터 대신 사용할 임시 제안 데이터 타입
-interface Proposal {
-  id: number;
-  title: string;
-  author: string;
-  timestamp: string;
-  summary: string;
-  timeLeft: string;
-  emoji?: string;
-}
-
-// 디자인과 똑같이 보이도록 만든 임시 데이터
-const mockProposals: Proposal[] = [
-  { id: 1, title: 'GPU 구매 공동 제안', author: '@0xasdf...', timestamp: '3시간 전', summary: 'TL;DR', timeLeft: '3h 42m', emoji: '🖥️' },
-  { id: 2, title: '새로운 멤버 초대', author: '@0xqwer...', timestamp: '5시간 전', summary: 'TL;DR', timeLeft: '5h 30m', emoji: '👥' },
-  { id: 3, title: '프로젝트 자금 지원', author: '@0xzxcv...', timestamp: '1일 전', summary: 'TL;DR', timeLeft: '23h 15m', emoji: '💰' },
-  { id: 4, title: '커뮤니티 규칙 개정', author: '@0xasdf...', timestamp: '2일 전', summary: 'TL;DR', timeLeft: '47h 30m', emoji: '📋' },
-  { id: 5, title: '기술 스택 업그레이드', author: '@0xqwer...', timestamp: '3일 전', summary: 'TL;DR', timeLeft: '71h 45m', emoji: '⚡' },
-  { id: 6, title: '환경 보호 프로젝트', author: '@0xzxcv...', timestamp: '4일 전', summary: 'TL;DR', timeLeft: '95h 20m', emoji: '🌱' },
-];
+// 제안의 상태(enum)를 사람이 읽을 수 있는 문자열로 변환해주는 헬퍼 함수
+const getStatusText = (status: bigint | number): string => {
+  const statusNum = Number(status);
+  switch (statusNum) {
+    case 0: return 'Pending';
+    case 1: return 'Passed';
+    case 2: return 'Rejected';
+    case 3: return 'Executed';
+    default: return 'Unknown';
+  }
+};
 
 const DaoProposal: React.FC = () => {
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [showNewProposal, setShowNewProposal] = useState(false);
-  const [proposals, setProposals] = useState<Proposal[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const { id: daoAddress } = useParams<{ id: string }>();
+
+  // --- 상태 관리 ---
+  const [proposals, setProposals] = useState<any[]>([]);
+  const [daoRules, setDaoRules] = useState<{ votingDuration?: number }>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isActionLoading, setIsActionLoading] = useState<{[key: number]: boolean}>({}); // 개별 버튼 로딩 상태
   const [error, setError] = useState("");
+  const [view, setView] = useState<'list' | 'form'>('list');
 
-  const handleSelect = (id: number) => setSelectedId(id);
-  const handleBack = () => setSelectedId(null);
-  const handleNewProposal = () => setShowNewProposal(true);
-  const handleCloseNewProposal = () => {
-    setShowNewProposal(false);
-    // 새 제안 생성 후 목록 새로고침
-    loadProposals();
-  };
-
-  const handleCreateProposal = () => {
-    setShowNewProposal(true);
-  };
-
-  const handleVote = async (proposalId: number, voteType: 'for' | 'abstain' | 'against') => {
+  // --- 데이터 로딩 함수 ---
+  const fetchProposalsAndRules = useCallback(async () => {
+    if (!daoAddress) return;
     try {
-      console.log(`Voting ${voteType} for proposal ${proposalId}`);
-      // TODO: 실제 투표 로직 구현
-      alert(`${voteType} 투표가 기록되었습니다.`);
-    } catch (error) {
-      console.error('투표 오류:', error);
-      alert('투표 중 오류가 발생했습니다.');
-    }
-  };
-
-  const loadProposals = async () => {
-    setIsLoading(true);
-    setError("");
-    
-    try {
-      // 네트워크 확인
-      const isCorrectNetwork = await contractService.checkNetwork();
-      if (!isCorrectNetwork) {
-        setError("Sepolia 네트워크에 연결해주세요.");
-        return;
-      }
-
-      // 실제 제안 목록 가져오기 (현재는 더미 데이터 사용)
-      // TODO: getAllProposals 함수 구현 후 실제 데이터 사용
-      // const blockchainProposals = await contractService.getAllProposals();
-      setProposals(mockProposals);
+      // Promise.all을 사용해 DAO 규칙과 제안 목록을 병렬로 요청
+      const [daoDetails, props] = await Promise.all([
+        contractService.getDaoDetails(daoAddress),
+        contractService.getAllProposals(daoAddress)
+      ]);
       
-    } catch (error: any) {
-      console.error("제안 목록 로드 오류:", error);
-      setError(error.message || "제안 목록을 불러오는 중 오류가 발생했습니다.");
+      setDaoRules({ votingDuration: daoDetails.rules.votingDuration });
+      // 최신 제안이 위로 오도록 정렬
+      setProposals(props.slice().reverse());
+    } catch (err) {
+      setError("Failed to load proposals and DAO rules.");
+      console.error(err);
     } finally {
       setIsLoading(false);
     }
+  }, [daoAddress]);
+
+  // 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
+    fetchProposalsAndRules();
+  }, [fetchProposalsAndRules]);
+
+  // --- 핸들러 함수들 ---
+  const handleAction = async (proposalId: number, action: () => Promise<any>, successMessage: string, errorMessage: string) => {
+    setIsActionLoading(prev => ({ ...prev, [proposalId]: true }));
+    try {
+      await action();
+      alert(successMessage);
+      await fetchProposalsAndRules(); // 액션 성공 후 목록 새로고침
+    } catch (err: any) {
+      console.error(errorMessage, err);
+      const message = err.code === 'ACTION_REJECTED' ? "Transaction was rejected by user." : errorMessage;
+      alert(message);
+    } finally {
+      setIsActionLoading(prev => ({ ...prev, [proposalId]: false }));
+    }
   };
 
-  useEffect(() => {
-    loadProposals();
-  }, []);
+  const handleVote = (proposalId: number, choice: 0 | 1 | 2) => {
+    if (!daoAddress) return;
+    handleAction(
+      proposalId,
+      () => contractService.voteOnProposal(daoAddress, proposalId, choice),
+      "Vote submitted successfully!",
+      "Failed to submit vote. You may have already voted or are not a member."
+    );
+  };
 
-  if (showNewProposal) {
-    return <NewProposalForm onBack={handleCloseNewProposal} />;
+  const handleFinalize = (proposalId: number) => {
+    if (!daoAddress) return;
+    handleAction(
+      proposalId,
+      () => contractService.finalizeProposal(daoAddress, proposalId),
+      "Proposal finalized successfully!",
+      "Failed to finalize proposal. The voting period may not be over, or it has already been finalized."
+    );
+  };
+
+  // --- 뷰 렌더링 ---
+  if (isLoading) return <div className="status-message">Loading proposals...</div>;
+  if (error) return <div className="status-message error">{error}</div>;
+
+  // 새 제안 만들기 폼 보기
+  if (view === 'form') {
+    return <NewProposalForm 
+      onProposalCreated={() => { 
+        setView('list'); 
+        fetchProposalsAndRules();
+      }} 
+      onBack={() => setView('list')} 
+    />;
   }
 
+  // 제안 목록 보기 (기본)
   return (
-    <div className="proposals-container">
-      <div className="proposals-header">
-        <h1 className="proposals-title">Proposals</h1>
-        <button className="create-proposal-button" onClick={handleCreateProposal}>
-          📝
+    <div className="dao-proposal-page">
+      <div className="proposal-header">
+        <h1>Proposals</h1>
+        <button className="create-proposal-btn" onClick={() => setView('form')}>
+          + Create New Proposal
         </button>
       </div>
-      
-      {selectedId === null ? (
-        <div className="proposal-list">
-          {isLoading ? (
-            <div className="loading-message">제안 목록을 불러오는 중...</div>
-          ) : error ? (
-            <div className="error-message">{error}</div>
-          ) : proposals.length === 0 ? (
-            <div className="empty-message">아직 제안이 없습니다. 첫 번째 제안을 만들어보세요!</div>
-          ) : (
-            <div className="proposals-grid">
-              {proposals.map((proposal) => (
-                <div
-                  className="proposal-card"
-                  key={proposal.id}
-                  onClick={() => handleSelect(proposal.id)}
-                >
-                  <div className="card-header">
-                    <h2 className="card-title">{proposal.title}</h2>
-                    <div className="card-meta">
-                      <span className="author">by {proposal.author}</span>
-                      <span className="timestamp">🕒 {proposal.timestamp}</span>
-                    </div>
-                  </div>
-                  <div className="card-body">
-                    <p className="summary">{proposal.summary}</p>
-                    <div className="time-left-container">
-                      <p className="time-left-label">Time left:</p>
-                      <p className="time-left-value">{proposal.timeLeft}</p>
-                    </div>
-                  </div>
-                  <div className="card-footer">
-                    <button 
-                      className="vote-button vote-for" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleVote(proposal.id, 'for');
-                      }}
-                    >
-                      ✓
-                    </button>
-                    <button 
-                      className="vote-button vote-abstain" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleVote(proposal.id, 'abstain');
-                      }}
-                    >
-                      -
-                    </button>
-                    <button 
-                      className="vote-button vote-against" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleVote(proposal.id, 'against');
-                      }}
-                    >
-                      ×
-                    </button>
-                  </div>
+
+      <div className="proposal-list">
+        {proposals.length === 0 ? (
+          <div className="no-proposals">
+            <p>No proposals have been created yet.</p>
+            <p>Be the first to create one!</p>
+          </div>
+        ) : (
+          proposals.map((prop, index) => {
+            const proposalId = proposals.length - 1 - index;
+            const status = getStatusText(prop.status);
+            
+            // 스마트 컨트랙트에서 가져온 투표 기간(초 단위)을 사용하여 데드라인 계산
+            const deadlineTimestamp = (Number(prop.startTime) + (daoRules.votingDuration || 0)) * 1000;
+            const isVotingPeriodOver = deadlineTimestamp > 0 && Date.now() > deadlineTimestamp;
+
+            return (
+              <div key={proposalId} className={`proposal-card status-${status.toLowerCase()}`}>
+                <div className="card-header">
+                  <h3 className="card-title">{`#${proposalId}: ${prop.title}`}</h3>
+                  <div className={`status-tag ${status.toLowerCase()}`}>{status}</div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="proposal-detail-card">
-          <div className="proposal-detail-header">
-            <button className="back-button" onClick={handleBack}>
-              ← Back to Proposals
-            </button>
-            <button className="discussion-btn">
-              Join the discussion <span role="img" aria-label="chat">💬</span>
-            </button>
-            <div className="proposal-detail-actions">
-              <button className="action-yes" onClick={() => handleVote(selectedId, 'for')}>✔️</button>
-              <button className="action-neutral" onClick={() => handleVote(selectedId, 'abstain')}>➖</button>
-              <button className="action-no" onClick={() => handleVote(selectedId, 'against')}>❌</button>
-            </div>
-          </div>
-          <div className="proposal-detail-content">
-            <div className="proposal-detail-emoji">
-              {mockProposals.find(p => p.id === selectedId)?.emoji}
-            </div>
-            <div className="proposal-detail-title">
-              {mockProposals.find(p => p.id === selectedId)?.title}
-            </div>
-            <div className="proposal-detail-summary">
-              {mockProposals.find(p => p.id === selectedId)?.summary}
-            </div>
-            <div className="proposal-detail-meta">
-              <span>by {mockProposals.find(p => p.id === selectedId)?.author}</span>
-              <span>🕒 {mockProposals.find(p => p.id === selectedId)?.timestamp}</span>
-              <span>⏰ {mockProposals.find(p => p.id === selectedId)?.timeLeft} left</span>
-            </div>
-          </div>
-        </div>
-      )}
+                <p className="card-description">{prop.description}</p>
+                
+                <div className="vote-stats">
+                  <span>✔️ For: <strong>{Number(prop.votesFor)}</strong></span>
+                  <span>❌ Against: <strong>{Number(prop.votesAgainst)}</strong></span>
+                  <span>➖ Abstain: <strong>{Number(prop.votesAbstain)}</strong></span>
+                </div>
+                
+                {status === 'Pending' && (
+                  <div className="action-buttons">
+                    {!isVotingPeriodOver ? (
+                      <>
+                        <button onClick={() => handleVote(proposalId, 0)} disabled={isActionLoading[proposalId]}>For</button>
+                        <button onClick={() => handleVote(proposalId, 1)} disabled={isActionLoading[proposalId]}>Against</button>
+                        <button onClick={() => handleVote(proposalId, 2)} disabled={isActionLoading[proposalId]}>Abstain</button>
+                      </>
+                    ) : (
+                      <span className="voting-ended-text">Voting has ended.</span>
+                    )}
+
+                    {isVotingPeriodOver && (
+                      <button className="finalize-btn" onClick={() => handleFinalize(proposalId)} disabled={isActionLoading[proposalId]}>
+                        {isActionLoading[proposalId] ? 'Finalizing...' : 'Finalize'}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 };

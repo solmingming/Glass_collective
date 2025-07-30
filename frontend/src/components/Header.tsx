@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { ethers } from "ethers";
+import { useNavigate } from "react-router-dom";
+import { contractService } from "../services/contractService";
 import "../styles/Header.css";
 
 interface HeaderProps {
@@ -25,25 +28,16 @@ const formatEthBalance = (balance: number) => {
 const Header: React.FC<HeaderProps> = ({ walletAddress, searchTerm, setSearchTerm, daoName }) => {
   const [ethBalance, setEthBalance] = useState<number>(0);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const navigate = useNavigate();
 
   // ETH 잔고 조회 함수
   const fetchEthBalance = async (address: string) => {
-    if (!window.ethereum) {
-      console.error('MetaMask not found');
-      return;
-    }
-
     try {
       setIsLoadingBalance(true);
       
-      // 웹3 provider를 통해 잔고 조회
-      const balance = await window.ethereum.request({
-        method: 'eth_getBalance',
-        params: [address, 'latest']
-      });
-      
-      // Wei를 ETH로 변환 (1 ETH = 10^18 Wei)
-      const ethValue = parseInt(balance, 16) / Math.pow(10, 18);
+      // contractService의 getEthBalance 메서드 사용
+      const ethValue = await contractService.getEthBalance(address);
       setEthBalance(ethValue);
       
     } catch (error) {
@@ -54,10 +48,39 @@ const Header: React.FC<HeaderProps> = ({ walletAddress, searchTerm, setSearchTer
     }
   };
 
+  // 로그아웃 함수
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await contractService.logout();
+      
+      // 로컬 스토리지에서 지갑 주소 제거
+      localStorage.removeItem('walletAddress');
+      
+      // 랜딩 페이지로 이동
+      navigate('/');
+      
+      // 페이지 새로고침으로 상태 초기화
+      window.location.reload();
+    } catch (error) {
+      console.error('Logout error:', error);
+      alert('로그아웃 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
   // 지갑 주소가 변경될 때마다 잔고 조회
   useEffect(() => {
     if (walletAddress) {
       fetchEthBalance(walletAddress);
+      
+      // 30초마다 잔고 업데이트
+      const interval = setInterval(() => {
+        fetchEthBalance(walletAddress);
+      }, 30000);
+      
+      return () => clearInterval(interval);
     } else {
       setEthBalance(0);
     }
@@ -84,7 +107,7 @@ const Header: React.FC<HeaderProps> = ({ walletAddress, searchTerm, setSearchTer
             ) : (
               <>
                 <span className="eth-icon">Ξ</span>
-                <span className="eth-amount">{formatEthBalance(ethBalance)}</span>
+                <span className="eth-amount">{formatEthBalance(ethBalance)} Sep ETH</span>
               </>
             )}
           </div>
@@ -92,8 +115,20 @@ const Header: React.FC<HeaderProps> = ({ walletAddress, searchTerm, setSearchTer
         
         {/* 지갑 주소 버튼 */}
         <button className="wallet-btn">
-          {walletAddress ? formatAddress(walletAddress) : '0x0EFA118A...'}
+          {walletAddress ? formatAddress(walletAddress) : 'Connect Wallet'}
         </button>
+        
+        {/* 로그아웃 버튼 */}
+        {walletAddress && (
+          <button 
+            className="logout-btn"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            title="로그아웃"
+          >
+            {isLoggingOut ? '⏳' : '🚪'}
+          </button>
+        )}
       </div>
     </header>
   );

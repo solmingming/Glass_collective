@@ -141,6 +141,11 @@ contract DAO {
         require(proposalContract.hasRole(proposalContract.DEFAULT_ADMIN_ROLE(), msg.sender), "Not admin");
         proposalContract.subGlassScore(member, amount);
     }
+    
+    // +++ 신규 추가된 함수 +++
+    function isMember(address user) external view returns (bool) {
+        return proposalContract.hasRole(proposalContract.MEMBER_ROLE(), user);
+    }
 
     function getTreasuryBalance() external view returns (uint256) { return vaultContract.getBalance(); }
     function getAllMembers() public view returns (address[] memory) { return proposalContract.getAllMembers(); }

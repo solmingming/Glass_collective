@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\Users\\jong0\\Desktop\\madcamp44\\Glass_collective\\contracts\\DAO.sol": {
-      "lastModificationDate": 1753807534772,
-      "contentHash": "8514edd2aaf3f8d7a0c950865ae7414c",
+      "lastModificationDate": 1753853849098,
+      "contentHash": "443d820db31e9ae38424bbc78485601b",
       "sourceName": "contracts/DAO.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -43,8 +43,8 @@
       ]
     },
     "C:\\Users\\jong0\\Desktop\\madcamp44\\Glass_collective\\contracts\\Proposal.sol": {
-      "lastModificationDate": 1753807534774,
-      "contentHash": "4868d8d4aee30cf8e5caa011e1576c50",
+      "lastModificationDate": 1753855724372,
+      "contentHash": "11a3e75128b1cfe997a7a8c099bd7ab9",
       "sourceName": "contracts/Proposal.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -72,8 +72,7 @@
         }
       },
       "imports": [
-        "@openzeppelin/contracts/access/AccessControl.sol",
-        "hardhat/console.sol"
+        "@openzeppelin/contracts/access/AccessControl.sol"
       ],
       "versionPragmas": [
         "^0.8.0"

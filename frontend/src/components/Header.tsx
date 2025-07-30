@@ -6,6 +6,7 @@ interface HeaderProps {
   searchTerm?: string;
   setSearchTerm?: (v: string) => void;
   daoName?: string;
+  onLogout?: () => void;
 }
 
 const formatAddress = (address: string) => {
@@ -22,7 +23,7 @@ const formatEthBalance = (balance: number) => {
   }
 };
 
-const Header: React.FC<HeaderProps> = ({ walletAddress, searchTerm, setSearchTerm, daoName }) => {
+const Header: React.FC<HeaderProps> = ({ walletAddress, searchTerm, setSearchTerm, daoName, onLogout }) => {
   const [ethBalance, setEthBalance] = useState<number>(0);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
 
@@ -94,6 +95,17 @@ const Header: React.FC<HeaderProps> = ({ walletAddress, searchTerm, setSearchTer
         <button className="wallet-btn">
           {walletAddress ? formatAddress(walletAddress) : '0x0EFA118A...'}
         </button>
+        
+        {/* 로그아웃 버튼 */}
+        {walletAddress && onLogout && (
+          <button 
+            className="logout-btn" 
+            onClick={onLogout}
+            title="로그아웃"
+          >
+            🚪
+          </button>
+        )}
       </div>
     </header>
   );

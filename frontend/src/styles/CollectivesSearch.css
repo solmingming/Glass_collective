@@ -340,19 +340,21 @@
 
 /* 검색 결과 없음 */
 .no-results {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   text-align: center;
   padding: 3rem;
-  color: #9ca3af;
+  color: #6b7280;
   width: 100%;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  max-width: 400px;
 }
 
 .no-results p {
   margin: 0.5rem 0;
-  font-size: 1rem;
+  font-size: 1.1rem;
+  line-height: 1.5;
 }
 
 /* 반응형 */
@@ -385,8 +387,8 @@
   .main-content {
     width: 100%;
     left: 0;
-    top: 160px;
-    height: calc(100vh - 160px);
+    top: auto; /* auto로 변경 */
+    height: auto;
   }
   
   .header-right {
@@ -396,7 +398,7 @@
   }
   
   .bubble-canvas {
-    height: calc(100vh - 160px);
+    height: calc(100vh - 220px); /* 헤더와 탭 높이를 대략적으로 뺌 */
     min-height: 400px;
   }
   
@@ -421,10 +423,10 @@
   }
   
   .main-content {
-    width: calc(100% - 120px);
-    left: 120px;
-    top: 200px;
-    height: calc(100vh - 200px);
+    width: 100%;
+    left: 0;
+    top: auto;
+    height: auto;
   }
   
   .bubble-canvas {
@@ -452,4 +454,4 @@
     height: 28px;
     font-size: 0.8rem;
   }
-} 
+}

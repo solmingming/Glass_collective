@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@multiavatar/multiavatar": "^1.0.7",
     "@react-three/drei": "^10.6.1",
     "@react-three/fiber": "^9.2.0",
     "@types/d3": "^7.4.3",

@@ -70,6 +70,15 @@
   animation: slideIn 0.3s ease;
 }
 
+/* Quit 항목만 위쪽 여백과 빨간색 hover */
+.menu-indent.quit-item {
+  margin-top: 32px;
+}
+
+.menu-indent.quit-item:hover {
+  color: #dc2626;
+}
+
 @keyframes slideIn {
   from {
     width: 0;

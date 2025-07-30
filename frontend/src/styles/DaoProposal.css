@@ -1,167 +1,183 @@
-.dao-proposal-container {
-  padding: 32px 48px;
-  background: #fff;
-  min-height: 100vh;
+/* DaoProposal.css */
+
+/* 전체 탭 컨테이너 스타일 */
+.proposals-container {
+  width: 100%;
+  padding: 24px 32px;
+  background-color: #ffffff;
+  /* 시스템 기본 폰트를 사용하여 깔끔하게 보이도록 설정 */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-.dao-proposal-header {
+/* 헤더 ("Proposals" 제목과 생성 버튼) */
+.proposals-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
-  gap: 12px;
 }
 
-.dao-proposal-header h2 {
-  font-size: 1.3rem;
+.proposals-title {
+  font-size: 28px;
   font-weight: 600;
-  margin-right: 8px;
+  color: #000000;
+  margin: 0;
 }
 
-.edit-icon {
-  font-size: 1.1rem;
+.create-proposal-button {
+  background-color: transparent;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
   cursor: pointer;
-  margin-right: auto;
-}
-
-.sort-by {
-  color: #888;
-  font-size: 0.95rem;
-}
-
-.proposal-list {
   display: flex;
-  flex-direction: column;
-  gap: 18px;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px; /* 이모지 크기 조절 */
+  transition: background-color 0.2s;
 }
 
+.create-proposal-button:hover {
+  background-color: #f5f5f5;
+}
+
+/* 제안 카드들을 담는 그리드 */
+.proposals-grid {
+  display: grid;
+  /* 화면 크기에 맞춰 자동으로 카드 개수를 조절 (최소 280px 너비) */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+/* 개별 제안 카드 스타일 */
 .proposal-card {
-  display: flex;
-  align-items: center;
-  background: #fafafa;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  padding: 18px 24px;
-  cursor: pointer;
-  transition: box-shadow 0.15s;
-}
-
-.proposal-card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-}
-
-.proposal-emoji {
-  font-size: 2.2rem;
-  margin-right: 18px;
-}
-
-.proposal-title {
-  flex: 1;
-  font-size: 1.08rem;
-  font-weight: 500;
-}
-
-.proposal-actions {
-  display: flex;
-  gap: 16px;
-  font-size: 1.5rem;
-}
-
-.action-yes {
-  color: #3cb371;
-}
-.action-neutral {
-  color: #aaa;
-}
-.action-no {
-  color: #e74c3c;
-}
-
-.proposal-detail {
-  background: #fafafa;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  padding: 32px 28px;
-  max-width: 500px;
-}
-
-.back-btn {
-  background: none;
-  border: none;
-  color: #888;
-  font-size: 1rem;
-  cursor: pointer;
-  margin-bottom: 18px;
-}
-
-.proposal-detail-card {
-  background: #fff;
+  border: 1px solid #e0e0e0;
   border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-  padding: 36px 32px 48px 32px;
-  max-width: 600px;
-  margin: 40px auto 0 auto;
-  min-height: 320px;
+  background-color: #fff;
+  padding: 20px;
+  display: flex;
+  flex-direction: column; /* 내용을 세로로 정렬 */
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.13), 0 1.5px 6px rgba(0,0,0,0.10);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #000;
+  margin: 0 0 8px 0;
+}
+
+.card-meta {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  position: relative;
+  align-items: flex-end;
+  font-size: 12px;
+  color: #888;
+  gap: 2px;
+  white-space: normal;
 }
 
-.proposal-detail-header {
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin-bottom: 18px;
-  gap: 12px;
-  position: absolute;
-  top: 24px;
-  left: 0;
-  right: 0;
-  padding: 0 32px;
-}
-
-.discussion-btn {
-  background: #fff;
-  border: 1.5px solid #bbb;
-  border-radius: 20px;
-  padding: 7px 22px;
-  font-size: 1rem;
+.author {
   font-weight: 500;
-  cursor: pointer;
-  margin-right: auto;
-  transition: border 0.15s;
+  margin-bottom: 0;
+  white-space: nowrap;
 }
 
-.discussion-btn:hover {
-  border: 1.5px solid #888;
-}
-
-.proposal-detail-actions {
+.timestamp {
   display: flex;
-  gap: 18px;
-  font-size: 1.6rem;
+  align-items: center;
+  margin-top: 0;
+  white-space: nowrap;
 }
 
-.proposal-detail-actions .action-yes { color: #3cb371; }
-.proposal-detail-actions .action-neutral { color: #aaa; }
-.proposal-detail-actions .action-no { color: #e74c3c; }
-
-.proposal-detail-content {
+/* 카드 본문 (TL;DR 및 남은 시간) */
+.card-body {
+  /* 이 부분이 남은 공간을 모두 차지하여 푸터를 맨 아래로 밀어냄 */
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+}
+
+.summary {
+  font-size: 14px;
+  color: #333;
+  margin: 0 0 16px 0;
+}
+
+.time-left-label {
+  font-size: 12px;
+  color: #888;
+  margin: 0;
+}
+
+.time-left-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: #000;
+  margin: 4px 0 0 0;
+}
+
+/* 카드 푸터 (투표 버튼들) */
+.card-footer {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  margin-top: 60px;
-  width: 100%;
+  padding-top: 16px;
+  margin-top: 24px;
+  border-top: 1px solid #f0f0f0;
 }
 
-.proposal-detail-emoji {
-  font-size: 2.8rem;
-  margin-bottom: 18px;
+/* 개별 투표 버튼 공통 스타일 */
+.vote-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid #e0e0e0;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  /* 기호가 아이콘처럼 보이도록 폰트 크기와 굵기 조절 */
+  font-size: 24px;
+  font-weight: bold;
+  transition: all 0.2s ease-in-out;
 }
 
-.proposal-detail-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  text-align: center;
+/* 찬성 버튼 (초록색) */
+.vote-for {
+  color: #4caf50;
+}
+.vote-for:hover {
+  background-color: #e8f5e9;
+  border-color: #a5d6a7;
+}
+
+/* 기권 버튼 (회색) */
+.vote-abstain {
+  color: #9e9e9e;
+}
+.vote-abstain:hover {
+  background-color: #f5f5f5;
+  border-color: #bdbdbd;
+}
+
+/* 반대 버튼 (빨간색) */
+.vote-against {
+  color: #f44336;
+}
+.vote-against:hover {
+  background-color: #ffebee;
+  border-color: #ef9a9a;
 }

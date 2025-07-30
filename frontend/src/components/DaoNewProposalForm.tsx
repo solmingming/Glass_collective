@@ -9,13 +9,21 @@ const NewProposalForm: React.FC<NewProposalFormProps> = ({ onBack }) => {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
 
+  const handlePublish = () => {
+    // TODO: 여기에 제안을 저장/발행하는 로직 추가
+    console.log('Publishing proposal:', { title, desc });
+    
+    // 발행 후 다시 DaoProposal로 이동
+    onBack();
+  };
+
   return (
     <div className="new-proposal-container">
       <div className="new-proposal-main">
         <div className="new-proposal-header">
           <button className="back-btn" onClick={onBack}>←</button>
           <h2>New Proposals</h2>
-          <button className="publish-btn">Publish ➤</button>
+          <button className="publish-btn" onClick={handlePublish}>Publish ➤</button>
         </div>
         <div className="new-proposal-form">
           <input
@@ -46,13 +54,13 @@ const NewProposalForm: React.FC<NewProposalFormProps> = ({ onBack }) => {
         </div>
         <div className="timeline">
           <div>Time line</div>
-          <div className="timeline-dot created">
+          <div className="proposal-timeline-item created">
             <span className="dot" /> created <span className="date">2023.07.17</span>
           </div>
-          <div className="timeline-dot start">
+          <div className="proposal-timeline-item start">
             <span className="dot" /> start <span className="date">2023.07.17/00:00</span>
           </div>
-          <div className="timeline-dot end">
+          <div className="proposal-timeline-item end">
             <span className="dot" /> end <span className="date">2023.08.01/00:00</span>
           </div>
         </div>

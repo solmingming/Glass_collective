@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, useParams, Outlet } from 'react-router-dom';
 import Home from './pages/Home';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
 import CollectivesSearch from './components/CollectivesSearch';
 import ScrollProgress from './components/ScrollProgress';
 import MouseFollower from './components/MouseFollower';
+import CreateDAO from './components/CreateDAO';
 
 // DAO 페이지 컴포넌트들
 import LogoSidebar from './components/LogoSidebar';
@@ -18,19 +19,21 @@ import DaoHistory from './components/DaoHistory';
 // CSS 파일들을 동적으로 import
 import './App.css'; // 랜딩페이지용 스타일
 
-// DAO 페이지용 탭 리스트
-const daoTabList = [
-  { key: "overview", path: "/dao/overview", label: "Overview" },
-  { key: "proposal", path: "/dao/proposal", label: "Proposal" },
-  { key: "history", path: "/dao/history", label: "History" },
-];
 
 // DAO 페이지 레이아웃 컴포넌트
 const DaoLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { id } = useParams(); // id 추출
   const [currentTab, setCurrentTab] = useState(0);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
+
+  // daoTabList를 id에 따라 동적으로 생성
+  const daoTabList = [
+    { key: "overview", path: `/collective/${id}/overview`, label: "Overview" },
+    { key: "proposal", path: `/collective/${id}/proposal`, label: "Proposal" },
+    { key: "history", path: `/collective/${id}/history`, label: "History" },
+  ];
 
   // DAO 페이지용 CSS 동적 로딩
   useEffect(() => {
@@ -71,7 +74,7 @@ const DaoLayout: React.FC = () => {
     <div className="dao-app-container">
       <LogoSidebar />
       <div className="right-area">
-        <Header walletAddress={walletAddress || undefined} />
+        <Header walletAddress={walletAddress || undefined} daoName={id} />
         <div className="content-row">
           <MenuSidebar
             tabList={daoTabList}
@@ -110,6 +113,7 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />
         <Route path="/collectives-search" element={<CollectivesSearch />} />
+        <Route path="/create-dao" element={<CreateDAO />} />
         
         {/* DAO 페이지 라우트들 */}
         <Route path="/dao" element={<DaoLayout />}>

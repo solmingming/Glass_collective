@@ -5,7 +5,7 @@ import Navigation from '../components/Navigation';
 import ValueCard from '../components/ValueCard';
 import FeatureCard from '../components/FeatureCard';
 import GlassScore from '../components/GlassScore';
-import ObjectImage from '../components/ObjectImage';
+
 import ScrollSnap from '../components/ScrollSnap';
 import { useNavigate } from 'react-router-dom';
 
@@ -21,7 +21,7 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
 
   // Define sections for scroll snap
-  const sections = ['hero', 'philosophy', 'about', 'features', 'values', 'gallery', 'score', 'cta'];
+  const sections = ['hero', 'philosophy', 'about', 'features', 'values', 'score', 'cta'];
 
   // Intersection observers for each section
   const [heroRef, heroInView] = useInView({
@@ -49,10 +49,7 @@ const Home: React.FC = () => {
     triggerOnce: false
   });
 
-  const [galleryRef, galleryInView] = useInView({
-    threshold: 0.2,
-    triggerOnce: false
-  });
+
 
   const [scoreRef, scoreInView] = useInView({
     threshold: 0.2,
@@ -70,7 +67,6 @@ const Home: React.FC = () => {
     about: aboutRef,
     features: featuresRef,
     values: valuesRef,
-    gallery: galleryRef,
     score: scoreRef,
     cta: ctaRef,
   };
@@ -98,13 +94,12 @@ const Home: React.FC = () => {
   useEffect(() => {
     if (ctaInView) setActiveSection('cta');
     else if (scoreInView) setActiveSection('score');
-    else if (galleryInView) setActiveSection('gallery');
     else if (valuesInView) setActiveSection('values');
     else if (featuresInView) setActiveSection('features');
     else if (aboutInView) setActiveSection('about');
     else if (philosophyInView) setActiveSection('philosophy');
     else if (heroInView) setActiveSection('hero');
-  }, [heroInView, philosophyInView, aboutInView, featuresInView, valuesInView, galleryInView, scoreInView, ctaInView]);
+  }, [heroInView, philosophyInView, aboutInView, featuresInView, valuesInView, scoreInView, ctaInView]);
 
   // Handle section change from ScrollSnap
   const handleSectionChange = (sectionId: string) => {
@@ -704,102 +699,7 @@ const Home: React.FC = () => {
             </div>
           </section>
 
-          {/* Glass Objects Gallery */}
-          <section 
-            id="gallery" 
-            ref={galleryRef}
-            className={`section ${activeSection === 'gallery' ? 'active' : ''}`}
-            style={{ background: 'var(--glass-gray-50)' }}
-          >
-            <div className="container">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ 
-                  opacity: galleryInView ? 1 : 0, 
-                  y: galleryInView ? 0 : 30 
-                }}
-                transition={{ duration: 0.8 }}
-                className="text-center mb-2xl"
-              >
-                <h2>Glass Objects</h2>
-                <p className="max-w-2xl mx-auto">
-                  Glass objects symbolizing transparency and immutability<br />
-                  Each expressing our core values.
-                </p>
-              </motion.div>
 
-              <motion.div 
-                className="grid grid-4"
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ 
-                  opacity: galleryInView ? 1 : 0, 
-                  y: galleryInView ? 0 : 50 
-                }}
-                transition={{ duration: 1, delay: 0.3 }}
-              >
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ 
-                    opacity: galleryInView ? 1 : 0, 
-                    scale: galleryInView ? 1 : 0.8 
-                  }}
-                  transition={{ duration: 0.6, delay: 0.4 }}
-                >
-                  <ObjectImage 
-                    src={object1Main} 
-                    alt="Glass Object 1" 
-                    size="medium"
-                    delay={0.1}
-                  />
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ 
-                    opacity: galleryInView ? 1 : 0, 
-                    scale: galleryInView ? 1 : 0.8 
-                  }}
-                  transition={{ duration: 0.6, delay: 0.6 }}
-                >
-                  <ObjectImage 
-                    src={object2Main} 
-                    alt="Glass Object 2" 
-                    size="medium"
-                    delay={0.2}
-                  />
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ 
-                    opacity: galleryInView ? 1 : 0, 
-                    scale: galleryInView ? 1 : 0.8 
-                  }}
-                  transition={{ duration: 0.6, delay: 0.8 }}
-                >
-                  <ObjectImage 
-                    src={object1Main} 
-                    alt="Glass Object 3" 
-                    size="medium"
-                    delay={0.3}
-                  />
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ 
-                    opacity: galleryInView ? 1 : 0, 
-                    scale: galleryInView ? 1 : 0.8 
-                  }}
-                  transition={{ duration: 0.6, delay: 1.0 }}
-                >
-                  <ObjectImage 
-                    src={object2Main} 
-                    alt="Glass Object 4" 
-                    size="medium"
-                    delay={0.4}
-                  />
-                </motion.div>
-              </motion.div>
-            </div>
-          </section>
 
           {/* Glass Score & Corruption Index Section */}
           <section 

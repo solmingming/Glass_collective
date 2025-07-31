@@ -266,7 +266,7 @@ const Home: React.FC = () => {
                   ease: "easeOut" 
                 }}
               >
-                test해보아요요
+                구조로 신뢰를 증명하는 무결성2
               </motion.p>
 
               <motion.div

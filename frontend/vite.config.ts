@@ -6,5 +6,21 @@ export default defineConfig({
   plugins: [react()],
   server: {
     headers: {}
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ethers: ['ethers'],
+          three: ['three', '@react-three/fiber', '@react-three/drei']
+        }
+      }
+    }
+  },
+  define: {
+    global: 'globalThis'
   }
 })

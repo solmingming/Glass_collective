@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/$1"
+    }
+  ],
+  "env": {
+    "VITE_INFURA_PROJECT_ID": "@vite_infura_project_id",
+    "VITE_DAO_FACTORY_ADDRESS": "@vite_dao_factory_address",
+    "VITE_NETWORK_NAME": "sepolia",
+    "VITE_CHAIN_ID": "11155111"
+  }
+} 

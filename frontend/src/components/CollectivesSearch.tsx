@@ -589,7 +589,7 @@ const CollectivesSearch: React.FC = () => {
               }}
             >
               <span style={{ fontSize: '16px' }}>+</span>
-              Create Collective
+              Create!!
             </button>
             
             {/* Join with NFT 버튼

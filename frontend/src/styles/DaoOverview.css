@@ -40,6 +40,50 @@
   flex: 1;
 }
 
+/* --- *** NEW: DAO 통계 섹션 스타일 *** --- */
+.dao-overview-page .dao-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 120px;
+}
+
+.dao-overview-page .stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.dao-overview-page .stat-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+.dao-overview-page .stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dao-overview-page .stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dao-overview-page .stat-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #000000;
+}
+
 .dao-overview-page .dao-avatar-container {
   position: relative;
   flex-shrink: 0;
@@ -400,6 +444,17 @@
     flex-direction: column;
     text-align: center;
     gap: 12px;
+  }
+  
+  .dao-overview-page .dao-stats {
+    flex-direction: row;
+    justify-content: space-between;
+    min-width: auto;
+  }
+  
+  .dao-overview-page .stat-item {
+    flex: 1;
+    justify-content: center;
   }
   
   .dao-overview-page .dao-avatar {

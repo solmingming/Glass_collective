@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\Users\\jong0\\Desktop\\madcamp4_fin\\Glass_collective\\contracts\\DAO.sol": {
-      "lastModificationDate": 1753903760852,
-      "contentHash": "e2453c2ce53335708c5fc7f27e4b4d7e",
+      "lastModificationDate": 1754701145885,
+      "contentHash": "ddd54653c4a9ad5b21e2cea0c9b16052",
       "sourceName": "contracts/DAO.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -380,8 +380,8 @@
       ]
     },
     "C:\\Users\\jong0\\Desktop\\madcamp4_fin\\Glass_collective\\contracts\\DAOFactory.sol": {
-      "lastModificationDate": 1753903589596,
-      "contentHash": "d81c6bb83f43aabeb138195150a42cd3",
+      "lastModificationDate": 1753907001321,
+      "contentHash": "1864565e301c943517ae6f3b56cbf3fe",
       "sourceName": "contracts/DAOFactory.sol",
       "solcConfig": {
         "version": "0.8.20",

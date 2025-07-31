@@ -1,64 +1,128 @@
-import React, { useState, useEffect } from 'react';
-import '../styles/DaoHistory.css'; // 일반 CSS 파일 임포트
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
+import { contractService } from '../services/contractService';
+import '../styles/DaoHistory.css';
+import { ethers } from 'ethers';
 
-// 히스토리 아이템의 타입을 정의합니다.
+// --- *** 1. MODIFIED: 히스토리 아이템 타입을 실제 데이터에 맞게 확장 *** ---
 type HistoryItem = {
-  id: number;
   type: 'proposal' | 'member_event';
-  date: string; // 날짜별로 그룹화하기 위한 필드
-  actor?: string;
+  timestamp: number;
+  // Proposal 타입일 때
+  proposalId?: number;
+  title?: string;
+  proposer?: string;
+  sanctionType?: string;
+  amount?: bigint;
+  recipient?: string;
+  ruleToChange?: string;
+  newValue?: bigint;
+  // Member Event 타입일 때
   action?: 'join' | 'leave';
+  actor?: string;
 };
 
-// 디자인과 똑같이 보이도록 만든 임시(mock) 데이터
-const mockHistoryData: HistoryItem[] = [
-  { id: 1, type: 'proposal', date: '2025.07.29' },
-  { id: 2, type: 'member_event', date: '2025.07.29', actor: '0xa123bfe...', action: 'join' },
-  { id: 3, type: 'proposal', date: '2025.07.29' },
-  { id: 4, type: 'proposal', date: '2025.07.28' },
-  { id: 5, type: 'member_event', date: '2025.07.27', actor: '0x456...', action: 'leave' },
-  { id: 6, type: 'proposal', date: '2025.07.27' },
-];
+// --- 헬퍼 함수들 ---
+const formatDate = (timestamp: number): string => {
+  return new Date(timestamp * 1000).toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+};
+
+const formatAddress = (address: string = ''): string => {
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+};
+
+const getProposalPurpose = (item: HistoryItem): string => {
+    if (item.sanctionType === 'treasury-in') return `💰 Treasury Deposit: ${ethers.formatEther(item.amount || 0)} ETH`;
+    if (item.sanctionType === 'treasury-out') return `💸 Payout to ${formatAddress(item.recipient)}: ${ethers.formatEther(item.amount || 0)} ETH`;
+    if (item.sanctionType === 'rule-change') return `📜 Rule Change: ${item.ruleToChange} → ${item.newValue}`;
+    return '📋 General Proposal';
+};
+
 
 const DaoHistory: React.FC = () => {
+  const { id: daoAddress } = useParams<{ id: string }>();
+
+  // --- *** 2. MODIFIED: 상태 타입을 새로운 HistoryItem으로 변경 *** ---
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string>("");
+
+  // --- 데이터 로딩 ---
+  const fetchHistory = useCallback(async () => {
+    if (!daoAddress) return;
+    setIsLoading(true);
+    try {
+      const history = await contractService.getDaoHistory(daoAddress);
+      setHistoryItems(history);
+    } catch (err) {
+      setError("Failed to load DAO history.");
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [daoAddress]);
 
   useEffect(() => {
-    setTimeout(() => {
-      setHistoryItems(mockHistoryData);
-      setLoading(false);
-    }, 500);
-  }, []);
+    fetchHistory();
+  }, [fetchHistory]);
 
-  if (loading) {
-    return <div className="history-container">Loading History...</div>;
-  }
+
+  if (isLoading) return <div className="history-container status-message">Loading History...</div>;
+  if (error) return <div className="history-container status-message error">{error}</div>;
 
   return (
     <div className="history-container">
-      <h1 className="history-title">History</h1>
+      <h1 className="history-title">Activity History</h1>
       <div className="history-timeline">
-        {/* 세로선: 타임라인 전체를 관통하는 중앙선 */}
         <div className="vertical-line" />
-        {historyItems.map((item, index) => {
-          const showDateHeader = index === 0 || historyItems[index - 1].date !== item.date;
-          return (
-            <div key={item.id} className="timeline-item">
-              {showDateHeader && (
-                <span className="date-header-inline">{item.date}</span>
-              )}
-              {item.type === 'proposal' ? (
-                <div className="proposal-placeholder center-timeline-item"></div>
-              ) : (
-                <>
-                  <div className="timeline-dot center-timeline-item"></div>
-                  <span className="event-desc-separate">{item.actor} {item.action}</span>
-                </>
-              )}
-            </div>
-          );
-        })}
+        
+        {/* --- *** 3. MODIFIED: 실제 데이터를 기반으로 타임라인 렌더링 *** --- */}
+        {historyItems.length === 0 ? (
+            <div className="no-history">No activities found yet.</div>
+        ) : (
+          historyItems.map((item, index) => {
+            const currentDate = formatDate(item.timestamp);
+            const prevDate = index > 0 ? formatDate(historyItems[index - 1].timestamp) : null;
+            const showDateHeader = index === 0 || currentDate !== prevDate;
+            
+            return (
+              <div key={`${item.type}-${item.timestamp}-${index}`} className="timeline-item">
+                {showDateHeader && (
+                  <div className="date-header">{currentDate}</div>
+                )}
+                
+                {item.type === 'proposal' ? (
+                  // 제안 이벤트 렌더링 (네모 박스)
+                  <div className="timeline-content proposal">
+                    <div className="timeline-icon proposal-icon">📄</div>
+                    <div className="content-details">
+                      <div className="content-title">
+                        New Proposal Created: #{item.proposalId} {item.title}
+                      </div>
+                      <div className="content-purpose">{getProposalPurpose(item)}</div>
+                      <div className="content-actor">by {formatAddress(item.proposer)}</div>
+                    </div>
+                  </div>
+                ) : (
+                  // 멤버 이벤트 렌더링 (동그라미)
+                  <div className="timeline-content member-event">
+                    <div className={`timeline-icon member-icon ${item.action}`}>{item.action === 'join' ? '🎉' : '👋'}</div>
+                    <div className="content-details">
+                      <div className="content-title">
+                        <span className="actor-address">{formatAddress(item.actor)}</span>
+                        {item.action === 'join' ? ' joined the collective.' : ' left the collective.'}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );

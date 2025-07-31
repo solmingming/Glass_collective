@@ -67,6 +67,47 @@ const DaoOverview: React.FC = () => {
     try {
       // 항상 DAO의 공개 정보를 먼저 로드
       const details = await contractService.getDaoDetails(daoId);
+      
+      // 가결된 규칙 변경 제안 확인 및 적용
+      try {
+        const proposals = await contractService.getAllProposals(daoId);
+        const passedRuleChanges = proposals.filter((prop: any, index: number) => {
+          const proposalId = proposals.length - 1 - index;
+          const status = Number(prop.status);
+          const isRuleChange = prop.sanctionType === 'rule-change';
+          return status === 1 && isRuleChange; // 1 = Passed
+        });
+        
+        // 가결된 규칙 변경을 적용
+        if (passedRuleChanges.length > 0) {
+          console.log("Found passed rule changes:", passedRuleChanges);
+          
+          // 가결된 규칙 변경을 details에 적용
+          passedRuleChanges.forEach((proposal: any) => {
+            const ruleName = proposal.title;
+            const newValue = Number(proposal.afterValue);
+            
+            if (ruleName === 'passCriteria') {
+              details.rules.passCriteria = newValue;
+            } else if (ruleName === 'votingDuration') {
+              details.rules.votingDuration = newValue;
+            } else if (ruleName === 'absentPenalty') {
+              details.rules.absentPenalty = (newValue / 1e18).toString() + ' ETH';
+            } else if (ruleName === 'countToExpel') {
+              details.rules.countToExpel = newValue;
+            } else if (ruleName === 'scoreToExpel') {
+              details.rules.scoreToExpel = newValue;
+            } else if (ruleName === 'entryFee') {
+              details.rules.entryFee = (newValue / 1e18).toString() + ' ETH';
+            }
+          });
+          
+          console.log("Updated DAO rules:", details.rules);
+        }
+      } catch (proposalError) {
+        console.warn("Failed to check rule changes:", proposalError);
+      }
+      
       setDaoDetails(details);
       
       const accounts = await window.ethereum?.request({ method: 'eth_accounts' });
@@ -74,7 +115,7 @@ const DaoOverview: React.FC = () => {
 
       if (currentAddress && details) {
         setWalletAddress(currentAddress);
-        const memberStatus = details.members.map(addr => addr.toLowerCase()).includes(currentAddress);
+        const memberStatus = details.members.map((addr: string) => addr.toLowerCase()).includes(currentAddress);
         setIsMember(memberStatus);
         
         // 멤버 상태에 따라 점수 설정
@@ -162,6 +203,24 @@ const DaoOverview: React.FC = () => {
     <div className="dao-overview-page overview-container loaded">
       <div className="dao-header-section">
         <div className="dao-profile">
+          {/* --- *** NEW: 공동금고 잔액과 멤버 수 표시 *** --- */}
+          <div className="dao-stats">
+            <div className="stat-item">
+              <div className="stat-icon">💰</div>
+              <div className="stat-content">
+                <div className="stat-label">Treasury</div>
+                <div className="stat-value">{daoDetails.treasuryBalance} Sep ETH</div>
+              </div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-icon">👥</div>
+              <div className="stat-content">
+                <div className="stat-label">Members</div>
+                <div className="stat-value">{daoDetails.participants}</div>
+              </div>
+            </div>
+          </div>
+          
           <div className="dao-info">
             <div className="dao-name">{daoDetails.name}</div>
             <div className="dao-description">{daoDetails.description}</div>

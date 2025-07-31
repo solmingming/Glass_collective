@@ -21,6 +21,61 @@ const NewProposalForm: React.FC<NewProposalFormProps> = ({ onProposalCreated, on
   const [ruleToChange, setRuleToChange] = useState("passCriteria");
   const [newValue, setNewValue] = useState("");
 
+  // --- *** NEW: 규칙별 입력 범위 설정 함수 *** ---
+  const getRuleInputConfig = (rule: string) => {
+    switch (rule) {
+      case 'passCriteria':
+        return {
+          min: 1,
+          max: 100,
+          step: 1,
+          placeholder: "Enter percentage (1-100%)"
+        };
+      case 'votingDuration':
+        return {
+          min: 1,
+          max: 365,
+          step: 1,
+          placeholder: "Enter days (1-365)"
+        };
+      case 'entryFee':
+        return {
+          min: 0,
+          max: 100,
+          step: 0.01,
+          placeholder: "Enter ETH amount (0-100)"
+        };
+      case 'absentPenalty':
+        return {
+          min: 0,
+          max: 100,
+          step: 0.01,
+          placeholder: "Enter ETH amount (0-100)"
+        };
+      case 'countToExpel':
+        return {
+          min: 1,
+          max: 50,
+          step: 1,
+          placeholder: "Enter count (1-50)"
+        };
+      case 'scoreToExpel':
+        return {
+          min: 0,
+          max: 1000,
+          step: 1,
+          placeholder: "Enter score (0-1000)"
+        };
+      default:
+        return {
+          min: 0,
+          max: 999999,
+          step: 1,
+          placeholder: "Enter new value"
+        };
+    }
+  };
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -49,6 +104,16 @@ const NewProposalForm: React.FC<NewProposalFormProps> = ({ onProposalCreated, on
       case 'rule-change':
         if (!description.trim() || !newValue.trim()) 
           validationError = "Please provide a description and a new value.";
+        else {
+          // 범위 검증 로직 추가
+          const config = getRuleInputConfig(ruleToChange);
+          const numValue = Number(newValue);
+          if (isNaN(numValue)) {
+            validationError = "Please enter a valid number.";
+          } else if (numValue < config.min || numValue > config.max) {
+            validationError = `Please enter a value between ${config.min} and ${config.max} for ${ruleToChange}.`;
+          }
+        }
         break;
     }
 
@@ -152,7 +217,20 @@ const NewProposalForm: React.FC<NewProposalFormProps> = ({ onProposalCreated, on
             </div>
             <div>
               <label>New Value:</label>
-              <input type="number" placeholder="Enter new value for the rule" value={newValue} onChange={e => setNewValue(e.target.value)} />
+              {(() => {
+                const config = getRuleInputConfig(ruleToChange);
+                return (
+                  <input 
+                    type="number" 
+                    min={config.min}
+                    max={config.max}
+                    step={config.step}
+                    placeholder={config.placeholder}
+                    value={newValue} 
+                    onChange={e => setNewValue(e.target.value)} 
+                  />
+                );
+              })()}
             </div>
           </div>
         )}

@@ -52,10 +52,20 @@ export interface ProposalCreationData {
 
 // .env 환경 변수 로드 (Vite 환경)
 const INFURA_PROJECT_ID = import.meta.env.VITE_INFURA_PROJECT_ID;
-const DAO_FACTORY_ADDRESS = import.meta.env.VITE_DAO_FACTORY_ADDRESS;
+const DAO_FACTORY_ADDRESS = import.meta.env.VITE_DAO_FACTORY_ADDRESS || "0xf1cD4D3299f9D11aaF88e0878A24145Ab5Af7f42";
 
-if (!INFURA_PROJECT_ID || !DAO_FACTORY_ADDRESS) {
-  throw new Error("Required environment variables are not set in .env file.");
+console.log("=== Environment Variables Debug ===");
+console.log("VITE_INFURA_PROJECT_ID:", import.meta.env.VITE_INFURA_PROJECT_ID);
+console.log("VITE_DAO_FACTORY_ADDRESS:", import.meta.env.VITE_DAO_FACTORY_ADDRESS);
+console.log("Using DAO_FACTORY_ADDRESS:", DAO_FACTORY_ADDRESS);
+console.log("===================================");
+
+if (!INFURA_PROJECT_ID) {
+  throw new Error("VITE_INFURA_PROJECT_ID is not set in .env file.");
+}
+
+if (!DAO_FACTORY_ADDRESS) {
+  throw new Error("VITE_DAO_FACTORY_ADDRESS is not set in .env file.");
 }
 
 const SEPOLIA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_PROJECT_ID}`;
@@ -152,7 +162,23 @@ class ContractService {
         const vaultContractAddress = await daoContract.vaultContract();
         const proposalContract = new ethers.Contract(proposalContractAddress, ProposalABI.abi, this.provider);
         const vaultContract = new ethers.Contract(vaultContractAddress, VaultABI.abi, this.provider);
-        const [memberCount, treasuryBalance] = await Promise.all([proposalContract.getMemberCount(), vaultContract.getBalance()]);
+        
+        let memberCount = 0;
+        let treasuryBalance = "0";
+        
+        try {
+          const [memberCountResult, treasuryBalanceResult] = await Promise.all([
+            proposalContract.getMemberCount(), 
+            vaultContract.getBalance()
+          ]);
+          memberCount = Number(memberCountResult);
+          treasuryBalance = ethers.formatEther(treasuryBalanceResult);
+        } catch (error) {
+          console.warn(`Failed to get details for DAO ${daoAddress}:`, error);
+          // 기본값으로 설정
+          memberCount = 9999;
+          treasuryBalance = "0";
+        }
         
         return {
           id: daoAddress,
@@ -160,12 +186,13 @@ class ContractService {
           name: name,
           description: description,
           category: category,
-          participants: Number(memberCount),
-          treasuryBalance: ethers.formatEther(treasuryBalance),
+          participants: memberCount,
+          treasuryBalance: treasuryBalance,
           isActive: true,
           collectiveType: isPrivate ? 'private' : 'public',
         };
       } catch (error) {
+        console.warn(`Failed to process DAO ${daoAddress}:`, error);
         return null;
       }
     });
@@ -284,7 +311,8 @@ class ContractService {
       absentPenalty,
       countToExpel,
       scoreToExpel,
-      entryFee
+      entryFee,
+      vaultAddress
     ] = await Promise.all([
       daoContract.isPrivate(),
       proposalContract.getAllMembers(),
@@ -293,10 +321,22 @@ class ContractService {
       daoContract.absentPenalty(),
       daoContract.countToExpel(),
       daoContract.scoreToExpel(),
-      daoContract.entryFee()
+      daoContract.entryFee(),
+      daoContract.vaultContract()
     ]);
 
-    // --- 1-C. 모든 정보를 취합하여 최종 객체 반환 ---
+    // --- 1-C. Vault 컨트랙트에서 잔액 가져오기 ---
+    let treasuryBalance = "0";
+    try {
+      const vaultContract = new ethers.Contract(vaultAddress, VaultABI.abi, this.provider);
+      const balanceInWei = await vaultContract.getBalance();
+      treasuryBalance = ethers.formatEther(balanceInWei);
+    } catch (error) {
+      console.warn("Failed to get vault balance:", error);
+      treasuryBalance = "0";
+    }
+
+    // --- 1-D. 모든 정보를 취합하여 최종 객체 반환 ---
     return {
       id: daoAddress,
       contractAddress: daoAddress,
@@ -305,6 +345,7 @@ class ContractService {
       category, // <-- 이제 실제 이벤트 로그에서 가져온 값
       collectiveType: isPrivate ? 'private' : 'public',
       participants: members.length,
+      treasuryBalance, // <-- Vault에서 가져온 잔액
       members,
       rules: {
         passCriteria: Number(passCriteria),
@@ -384,6 +425,131 @@ class ContractService {
     const daoContract = new ethers.Contract(daoAddress, DaoABI.abi, this.signer);
     const tx = await daoContract.finalizeProposal(proposalId);
     return await tx.wait();
+  }
+
+  // 제안의 투표 현황을 확인하는 함수
+  async getProposalVoteStatus(daoAddress: string, proposalId: number): Promise<{
+    votesFor: number;
+    votesAgainst: number;
+    votesAbstain: number;
+    totalVotes: number;
+    memberCount: number;
+    canFinalize: boolean;
+  }> {
+    const daoContract = new ethers.Contract(daoAddress, DaoABI.abi, this.provider);
+    const proposalContractAddress = await daoContract.proposalContract();
+    const proposalContract = new ethers.Contract(proposalContractAddress, ProposalABI.abi, this.provider);
+    
+    const proposal = await proposalContract.getProposal(proposalId);
+    const memberCount = await proposalContract.getMemberCount();
+    
+    // 추가 디버깅: proposalDeadline 확인
+    try {
+      const proposalDeadline = await daoContract.proposalDeadline(proposalId);
+      const currentTime = Math.floor(Date.now() / 1000); // 현재 시간 (초)
+      console.log(`Proposal ${proposalId} deadline info:`, {
+        proposalDeadline: Number(proposalDeadline),
+        currentTime,
+        isDeadlineReached: Number(proposalDeadline) < currentTime
+      });
+    } catch (error) {
+      console.log(`Could not fetch proposal deadline for ${proposalId}:`, error);
+    }
+    
+    const votesFor = Number(proposal.votesFor);
+    const votesAgainst = Number(proposal.votesAgainst);
+    const votesAbstain = Number(proposal.votesAbstain);
+    const totalVotes = votesFor + votesAgainst + votesAbstain;
+    
+    // 모든 멤버가 투표했는지 확인 (더 정확한 계산)
+    const memberCountNum = Number(memberCount);
+    const allMembersVoted = totalVotes >= memberCountNum && memberCountNum > 0;
+    
+    console.log(`Proposal ${proposalId} vote status:`, {
+      votesFor,
+      votesAgainst,
+      votesAbstain,
+      totalVotes,
+      memberCount: memberCountNum,
+      canFinalize: allMembersVoted,
+      proposalStatus: proposal.status
+    });
+    
+    return {
+      votesFor,
+      votesAgainst,
+      votesAbstain,
+      totalVotes,
+      memberCount: memberCountNum,
+      canFinalize: allMembersVoted
+    };
+  }
+
+  // --- *** 1. NEW: 히스토리 페이지를 위한 이벤트 로그 조회 함수 *** ---
+  async getDaoHistory(daoAddress: string): Promise<any[]> {
+    if (!ethers.isAddress(daoAddress)) {
+      throw new Error(`Invalid DAO address: ${daoAddress}`);
+    }
+
+    const daoContract = new ethers.Contract(daoAddress, DaoABI.abi, this.provider);
+    const proposalContractAddress = await daoContract.proposalContract();
+    const proposalContract = new ethers.Contract(proposalContractAddress, ProposalABI.abi, this.provider);
+
+    // --- 1-A. 제안 생성 이벤트(ProposalCreated) 조회 ---
+    const proposalFilter = proposalContract.filters.ProposalCreated();
+    const proposalEvents = await proposalContract.queryFilter(proposalFilter);
+
+    const proposalHistory = await Promise.all(proposalEvents.map(async (event) => {
+      const block = await event.getBlock();
+      const proposal = await proposalContract.getProposal(event.args.id);
+      return {
+        type: 'proposal',
+        timestamp: block.timestamp,
+        proposalId: Number(event.args.id),
+        title: proposal.title,
+        proposer: event.args.proposer,
+        sanctionType: proposal.sanctionType,
+        amount: proposal.amount,
+        recipient: proposal.recipient,
+        ruleToChange: proposal.title,
+        newValue: proposal.afterValue
+      };
+    }));
+    
+    // --- 1-B. 멤버 가입 이벤트(RoleGranted) 조회 ---
+    const memberRole = await proposalContract.MEMBER_ROLE();
+    const joinFilter = proposalContract.filters.RoleGranted(memberRole);
+    const joinEvents = await proposalContract.queryFilter(joinFilter);
+    
+    const joinHistory = await Promise.all(joinEvents.map(async (event) => {
+      const block = await event.getBlock();
+      return {
+        type: 'member_event',
+        action: 'join',
+        timestamp: block.timestamp,
+        actor: event.args.account,
+      };
+    }));
+
+    // --- 1-C. 멤버 탈퇴 이벤트(RoleRevoked) 조회 (leaveDAO 기능이 있을 경우) ---
+    const leaveFilter = proposalContract.filters.RoleRevoked(memberRole);
+    const leaveEvents = await proposalContract.queryFilter(leaveFilter);
+
+    const leaveHistory = await Promise.all(leaveEvents.map(async (event) => {
+      const block = await event.getBlock();
+      return {
+        type: 'member_event',
+        action: 'leave',
+        timestamp: block.timestamp,
+        actor: event.args.account,
+      };
+    }));
+
+    // --- 1-D. 모든 이벤트를 합치고 시간 역순(최신순)으로 정렬 ---
+    const allHistory = [...proposalHistory, ...joinHistory, ...leaveHistory];
+    allHistory.sort((a, b) => b.timestamp - a.timestamp);
+    
+    return allHistory;
   }
 }
 

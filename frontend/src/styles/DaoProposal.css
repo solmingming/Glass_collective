@@ -1,330 +1,287 @@
-/* DaoProposal.css */
-
-/* 전체 컨테이너 스타일 */
-.dao-proposal-container {
-  width: 100%;
-  padding: 24px 32px;
-  background-color: #ffffff;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+/* --- DaoProposal 페이지 전체 레이아웃 --- */
+.dao-proposal-page {
+  padding: 32px;
+  animation: fadeIn 0.5s ease-out;
 }
 
-/* 헤더 ("Proposals" 제목과 생성 버튼) */
-.dao-proposal-header {
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- 페이지 헤더 (제목, 생성 버튼) --- */
+.proposal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
 }
 
-.dao-proposal-header h2 {
+.header-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.proposal-header h1 {
   font-size: 28px;
   font-weight: 600;
-  color: #000000;
+  color: #111827;
   margin: 0;
 }
 
 .create-proposal-btn {
-  background-color: #000;
-  color: #fff;
+  background-color: #4f46e5;
+  color: white;
   border: none;
   border-radius: 8px;
-  padding: 12px 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
   transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .create-proposal-btn:hover {
-  background-color: #333;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  background-color: #4338ca;
+  transform: translateY(-2px);
 }
 
-/* 제안 목록 */
+.refresh-btn {
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+  background-color: #4b5563;
+  transform: translateY(-2px);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+
+/* --- 로딩, 에러, 제안 없음 메시지 --- */
+.status-message, .no-proposals {
+  padding: 40px;
+  text-align: center;
+  font-size: 18px;
+  color: #6b7280;
+}
+.status-message.error {
+  color: #b91c1c;
+}
+
+
+/* --- 제안 목록 --- */
 .proposal-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 320px));
+  gap: 32px; /* 카드 사이의 간격 증가 */
+  max-width: 1400px; /* 최대 너비 제한 */
+  margin: 0; /* 왼쪽 정렬을 위해 auto 제거 */
+  justify-content: start; /* 카드들을 왼쪽부터 정렬 */
 }
 
-/* 개별 제안 카드 스타일 */
+/* --- *** 1. MODIFIED: 개별 제안 카드 스타일 개선 *** --- */
 .proposal-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 16px;
-  background-color: #fff;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.13), 0 1.5px 6px rgba(0,0,0,0.10);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.proposal-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0,0,0,0.12);
-}
-
-.proposal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 16px;
-  margin-bottom: 16px;
-}
-
-.proposal-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #000;
-  margin: 0 0 8px 0;
-  flex: 1;
-}
-
-.proposal-author {
-  font-size: 12px;
-  color: #888;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.proposal-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 16px;
-  font-size: 12px;
-  color: #666;
-}
-
-.proposal-timestamp,
-.proposal-summary,
-.proposal-time-left,
-.proposal-amount {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.proposal-amount {
-  color: #3cb371;
-  font-weight: 500;
-}
-
-.proposal-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: auto;
-}
-
-.vote-btn {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  background-color: #fff;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-}
-
-.vote-for {
-  color: #3cb371;
-  border-color: #3cb371;
-}
-
-.vote-for:hover {
-  background-color: #3cb371;
-  color: #fff;
-}
-
-.vote-abstain {
-  color: #888;
-  border-color: #ccc;
-}
-
-.vote-abstain:hover {
-  background-color: #888;
-  color: #fff;
-}
-
-.vote-against {
-  color: #e74c3c;
-  border-color: #e74c3c;
-}
-
-.vote-against:hover {
-  background-color: #e74c3c;
-  color: #fff;
-}
-
-/* 로딩 및 에러 메시지 */
-.loading-message,
-.error-message,
-.empty-message {
-  text-align: center;
-  padding: 40px 20px;
-  font-size: 16px;
-  color: #666;
-}
-
-.error-message {
-  color: #dc2626;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  margin: 20px 0;
-}
-
-.empty-message {
-  color: #888;
-  font-style: italic;
-}
-
-/* 기존 스타일 유지 (호환성) */
-.proposals-container {
-  width: 100%;
-  padding: 24px 32px;
   background-color: #ffffff;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  border: 1px solid #e5e7eb; /* 은은한 테두리 */
+  border-radius: 12px;
+  padding: 20px; /* 패딩 줄임 */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s ease-in-out;
+  width: 100%; /* 카드 너비 고정 */
+  max-width: 320px; /* 최대 너비 제한 */
+  text-align: center; /* 카드 내부 모든 내용 가운데 정렬 */
+}
+.proposal-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.07);
 }
 
-.proposals-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
 
-.proposals-title {
-  font-size: 28px;
-  font-weight: 600;
-  color: #000000;
-  margin: 0;
-}
-
-.create-proposal-button {
-  background-color: transparent;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  transition: background-color 0.2s;
-}
-
-.create-proposal-button:hover {
-  background-color: #f5f5f5;
-}
-
-.proposals-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
-}
-
+/* --- *** 2. NEW: 카드 헤더 영역 추가 (제목과 상태 태그 분리) *** --- */
 .card-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 16px;
-  margin-bottom: 16px;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f3f4f6; /* 제목과 내용을 구분하는 선 */
 }
 
 .card-title {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 600;
-  color: #000;
-  margin: 0 0 8px 0;
+  color: #1f2937;
+  margin: 0;
 }
 
-.card-meta {
+/* 제안 상태 태그 */
+.status-tag {
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  white-space: nowrap; /* 줄바꿈 방지 */
+}
+.status-tag.pending { background-color: #eff6ff; color: #1d4ed8; }
+.status-tag.passed, .status-tag.executed { background-color: #dcfce7; color: #166534; }
+.status-tag.rejected { background-color: #fee2e2; color: #991b1b; }
+
+
+/* --- *** 2.5. NEW: 제안 목적 섹션 스타일 *** --- */
+.proposal-purpose {
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  border-left: 4px solid #3b82f6;
+}
+
+.purpose-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e40af;
+  display: block;
+}
+
+
+/* --- *** 3. MODIFIED: 카드 본문(설명) 스타일 개선 *** --- */
+.card-description {
+  color: #4b5563;
+  line-height: 1.6;
+  margin-bottom: 32px; /* 간격 증가: 20px → 32px */
+  padding-bottom: 16px;
+  font-size: 16px;
+}
+
+
+/* --- *** 4. MODIFIED: 투표 현황 스타일 개선 *** --- */
+.vote-stats {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  font-size: 12px;
-  color: #888;
-  gap: 2px;
-  white-space: normal;
-}
-
-.author {
-  font-weight: 500;
-  margin-bottom: 0;
-  white-space: nowrap;
-}
-
-.timestamp {
-  display: flex;
-  align-items: center;
-  margin-top: 0;
-  white-space: nowrap;
-}
-
-.card-body {
-  flex: 1;
-  margin-bottom: 16px;
-}
-
-.summary {
+  gap: 12px;
+  margin-bottom: 20px;
   font-size: 14px;
-  color: #666;
-  margin: 0 0 12px 0;
-  line-height: 1.4;
+  color: #374151;
+  align-items: center; /* 투표 현황 가운데 정렬 */
 }
 
-.time-left-container {
+.vote-stats .vote-row {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.vote-stats > span:not(.total-votes) {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+}
+.vote-stats span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.vote-stats strong {
+  font-weight: 700;
+  font-size: 16px;
+  color: #111827;
+  position: relative;
+}
+
+.vote-stats .total-votes {
   margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+  font-size: 13px;
+  color: #6b7280;
 }
 
-.time-left-label {
-  font-size: 12px;
-  color: #888;
-  margin: 0;
-}
-
-.time-left-value {
-  font-size: 12px;
-  font-weight: 600;
-  color: #000;
-  margin: 0;
-}
-
-.card-footer {
+/* --- *** 4.5. NEW: 시간 표시 영역 스타일 *** --- */
+.time-remaining {
   display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 8px;
-  margin-top: auto;
+  margin: 12px 0;
+  padding: 8px 12px;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
 }
 
-.vote-button {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  background-color: #fff;
-  cursor: pointer;
-  font-size: 12px;
+.time-label {
+  font-size: 14px;
+  color: #64748b;
   font-weight: 500;
-  transition: all 0.2s ease;
+}
+
+.time-value {
+  font-size: 14px;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+
+/* --- *** 5. MODIFIED: 액션 버튼 영역 및 버튼 디자인 개선 *** --- */
+.action-buttons {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
+  gap: 12px;
+  margin-top: 16px; /* 위 요소와 간격 */
+  padding-top: 16px;
+  border-top: 1px solid #f3f4f6; /* 액션 영역을 구분하는 선 */
+  justify-content: center; /* 액션 버튼들 가운데 정렬 */
+}
+
+/* 일반 투표 버튼 */
+.action-buttons button {
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  color: #374151;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.action-buttons button:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+.action-buttons button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background-color: #f3f4f6;
+}
+
+/* Finalize 버튼 */
+.action-buttons .finalize-btn {
+  margin-left: auto; /* 오른쪽 끝으로 밀기 */
+  background-color: #1f2937;
+  color: white;
+  border-color: #1f2937;
+}
+.action-buttons .finalize-btn:hover {
+  background-color: #000000;
+}
+
+.voting-ended-text {
+  font-size: 14px;
+  color: #6b7280;
+  font-style: italic;
 }

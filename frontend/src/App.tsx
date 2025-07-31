@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, useParams, Outlet } from 'react-router-dom';
+import { WalletProvider } from './contexts/WalletContext';
 
 // --- 페이지 및 공용 컴포넌트 Import ---
 // *** 1. MODIFIED: 경로를 'pages'로 통일하고 필요한 컴포넌트만 import 합니다. ***
@@ -115,36 +116,38 @@ function App() {
   // }, []);
 
   return (
-    <Router>
-      <Routes>
-        {/* --- *** 5. MODIFIED: 라우트 구조를 명확하게 재구성 *** --- */}
-        
-        {/* 그룹 1: 랜딩 및 일반 페이지 (상단 네비게이션 바 없는 레이아웃) */}
-        <Route path="/" element={<LandingLayout />}>
-          <Route index element={<Home />} />
-          <Route path="contact" element={<Contact />} />
-          <Route path="login" element={<Login />} />
-        </Route>
+    <WalletProvider>
+      <Router>
+        <Routes>
+          {/* --- *** 5. MODIFIED: 라우트 구조를 명확하게 재구성 *** --- */}
+          
+          {/* 그룹 1: 랜딩 및 일반 페이지 (상단 네비게이션 바 없는 레이아웃) */}
+          <Route path="/" element={<LandingLayout />}>
+            <Route index element={<Home />} />
+            <Route path="contact" element={<Contact />} />
+            <Route path="login" element={<Login />} />
+          </Route>
 
-        {/* 그룹 2: 전체 DAO 검색 및 생성 페이지 (별도 레이아웃) */}
-        <Route path="/collectives-search" element={<CollectivesSearch />} />
-        <Route path="/create-dao" element={<CreateDAO />} />
-        
-        {/* 그룹 3: 개별 DAO 상세 페이지 (DAO 전용 레이아웃 사용) */}
-        {/* `/collective/:id` 경로에 접근하면 DaoLayout이 먼저 렌더링됩니다. */}
-        <Route path="/collective/:id" element={<DaoLayout />}>
-          {/* 자식 라우트들: Outlet 위치에 렌더링됩니다. */}
-          <Route index element={<DaoOverview />} /> {/* `/collective/:id` 기본 경로 */}
-          <Route path="overview" element={<DaoOverview />} />
-          <Route path="proposal" element={<DaoProposal />} />
-          <Route path="history" element={<DaoHistory />} />
-        </Route>
-        
-        {/* 존재하지 않는 경로에 대한 처리 (선택 사항) */}
-        <Route path="*" element={<div>404 Not Found</div>} />
+          {/* 그룹 2: 전체 DAO 검색 및 생성 페이지 (별도 레이아웃) */}
+          <Route path="/collectives-search" element={<CollectivesSearch />} />
+          <Route path="/create-dao" element={<CreateDAO />} />
+          
+          {/* 그룹 3: 개별 DAO 상세 페이지 (DAO 전용 레이아웃 사용) */}
+          {/* `/collective/:id` 경로에 접근하면 DaoLayout이 먼저 렌더링됩니다. */}
+          <Route path="/collective/:id" element={<DaoLayout />}>
+            {/* 자식 라우트들: Outlet 위치에 렌더링됩니다. */}
+            <Route index element={<DaoOverview />} /> {/* `/collective/:id` 기본 경로 */}
+            <Route path="overview" element={<DaoOverview />} />
+            <Route path="proposal" element={<DaoProposal />} />
+            <Route path="history" element={<DaoHistory />} />
+          </Route>
+          
+          {/* 존재하지 않는 경로에 대한 처리 (선택 사항) */}
+          <Route path="*" element={<div>404 Not Found</div>} />
 
-      </Routes>
-    </Router>
+        </Routes>
+      </Router>
+    </WalletProvider>
   )
 }
 

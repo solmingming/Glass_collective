@@ -52,9 +52,28 @@ contract DAO {
     
     receive() external payable {}
 
-    function joinDAO() external payable { /* ... 변경 없음 ... */ }
-    function joinDAOWithCode(string memory _inviteCode) external payable { /* ... 변경 없음 ... */ }
-    function _join(uint256 _value) internal { /* ... 변경 없음 ... */ }
+    function joinDAO() external payable {
+        require(!isPrivate, "This is a private DAO. Use joinDAOWithCode instead.");
+        _join(msg.value);
+    }
+    
+    function joinDAOWithCode(string memory _inviteCode) external payable {
+        require(isPrivate, "This is a public DAO. Use joinDAO instead.");
+        require(keccak256(abi.encodePacked(_inviteCode)) == inviteCodeHash, "Invalid invite code");
+        _join(msg.value);
+    }
+    
+    function _join(uint256 _value) internal {
+        require(_value >= entryFee, "Insufficient entry fee");
+        require(!proposalContract.hasRole(proposalContract.MEMBER_ROLE(), msg.sender), "Already a member");
+        
+        // Vault에 입금
+        (bool sent, ) = address(vaultContract).call{value: _value}("");
+        require(sent, "Failed to send entry fee to vault");
+        
+        // Proposal 컨트랙트에서 멤버 역할 부여
+        proposalContract.grantRole(proposalContract.MEMBER_ROLE(), msg.sender);
+    }
     
     function createProposal(
         string calldata title, string calldata description, uint256 amount,

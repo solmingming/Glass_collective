@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\Users\\jong0\\Desktop\\madcamp4_fin\\Glass_collective\\contracts\\DAO.sol": {
-      "lastModificationDate": 1754701145885,
-      "contentHash": "ddd54653c4a9ad5b21e2cea0c9b16052",
+      "lastModificationDate": 1753958417704,
+      "contentHash": "64415dacc32a46ddc205b158f787e789",
       "sourceName": "contracts/DAO.sol",
       "solcConfig": {
         "version": "0.8.20",

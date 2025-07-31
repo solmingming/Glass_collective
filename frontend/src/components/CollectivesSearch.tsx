@@ -79,155 +79,6 @@ const CollectivesSearch: React.FC = () => {
     fetchDAOs();
   }, []);
 
-
-  // // 기존 하드코딩된 데이터 (백업용)
-  // const fallbackCollectives: Collective[] = [
-  //   {
-  //     id: 'glass-collective',
-  //     name: 'Glass\nCollective',
-  //     description: '투명하고 공정한 Web3 공동체',
-  //     participants: 1250,
-  //     category: 'glass',
-  //     isActive: true
-  //   },
-  //   {
-  //     id: 'tech-startup',
-  //     name: 'Tech\nStartup',
-  //     description: '혁신적인 기술 스타트업 생태계',
-  //     participants: 1890,
-  //     category: 'technology',
-  //     isActive: true
-  //   },
-  //   {
-  //     id: 'defi-collective',
-  //     name: 'DeFi\nCollective',
-  //     description: '탈중앙화 금융 생태계 구축',
-  //     participants: 3421,
-  //     category: 'finance',
-  //     isActive: true
-  //   },
-  //   {
-  //     id: 'art-collective',
-  //     name: 'Art\nCollective',
-  //     description: '디지털 아트와 NFT를 통한 창작자 공동체',
-  //     participants: 567,
-  //     category: 'art',
-  //     isActive: true
-  //   },
-  //   {
-  //     id: 'ai-collective',
-  //     name: 'AI\nCollective',
-  //     description: '인공지능과 머신러닝 연구 공동체',
-  //     participants: 2156,
-  //     category: 'technology',
-  //     isActive: true
-  //   },
-  //   {
-  //     id: 'music-collective',
-  //     name: 'Music\nCollective',
-  //     description: '음악과 오디오 NFT 플랫폼',
-  //     participants: 789,
-  //     category: 'music',
-  //     isActive: true
-  //   },
-  //   {
-  //     id: 'education-collective',
-  //     name: 'Education\nCollective',
-  //     description: '블록체인 교육과 지식 공유 플랫폼',
-  //     participants: 432,
-  //     category: 'education',
-  //     isActive: true
-  //   },
-  //   {
-  //     id: 'gaming-collective',
-  //     name: 'Gaming\nCollective',
-  //     description: '게임과 메타버스 생태계 구축',
-  //     participants: 1567,
-  //     category: 'gaming',
-  //     isActive: true
-  //   },
-  //   {
-  //     id: 'nft-collective',
-  //     name: 'NFT\nCollective',
-  //     description: 'NFT 아트와 디지털 자산 거래',
-  //     participants: 1876,
-  //     category: 'art',
-  //     isActive: true
-  //   },
-  //   {
-  //     id: 'crypto-collective',
-  //     name: 'Crypto\nCollective',
-  //     description: '암호화폐 투자와 트레이딩',
-  //     participants: 2987,
-  //     category: 'finance',
-  //     isActive: true
-  //   },
-  //   {
-  //     id: 'web3-collective',
-  //     name: 'Web3\nCollective',
-  //     description: '웹3 생태계 개발과 연구',
-  //     participants: 1654,
-  //     category: 'technology',
-  //     isActive: true
-  //   },
-  //   {
-  //     id: 'health-collective',
-  //     name: 'Health\nCollective',
-  //     description: '웰빙과 건강 정보를 공유하는 공동체',
-  //     participants: 678,
-  //     category: 'health',
-  //     isActive: true
-  //   },
-  //   {
-  //     id: 'dao-collective',
-  //     name: 'DAO\nCollective',
-  //     description: '탈중앙화 자율조직 연구',
-  //     participants: 1234,
-  //     category: 'technology',
-  //     isActive: true
-  //   },
-  //   {
-  //     id: 'eco-collective',
-  //     name: 'Eco\nCollective',
-  //     description: '환경 보호를 위한 지속가능한 공동체',
-  //     participants: 890,
-  //     category: 'environment',
-  //     isActive: true
-  //   },
-  //   {
-  //     id: 'blockchain-collective',
-  //     name: 'Blockchain\nCollective',
-  //     description: '블록체인 기술 연구와 개발',
-  //     participants: 1432,
-  //     category: 'technology',
-  //     isActive: true
-  //   },
-  //   {
-  //     id: 'creative-collective',
-  //     name: 'Creative\nCollective',
-  //     description: '창작자와 아티스트 지원',
-  //     participants: 654,
-  //     category: 'art',
-  //     isActive: true
-  //   },
-  //   {
-  //     id: 'metaverse-collective',
-  //     name: 'Metaverse\nCollective',
-  //     description: '메타버스 플랫폼 개발',
-  //     participants: 987,
-  //     category: 'gaming',
-  //     isActive: true
-  //   },
-  //   {
-  //     id: 'innovation-collective',
-  //     name: 'Innovation\nCollective',
-  //     description: '혁신 기술 연구와 개발',
-  //     participants: 1123,
-  //     category: 'technology',
-  //     isActive: true
-  //   }
-  // ];
-
   // 카테고리별 컬러 매핑 (세련된 색감)
   const getCategoryColor = (category: string) => {
     const categoryColors = {
@@ -265,8 +116,8 @@ const CollectivesSearch: React.FC = () => {
     const containerWidth = container.offsetWidth;
     const containerHeight = container.offsetHeight;
     const centerX = containerWidth / 2;
-    const centerY = containerHeight + 360;
-    const radius = 600;
+    // 원형을 아래쪽으로 이동하여 상단 부분만 보이도록 조정
+    const centerY = containerHeight + 200; // 화면 아래쪽으로 이동
     const cardCount = filtered.length;
     
     if (cardCount === 0) {
@@ -274,10 +125,27 @@ const CollectivesSearch: React.FC = () => {
         return;
     }
     
+    // 카드 개수에 따라 반지름 조정 (카드가 적을 때도 적절한 간격 유지)
+    const baseRadius = 400;
+    const minRadius = 300; // 최소 반지름
+    const maxRadius = 500; // 최대 반지름
+    const radius = Math.max(minRadius, Math.min(maxRadius, baseRadius * (1 + (10 - cardCount) * 0.1))); // 카드가 적을수록 반지름 증가
+    
     const newLayout: Card[] = filtered.map((dao, index) => {
-      const angleStep = 360 / cardCount;
-      const baseAngle = (-45 + angleStep * index) + rotationAngle;
-      const transform = `rotate(${baseAngle}deg) translate(${radius}px)`;
+      // 카드 개수에 따라 더 자연스러운 각도 분배
+      let angleStep;
+      if (cardCount <= 4) {
+        angleStep = 90; // 4개 이하면 90도씩
+      } else if (cardCount <= 6) {
+        angleStep = 60; // 5-6개면 60도씩
+      } else if (cardCount <= 8) {
+        angleStep = 45; // 7-8개면 45도씩
+      } else {
+        angleStep = 360 / cardCount; // 9개 이상이면 균등 분할
+      }
+      
+      const baseAngle = (-45 + angleStep * index) + rotationAngle; // 이전 버전의 각도 계산 사용
+      const transform = `rotate(${baseAngle}deg) translate(${radius}px)`; // 이전 버전의 transform 사용
       
       return {
         ...dao, // DAO의 모든 데이터를 그대로 가져옴
@@ -303,8 +171,8 @@ const CollectivesSearch: React.FC = () => {
     const physicsTimer = setInterval(() => {
       if (!isDragging) {
         // 스프링 물리 효과
-        const springStrength = 0.08; // 더 강한 스프링
-        const damping = 0.85; // 더 빠른 감쇠
+        const springStrength = 0.05; // 더 약한 스프링
+        const damping = 0.9; // 더 부드러운 감쇠
         
         const distance = targetRotation - rotationAngle;
         const springForce = distance * springStrength;
@@ -313,9 +181,9 @@ const CollectivesSearch: React.FC = () => {
         setRotationAngle(prev => prev + velocity);
         
         // 휠 관성 효과
-        if (Math.abs(inertia) > 0.05) {
+        if (Math.abs(inertia) > 0.01) {
           setRotationAngle(prev => prev + inertia);
-          setInertia(prev => prev * 0.92); // 더 부드러운 관성 감소
+          setInertia(prev => prev * 0.95); // 더 부드러운 관성 감소
         }
       }
     }, 16);
@@ -323,13 +191,14 @@ const CollectivesSearch: React.FC = () => {
     return () => clearInterval(physicsTimer);
   }, [rotationAngle, targetRotation, velocity, inertia, isDragging]);
 
-  // 자동 회전 효과
+  // 자동 회전 효과 - 더 활성화
   useEffect(() => {
     const autoRotateTimer = setInterval(() => {
-      if (!isDragging && Math.abs(inertia) < 0.1 && Math.abs(velocity) < 0.2) {
-        setTargetRotation(prev => prev + 0.5); // 더 명확한 자동 회전
+      // 드래그 중이 아니고, 관성과 속도가 모두 안정적일 때만 자동 회전
+      if (!isDragging && Math.abs(inertia) < 0.05 && Math.abs(velocity) < 0.1) {
+        setTargetRotation(prev => prev + 0.3); // 더 부드러운 자동 회전
       }
-    }, 50); // 더 빠른 간격으로 체크
+    }, 50); // 더 느린 간격으로 체크
     
     return () => clearInterval(autoRotateTimer);
   }, [isDragging, inertia, velocity]);
@@ -338,11 +207,11 @@ const CollectivesSearch: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft') {
-        setTargetRotation(prev => prev - 15); // 더 큰 키보드 제어
+        setTargetRotation(prev => prev - 10); // 더 작은 키보드 제어
         setInertia(0); // 관성 초기화
         setVelocity(0); // 속도 초기화
       } else if (e.key === 'ArrowRight') {
-        setTargetRotation(prev => prev + 15); // 더 큰 키보드 제어
+        setTargetRotation(prev => prev + 10); // 더 작은 키보드 제어
         setInertia(0); // 관성 초기화
         setVelocity(0); // 속도 초기화
       }
@@ -357,15 +226,15 @@ const CollectivesSearch: React.FC = () => {
     setIsDragging(true);
     setDragStartX(e.clientX);
     setInertia(0); // 드래그 시작 시 관성 초기화
+    setVelocity(0); // 드래그 시작 시 속도 초기화
     setShowDragHint(false); // 드래그 시작하면 힌트 숨기기
-    // 자동 회전 즉시 멈춤
   }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!isDragging) return;
     
     const deltaX = e.clientX - dragStartX;
-    const sensitivity = 0.3; // 드래그 감도 대폭 감소 (더 자연스럽게)
+    const sensitivity = 0.2; // 드래그 감도 더 감소
     const newRotation = rotationAngle + deltaX * sensitivity;
     
     setRotationAngle(newRotation);
@@ -377,10 +246,10 @@ const CollectivesSearch: React.FC = () => {
     if (isDragging) {
       const currentX = e?.clientX || dragStartX;
       const deltaX = currentX - dragStartX;
-      const sensitivity = 0.3; // 드래그 감도 대폭 감소
-      const velocity = deltaX * sensitivity * 0.1; // 더 부드러운 관성 효과
+      const sensitivity = 0.2; // 드래그 감도 더 감소
+      const velocity = deltaX * sensitivity * 0.05; // 더 부드러운 관성 효과
       setInertia(velocity);
-      setVelocity(velocity * 0.8); // 더 강한 속도 기반 관성
+      setVelocity(velocity * 0.5); // 더 약한 속도 기반 관성
     }
     setIsDragging(false);
   }, [isDragging, dragStartX]);
@@ -430,63 +299,6 @@ const CollectivesSearch: React.FC = () => {
   const handleCreateClick = () => {
     navigate('/create-dao');
   };
-
-  // // NFT 모달 관련 함수들
-  // const handleJoinWithNft = () => {
-  //   setShowNftModal(true);
-  //   setNftCode('');
-  //   setNftValidationError('');
-  //   setValidatedNftInfo(null);
-  // };
-
-  // const handleJoinWithNftCode = async () => {
-  //   if (!nftCode.trim()) {
-  //     setNftValidationError('NFT 코드를 입력해주세요.');
-  //     return;
-  //   }
-
-  //   setIsValidatingNft(true);
-  //   setNftValidationError('');
-  //   setValidatedNftInfo(null);
-
-  //   try {
-  //     await new Promise(resolve => setTimeout(resolve, 2000));
-      
-  //     const tokenIdPattern = /^\d{13}-\d{1,4}$/;
-  //     if (!tokenIdPattern.test(nftCode)) {
-  //       throw new Error('유효하지 않은 NFT 코드 형식입니다. (예: 1703234567890-1234)');
-  //     }
-
-  //     const nftInfo = generateNftFromTokenId(nftCode, 'Tech Innovators', 'tech-innovators');
-  //     setValidatedNftInfo({
-  //       ...nftInfo,
-  //       isValid: true
-  //     });
-
-  //   } catch (error) {
-  //     console.error('NFT 검증 실패:', error);
-  //     setNftValidationError(error instanceof Error ? error.message : 'NFT 검증에 실패했습니다.');
-  //     setValidatedNftInfo(null);
-  //   } finally {
-  //     setIsValidatingNft(false);
-  //   }
-  // };
-
-  // const handleConfirmJoinWithNft = () => {
-  //   if (validatedNftInfo && validatedNftInfo.isValid) {
-  //     console.log('NFT 검증 성공:', validatedNftInfo);
-  //     navigate(`/collective/${validatedNftInfo.collectiveId}/overview`);
-  //     handleCloseNftModal();
-  //   }
-  // };
-
-  // const handleCloseNftModal = () => {
-  //   setShowNftModal(false);
-  //   setNftCode('');
-  //   setNftValidationError('');
-  //   setIsValidatingNft(false);
-  //   setValidatedNftInfo(null);
-  // };
 
   // 메타마스크 지갑 ID 불러옴
   useEffect(() => {
@@ -589,49 +401,8 @@ const CollectivesSearch: React.FC = () => {
               }}
             >
               <span style={{ fontSize: '16px' }}>+</span>
-              Create!!
+              Create Collective
             </button>
-            
-            {/* Join with NFT 버튼
-            <button 
-              onClick={handleJoinWithNft}
-              style={{
-                position: 'absolute',
-                top: '20px',
-                left: '200px',
-                zIndex: 1000,
-                padding: '14px 20px',
-                backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                color: '#6366f1',
-                border: '1px solid rgba(99, 102, 241, 0.2)',
-                borderRadius: '12px',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                boxShadow: '0 2px 12px rgba(99, 102, 241, 0.08)',
-                backdropFilter: 'blur(10px)',
-                fontFamily: 'Space Grotesk, sans-serif',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.15)';
-                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
-                e.currentTarget.style.boxShadow = '0 8px 25px rgba(99, 102, 241, 0.15)';
-                e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.3)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.1)';
-                e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                e.currentTarget.style.boxShadow = '0 2px 12px rgba(99, 102, 241, 0.08)';
-                e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.2)';
-              }}
-            >
-              <span style={{ fontSize: '16px' }}>🎫</span>
-              Join with NFT
-            </button> */}
 
             {/* 2D 색상환 컨테이너 */}
             <div 
@@ -735,8 +506,8 @@ const CollectivesSearch: React.FC = () => {
                       transformOrigin: 'center center',
                       width: '180px',
                       height: '280px',
-                      background: `linear-gradient(135deg, ${backgroundColor} 0%, ${backgroundColor}90 50%, ${backgroundColor}70 100%)`,
-                      borderRadius: '8px',
+                      background: backgroundColor, // 그라데이션 제거하고 단색으로
+                      borderRadius: '12px', // 더 둥근 모서리
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
@@ -751,16 +522,16 @@ const CollectivesSearch: React.FC = () => {
                         ? 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
                         : 'all 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
                       boxShadow: Math.abs(inertia) > 0.8 
-                        ? `0 4px 16px rgba(0, 0, 0, 0.08), 0 0 30px rgba(255, 255, 255, 0.3), 0 0 60px rgba(255, 255, 255, 0.2)`
-                        : '0 6px 20px rgba(0, 0, 0, 0.1)',
+                        ? `0 4px 16px rgba(0, 0, 0, 0.15)`
+                        : '0 2px 8px rgba(0, 0, 0, 0.1)',
                       color: 'white',
                       textAlign: 'center',
                       padding: '24px 16px',
                       userSelect: 'none',
                       border: 'none',
                       fontFamily: 'Space Grotesk, -apple-system, BlinkMacSystemFont, sans-serif',
-                      backdropFilter: 'blur(5px)',
-                      WebkitBackdropFilter: 'blur(5px)'
+                      backdropFilter: 'none', // 블러 효과 제거
+                      WebkitBackdropFilter: 'none'
                     }}
                     onClick={() => handleCardClick(card)}
                   >
@@ -776,20 +547,20 @@ const CollectivesSearch: React.FC = () => {
                         width: '70px',
                         height: '70px',
                         borderRadius: '50%',
-                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.15)', // 더 투명하게
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         marginBottom: '18px',
                         marginTop: '-8px',
-                        border: '2px solid rgba(255, 255, 255, 0.3)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)', // 더 얇은 테두리
                         transition: 'all 0.3s ease',
                         overflow: 'hidden'
                       }}
                     >
                       <span style={{ 
                         fontSize: '28px',
-                        opacity: 0.8
+                        opacity: 0.9
                       }}>
                         {card.name.charAt(0).toUpperCase()}
                       </span>
@@ -800,7 +571,7 @@ const CollectivesSearch: React.FC = () => {
                       className="card-title"
                       style={{
                         fontSize: '16px',
-                        fontWeight: '700',
+                        fontWeight: '600', // 더 얇게
                         lineHeight: '1.2',
                         marginBottom: '12px',
                         letterSpacing: '0.01em',
@@ -808,7 +579,7 @@ const CollectivesSearch: React.FC = () => {
                         transition: 'all 0.3s ease',
                         wordBreak: 'break-word',
                         textAlign: 'center',
-                        textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)'
+                        textShadow: 'none' // 텍스트 그림자 제거
                       }}
                     >
                       {card.name}
@@ -819,12 +590,12 @@ const CollectivesSearch: React.FC = () => {
                       className="card-participants"
                       style={{
                         fontSize: '11px',
-                        fontWeight: '500',
+                        fontWeight: '400', // 더 얇게
                         opacity: 0.8,
                         letterSpacing: '0.02em',
                         transition: 'all 0.3s ease',
                         textAlign: 'center',
-                        textShadow: '0 1px 1px rgba(0, 0, 0, 0.2)',
+                        textShadow: 'none', // 텍스트 그림자 제거
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -850,309 +621,6 @@ const CollectivesSearch: React.FC = () => {
         </div>
       </div>
 
-      {/* NFT 코드 입력 모달
-      {showNftModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 2000
-        }}>
-          <div style={{
-            background: 'white',
-            borderRadius: '16px',
-            padding: '32px',
-            width: '90%',
-            maxWidth: validatedNftInfo ? '600px' : '500px',
-            maxHeight: '90vh',
-            overflowY: 'auto',
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-            position: 'relative'
-          }}>
-            {/* 닫기 버튼 *
-            <button
-              onClick={handleCloseNftModal}
-              style={{
-                position: 'absolute',
-                top: '16px',
-                right: '16px',
-                background: 'none',
-                border: 'none',
-                fontSize: '24px',
-                cursor: 'pointer',
-                color: '#666'
-              }}
-            >
-              ×
-            </button>
-
-            <h2 style={{ 
-              fontSize: '24px', 
-              fontWeight: '600', 
-              marginBottom: '8px',
-              color: '#000'
-            }}>
-              🎫 Join with NFT Invitation
-            </h2>
-            
-            <p style={{ 
-              color: '#666', 
-              marginBottom: '24px',
-              fontSize: '14px'
-            }}>
-              NFT 초대장의 토큰 ID를 입력하여 Private Collective에 가입하세요.
-            </p>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '8px', 
-                fontWeight: '500',
-                color: '#333'
-              }}>
-                NFT Token ID:
-              </label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input
-                  type="text"
-                  value={nftCode}
-                  onChange={(e) => setNftCode(e.target.value)}
-                  placeholder="예: 1703234567890-1234"
-                  style={{
-                    flex: 1,
-                    padding: '12px 16px',
-                    border: nftValidationError ? '2px solid #dc2626' : '2px solid #e9ecef',
-                    borderRadius: '8px',
-                    fontSize: '16px',
-                    fontFamily: 'Monaco, Menlo, monospace',
-                    letterSpacing: '1px',
-                    outline: 'none',
-                    transition: 'border-color 0.2s ease'
-                  }}
-                  onFocus={(e) => {
-                    if (!nftValidationError) {
-                      e.target.style.borderColor = '#007bff';
-                    }
-                  }}
-                  onBlur={(e) => {
-                    if (!nftValidationError) {
-                      e.target.style.borderColor = '#e9ecef';
-                    }
-                  }}
-                />
-                <button
-                  onClick={handleJoinWithNftCode}
-                  disabled={isValidatingNft || !nftCode.trim()}
-                  style={{
-                    padding: '12px 20px',
-                    border: 'none',
-                    borderRadius: '8px',
-                    background: isValidatingNft || !nftCode.trim()
-                      ? '#ccc' 
-                      : '#007bff',
-                    color: 'white',
-                    cursor: isValidatingNft || !nftCode.trim() ? 'not-allowed' : 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  {isValidatingNft ? '⏳' : '🔍 Verify'}
-                </button>
-              </div>
-              {nftValidationError && (
-                <p style={{ 
-                  color: '#dc2626', 
-                  fontSize: '12px', 
-                  marginTop: '4px',
-                  margin: '4px 0 0 0'
-                }}>
-                  {nftValidationError}
-                </p>
-              )}
-            </div>
-
-            {/* NFT 정보 표시 *
-            {validatedNftInfo && (
-              <div style={{
-                marginTop: '24px',
-                padding: '20px',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                borderRadius: '12px',
-                color: 'white'
-              }}>
-                <h3 style={{ 
-                  fontSize: '18px', 
-                  fontWeight: '600', 
-                  marginBottom: '16px',
-                  color: 'white'
-                }}>
-                  ✅ NFT Verified!
-                </h3>
-                
-                <div style={{
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  borderRadius: '12px',
-                  padding: '16px',
-                  backdropFilter: 'blur(10px)'
-                }}>
-                  <div style={{
-                    background: 'white',
-                    borderRadius: '12px',
-                    padding: '16px',
-                    display: 'flex',
-                    gap: '16px',
-                    alignItems: 'center',
-                    marginBottom: '16px'
-                  }}>
-                    <div style={{
-                      width: '80px',
-                      height: '80px',
-                      borderRadius: '8px',
-                      overflow: 'hidden',
-                      flexShrink: 0,
-                      background: '#f0f0f0'
-                    }}>
-                      <img 
-                        src={validatedNftInfo.image} 
-                        alt={validatedNftInfo.name}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover'
-                        }}
-                      />
-                    </div>
-                    <div style={{ flex: 1, color: '#333' }}>
-                      <h4 style={{ 
-                        fontSize: '16px', 
-                        fontWeight: '600', 
-                        color: '#000', 
-                        margin: '0 0 8px 0' 
-                      }}>
-                        {validatedNftInfo.name}
-                      </h4>
-                      <p style={{ 
-                        fontSize: '12px', 
-                        color: '#666', 
-                        margin: '0 0 12px 0',
-                        fontFamily: 'Monaco, Menlo, monospace'
-                      }}>
-                        Token ID: {validatedNftInfo.tokenId}
-                      </p>
-                      <div style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: '6px'
-                      }}>
-                        {validatedNftInfo.attributes.slice(0, 4).map((attr, index) => (
-                          <span key={index} style={{
-                            background: '#f8f9fa',
-                            color: '#495057',
-                            padding: '4px 8px',
-                            borderRadius: '12px',
-                            fontSize: '10px',
-                            fontWeight: '500',
-                            border: '1px solid #e9ecef'
-                          }}>
-                            {attr.trait_type}: {attr.value}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div style={{
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    borderRadius: '8px',
-                    padding: '12px',
-                    textAlign: 'center'
-                  }}>
-                    <p style={{ 
-                      fontSize: '14px',
-                      margin: '0 0 8px 0',
-                      color: 'rgba(255, 255, 255, 0.9)'
-                    }}>
-                      이 NFT는 <strong>{validatedNftInfo.collectiveName}</strong>에 대한 초대장입니다.
-                    </p>
-                    <p style={{ 
-                      fontSize: '12px',
-                      margin: '0',
-                      color: 'rgba(255, 255, 255, 0.7)',
-                      fontStyle: 'italic'
-                    }}>
-                      가입을 진행하시겠습니까?
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div style={{ 
-              display: 'flex', 
-              gap: '12px',
-              justifyContent: 'flex-end',
-              marginTop: '24px'
-            }}>
-              <button
-                onClick={handleCloseNftModal}
-                style={{
-                  padding: '12px 24px',
-                  border: '1px solid #ddd',
-                  borderRadius: '8px',
-                  backgroundColor: '#fff',
-                  color: '#666',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500'
-                }}
-              >
-                Cancel
-              </button>
-              
-              {validatedNftInfo ? (
-                <button
-                  onClick={handleConfirmJoinWithNft}
-                  style={{
-                    padding: '12px 24px',
-                    border: 'none',
-                    borderRadius: '8px',
-                    background: 'linear-gradient(45deg, #667eea, #764ba2)',
-                    color: 'white',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '600'
-                  }}
-                >
-                  🚀 Join {validatedNftInfo.collectiveName}
-                </button>
-              ) : (
-                <button
-                  disabled
-                  style={{
-                    padding: '12px 24px',
-                    border: 'none',
-                    borderRadius: '8px',
-                    background: '#ccc',
-                    color: 'white',
-                    cursor: 'not-allowed',
-                    fontSize: '14px',
-                    fontWeight: '600'
-                  }}
-                >
-                  Enter Token ID First
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )} */}
       {/* *** 14. MODIFIED: NFT 모달을 Private DAO 인증 모달로 교체 *** */}
       {isModalOpen && selectedPrivateDao && (
         <div className="modal-overlay">

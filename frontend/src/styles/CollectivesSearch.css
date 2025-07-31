@@ -4,7 +4,7 @@
 
 /* --- 기본 페이지 및 레이아웃 --- */
 .collectives-search-page {
-  background: #ffffff;
+  background: #ffffff; /* 순수 흰색 배경 */
   min-height: 100vh;
   font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
   overflow: hidden; /* 페이지 전체 스크롤 방지 */
@@ -53,7 +53,7 @@
 }
 
 .circle-card:hover {
-  transform: translateY(-10px) scale(1.05) !important;
+  /* transform: translateY(-10px) scale(1.05) !important; */ /* 호버 시 움직임 제거 */
   z-index: 10 !important; /* 다른 카드 위로 올라오도록 */
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
 }

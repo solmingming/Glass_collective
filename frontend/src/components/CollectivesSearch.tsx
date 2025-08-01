@@ -116,8 +116,8 @@ const CollectivesSearch: React.FC = () => {
     const containerWidth = container.offsetWidth;
     const containerHeight = container.offsetHeight;
     const centerX = containerWidth / 2;
-    // 원형을 아래쪽으로 이동하여 상단 부분만 보이도록 조정
-    const centerY = containerHeight + 200; // 화면 아래쪽으로 이동
+    // 원형을 위쪽으로 이동하여 더 많은 카드가 보이도록 조정
+    const centerY = containerHeight * 0.85; // 화면 중앙보다 약간 위쪽으로 이동
     const cardCount = filtered.length;
     
     if (cardCount === 0) {
